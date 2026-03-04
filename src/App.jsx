@@ -39,21 +39,21 @@ function SectionLabel({ text }) {
   return (
     <div style={{ display: "inline-flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
       <div style={{ width: 24, height: 2, background: TEAL, borderRadius: 1 }} />
-      <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: 2, textTransform: "uppercase", color: TEAL, fontFamily: "'Outfit', sans-serif" }}>{text}</span>
+      <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: 2, textTransform: "uppercase", color: TEAL, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>{text}</span>
     </div>
   );
 }
 
 function SectionTitle({ children }) {
-  return <h2 style={{ fontFamily: "'Source Serif 4', serif", fontSize: "clamp(28px, 5vw, 40px)", fontWeight: 700, color: DARK, lineHeight: 1.2, marginBottom: 16 }}>{children}</h2>;
+  return <h2 style={{ fontFamily: "'Noto Sans TC', 'Source Serif 4', serif", fontSize: "clamp(28px, 5vw, 40px)", fontWeight: 700, color: DARK, lineHeight: 1.2, marginBottom: 16 }}>{children}</h2>;
 }
 
 function Paragraph({ children, style = {} }) {
-  return <p style={{ fontSize: 16, lineHeight: 1.75, color: MUTED, maxWidth: 640, fontFamily: "'Outfit', sans-serif", ...style }}>{children}</p>;
+  return <p style={{ fontSize: 16, lineHeight: 1.75, color: MUTED, maxWidth: 640, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif", ...style }}>{children}</p>;
 }
 
-const btnPrimary = { background: TEAL, border: "none", color: "#FFF", padding: "12px 28px", borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif", transition: "all 0.2s" };
-const btnSecondary = { background: "transparent", border: `1.5px solid ${TEAL}`, color: TEAL, padding: "11px 26px", borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif" };
+const btnPrimary = { background: TEAL, border: "none", color: "#FFF", padding: "12px 28px", borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "'Noto Sans TC', 'Outfit', sans-serif", transition: "all 0.2s" };
+const btnSecondary = { background: "transparent", border: `1.5px solid ${TEAL}`, color: TEAL, padding: "11px 26px", borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" };
 
 // ═══ STUDY COMBINER ═══
 function StudyCombiner() {
@@ -76,23 +76,23 @@ function StudyCombiner() {
   return (
     <div style={{ background: CARD_BG, borderRadius: 20, border: `1px solid ${LIGHT_BORDER}`, padding: "32px 28px", boxShadow: "0 2px 20px rgba(0,0,0,0.04)" }}>
       <div style={{ textAlign: "center", marginBottom: 24 }}>
-        <h3 style={{ fontFamily: "'Source Serif 4', serif", fontSize: 20, fontWeight: 600, color: DARK, marginBottom: 6 }}>
+        <h3 style={{ fontFamily: "'Noto Sans TC', 'Source Serif 4', serif", fontSize: 20, fontWeight: 600, color: DARK, marginBottom: 6 }}>
           {phase === "scattered" && t("combinerScattered")}
           {phase === "combining" && t("combinerCombining")}
           {phase === "combined" && t("combinerCombined")}
         </h3>
-        <p style={{ fontSize: 14, color: MUTED, fontFamily: "'Outfit', sans-serif" }}>
+        <p style={{ fontSize: 14, color: MUTED, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>
           {phase === "scattered" && t("combinerScatteredDesc")}
           {phase === "combining" && t("combinerCombiningDesc")}
           {phase === "combined" && t("combinerCombinedDesc", pooled.toFixed(2))}
         </p>
       </div>
       <div style={{ position: "relative", height: 260, background: "#FAFAF7", borderRadius: 14, border: `1px solid ${LIGHT_BORDER}`, overflow: "hidden", marginBottom: 20 }}>
-        <div style={{ position: "absolute", bottom: 8, left: 0, right: 0, display: "flex", justifyContent: "space-between", padding: "0 16px", fontSize: 10, color: "#B0AFAA", fontFamily: "'Outfit', sans-serif" }}>
+        <div style={{ position: "absolute", bottom: 8, left: 0, right: 0, display: "flex", justifyContent: "space-between", padding: "0 16px", fontSize: 10, color: "#B0AFAA", fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>
           <span>{t("combinerNegative")}</span><span>{t("combinerPositive")}</span>
         </div>
         <div style={{ position: "absolute", left: "50%", top: 16, bottom: 28, width: 1, background: "#DDD", transform: "translateX(-50%)" }} />
-        <div style={{ position: "absolute", left: "50%", top: 6, transform: "translateX(-50%)", fontSize: 9, color: "#BBB", fontFamily: "'Outfit', sans-serif" }}>{t("combinerNoEffect")}</div>
+        <div style={{ position: "absolute", left: "50%", top: 6, transform: "translateX(-50%)", fontSize: 9, color: "#BBB", fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>{t("combinerNoEffect")}</div>
         {studies.map((st, i) => {
           const scattered = scatteredPositions[i];
           const effectX = 50 + st.effect * 60;
@@ -109,14 +109,14 @@ function StudyCombiner() {
           <div style={{ position: "absolute", left: `${50 + pooled * 60}%`, top: "42%", transform: "translate(-50%, -50%) rotate(45deg)", width: 28, height: 28, background: TEAL, borderRadius: 4, boxShadow: `0 4px 20px ${TEAL}44`, animation: "popIn 0.5s ease-out" }} />
         )}
         {hoveredStudy !== null && phase === "scattered" && (
-          <div style={{ position: "absolute", left: `${scatteredPositions[hoveredStudy].x}%`, top: `${scatteredPositions[hoveredStudy].y - 14}%`, transform: "translateX(-50%)", background: DARK, color: "#FFF", borderRadius: 10, padding: "8px 14px", fontSize: 12, whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif", zIndex: 20, boxShadow: "0 4px 16px rgba(0,0,0,0.15)", pointerEvents: "none" }}>
+          <div style={{ position: "absolute", left: `${scatteredPositions[hoveredStudy].x}%`, top: `${scatteredPositions[hoveredStudy].y - 14}%`, transform: "translateX(-50%)", background: DARK, color: "#FFF", borderRadius: 10, padding: "8px 14px", fontSize: 12, whiteSpace: "nowrap", fontFamily: "'Noto Sans TC', 'Outfit', sans-serif", zIndex: 20, boxShadow: "0 4px 16px rgba(0,0,0,0.15)", pointerEvents: "none" }}>
             <strong>{studies[hoveredStudy].label}</strong> (n={studies[hoveredStudy].n})<br />{t(studies[hoveredStudy].descKey)}
           </div>
         )}
         <style>{`@keyframes popIn { from { transform: translate(-50%, -50%) rotate(45deg) scale(0); opacity: 0; } to { transform: translate(-50%, -50%) rotate(45deg) scale(1); opacity: 1; } }`}</style>
       </div>
       {phase === "scattered" && (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center", marginBottom: 16, fontSize: 12, color: MUTED, fontFamily: "'Outfit', sans-serif" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 12, justifyContent: "center", marginBottom: 16, fontSize: 12, color: MUTED, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>
           {studies.map((st) => (
             <div key={st.id} style={{ display: "flex", alignItems: "center", gap: 5 }}>
               <div style={{ width: 8, height: 8, borderRadius: "50%", background: st.color }} />
@@ -158,28 +158,28 @@ function ForestPlotExplainer() {
   return (
     <div style={{ background: CARD_BG, borderRadius: 20, border: `1px solid ${LIGHT_BORDER}`, padding: "32px 24px", boxShadow: "0 2px 20px rgba(0,0,0,0.04)" }}>
       <div style={{ textAlign: "center", marginBottom: 8 }}>
-        <h3 style={{ fontFamily: "'Source Serif 4', serif", fontSize: 20, fontWeight: 600, color: DARK, marginBottom: 6 }}>{t("forestTitle")}</h3>
-        <p style={{ fontSize: 14, color: MUTED, fontFamily: "'Outfit', sans-serif" }}>{t("forestClickHint").replace("👆 ", "")}</p>
+        <h3 style={{ fontFamily: "'Noto Sans TC', 'Source Serif 4', serif", fontSize: 20, fontWeight: 600, color: DARK, marginBottom: 6 }}>{t("forestTitle")}</h3>
+        <p style={{ fontSize: 14, color: MUTED, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>{t("forestClickHint").replace("👆 ", "")}</p>
       </div>
       <div style={{ minHeight: 72, padding: "12px 16px", marginBottom: 16, background: activeTooltip ? `${TEAL}08` : "transparent", borderRadius: 12, transition: "all 0.3s", border: activeTooltip ? `1px solid ${TEAL}22` : "1px solid transparent" }}>
         {activeTooltip ? (
           <>
-            <div style={{ fontSize: 14, fontWeight: 600, color: TEAL, fontFamily: "'Outfit', sans-serif", marginBottom: 4 }}>{t(explanations[activeTooltip].titleKey)}</div>
-            <div style={{ fontSize: 13.5, lineHeight: 1.6, color: MUTED, fontFamily: "'Outfit', sans-serif" }}>{t(explanations[activeTooltip].textKey)}</div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: TEAL, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif", marginBottom: 4 }}>{t(explanations[activeTooltip].titleKey)}</div>
+            <div style={{ fontSize: 13.5, lineHeight: 1.6, color: MUTED, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>{t(explanations[activeTooltip].textKey)}</div>
           </>
         ) : (
-          <div style={{ fontSize: 13, color: "#B0AFAA", fontFamily: "'Outfit', sans-serif", textAlign: "center", paddingTop: 8 }}>
+          <div style={{ fontSize: 13, color: "#B0AFAA", fontFamily: "'Noto Sans TC', 'Outfit', sans-serif", textAlign: "center", paddingTop: 8 }}>
             {t("forestClickHint")}
           </div>
         )}
       </div>
-      <div style={{ display: "flex", justifyContent: "space-between", marginLeft: 120, marginRight: 8, marginBottom: 6, fontSize: 10, color: "#B0AFAA", fontFamily: "'Outfit', sans-serif" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", marginLeft: 120, marginRight: 8, marginBottom: 6, fontSize: 10, color: "#B0AFAA", fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>
         <span>{t("forestFavorsTreatment")}</span><span>{t("forestFavorsControl")}</span>
       </div>
       <div style={{ position: "relative" }}>
         {studies.map((s, i) => (
           <div key={i} style={{ display: "flex", alignItems: "center", height: 40, padding: "0 4px" }}>
-            <div style={{ width: 116, fontSize: 13, color: MUTED, fontFamily: "'Outfit', sans-serif" }}>{s.name}</div>
+            <div style={{ width: 116, fontSize: 13, color: MUTED, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>{s.name}</div>
             <div style={{ flex: 1, position: "relative", height: "100%" }}>
               <div onClick={() => setActiveTooltip(activeTooltip === "center" ? null : "center")} style={{ position: "absolute", left: `${toX(0)}%`, top: 0, bottom: 0, width: activeTooltip === "center" ? 3 : 1, background: activeTooltip === "center" ? CORAL : "#DDD", cursor: "pointer", zIndex: 5, padding: "0 6px", backgroundClip: "content-box", transition: "all 0.3s" }} />
               <div onClick={() => setActiveTooltip(activeTooltip === "line" ? null : "line")} style={{ position: "absolute", left: `${toX(s.ci[0])}%`, width: `${toX(s.ci[1]) - toX(s.ci[0])}%`, top: "50%", height: activeTooltip === "line" ? 3 : 2, background: activeTooltip === "line" ? CORAL : TEAL, transform: "translateY(-50%)", cursor: "pointer", transition: "all 0.3s", borderRadius: 1 }} />
@@ -188,7 +188,7 @@ function ForestPlotExplainer() {
           </div>
         ))}
         <div style={{ display: "flex", alignItems: "center", height: 44, marginTop: 4, borderTop: `1px solid ${LIGHT_BORDER}`, paddingTop: 8 }}>
-          <div style={{ width: 116, fontSize: 13, fontWeight: 700, color: TEAL, fontFamily: "'Outfit', sans-serif" }}>{t("forestOverall")}</div>
+          <div style={{ width: 116, fontSize: 13, fontWeight: 700, color: TEAL, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>{t("forestOverall")}</div>
           <div style={{ flex: 1, position: "relative", height: "100%" }}>
             <div style={{ position: "absolute", left: `${toX(0)}%`, top: 0, bottom: 0, width: 1, background: "#DDD" }} />
             <svg onClick={() => setActiveTooltip(activeTooltip === "diamond" ? null : "diamond")} style={{ position: "absolute", left: `${toX(pooled.ci[0])}%`, top: "50%", width: `${toX(pooled.ci[1]) - toX(pooled.ci[0])}%`, height: 22, transform: "translateY(-50%)", overflow: "visible", cursor: "pointer" }} viewBox="0 0 100 22" preserveAspectRatio="none">
@@ -197,7 +197,7 @@ function ForestPlotExplainer() {
           </div>
         </div>
       </div>
-      <div style={{ display: "flex", marginLeft: 120, justifyContent: "space-between", marginTop: 10, fontSize: 10, color: "#C0BFB9", fontFamily: "'Outfit', sans-serif" }}>
+      <div style={{ display: "flex", marginLeft: 120, justifyContent: "space-between", marginTop: 10, fontSize: 10, color: "#C0BFB9", fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>
         {[-1.0, -0.6, -0.2, 0, 0.2, 0.6].map((v) => <span key={v}>{v.toFixed(1)}</span>)}
       </div>
     </div>
@@ -230,9 +230,9 @@ function Quiz() {
     return (
       <div style={{ background: CARD_BG, borderRadius: 20, border: `1px solid ${LIGHT_BORDER}`, padding: "48px 32px", textAlign: "center", boxShadow: "0 2px 20px rgba(0,0,0,0.04)" }}>
         <div style={{ fontSize: 48, marginBottom: 16 }}>{emoji}</div>
-        <h3 style={{ fontFamily: "'Source Serif 4', serif", fontSize: 28, fontWeight: 700, color: DARK, marginBottom: 8 }}>{pct === 100 ? t("quizPerfect") : pct >= 60 ? t("quizWellDone") : t("quizKeepLearning")}</h3>
-        <p style={{ fontSize: 18, color: TEAL, fontWeight: 600, fontFamily: "'Outfit', sans-serif", marginBottom: 8 }}>{t("quizCorrectCount", score, questions.length, pct)}</p>
-        <p style={{ fontSize: 14, color: MUTED, marginBottom: 28, fontFamily: "'Outfit', sans-serif" }}>{pct === 100 ? t("quizPerfectMsg") : t("quizRetryMsg")}</p>
+        <h3 style={{ fontFamily: "'Noto Sans TC', 'Source Serif 4', serif", fontSize: 28, fontWeight: 700, color: DARK, marginBottom: 8 }}>{pct === 100 ? t("quizPerfect") : pct >= 60 ? t("quizWellDone") : t("quizKeepLearning")}</h3>
+        <p style={{ fontSize: 18, color: TEAL, fontWeight: 600, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif", marginBottom: 8 }}>{t("quizCorrectCount", score, questions.length, pct)}</p>
+        <p style={{ fontSize: 14, color: MUTED, marginBottom: 28, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>{pct === 100 ? t("quizPerfectMsg") : t("quizRetryMsg")}</p>
         <button onClick={restart} style={btnPrimary}>{t("quizTryAgain")}</button>
       </div>
     );
@@ -242,12 +242,12 @@ function Quiz() {
   return (
     <div style={{ background: CARD_BG, borderRadius: 20, border: `1px solid ${LIGHT_BORDER}`, padding: "32px 28px", boxShadow: "0 2px 20px rgba(0,0,0,0.04)" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-        <span style={{ fontSize: 12, color: MUTED, fontFamily: "'Outfit', sans-serif" }}>{t("quizQuestion")} {current + 1} {t("quizOf")} {questions.length}</span>
+        <span style={{ fontSize: 12, color: MUTED, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>{t("quizQuestion")} {current + 1} {t("quizOf")} {questions.length}</span>
         <div style={{ display: "flex", gap: 4 }}>
           {questions.map((_, i) => <div key={i} style={{ width: 24, height: 4, borderRadius: 2, background: i <= current ? TEAL : "#E8E6E1", transition: "background 0.3s" }} />)}
         </div>
       </div>
-      <h3 style={{ fontFamily: "'Source Serif 4', serif", fontSize: 20, fontWeight: 600, color: DARK, marginBottom: 20, lineHeight: 1.4 }}>{q.q}</h3>
+      <h3 style={{ fontFamily: "'Noto Sans TC', 'Source Serif 4', serif", fontSize: 20, fontWeight: 600, color: DARK, marginBottom: 20, lineHeight: 1.4 }}>{q.q}</h3>
       <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
         {q.opts.map((opt, idx) => {
           let bg = "#FAFAF7", border = LIGHT_BORDER, color = DARK;
@@ -256,7 +256,7 @@ function Quiz() {
             else if (idx === selected && idx !== q.correct) { bg = "#FDEEEB"; border = "#D94B2E"; color = "#B83A20"; }
           }
           return (
-            <button key={idx} onClick={() => handleSelect(idx)} style={{ background: bg, border: `1.5px solid ${border}`, borderRadius: 12, padding: "14px 18px", textAlign: "left", fontSize: 15, color, fontFamily: "'Outfit', sans-serif", cursor: answered ? "default" : "pointer", transition: "all 0.2s", fontWeight: answered && idx === q.correct ? 600 : 400 }}>
+            <button key={idx} onClick={() => handleSelect(idx)} style={{ background: bg, border: `1.5px solid ${border}`, borderRadius: 12, padding: "14px 18px", textAlign: "left", fontSize: 15, color, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif", cursor: answered ? "default" : "pointer", transition: "all 0.2s", fontWeight: answered && idx === q.correct ? 600 : 400 }}>
               <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 24, height: 24, borderRadius: "50%", border: `1.5px solid ${border}`, fontSize: 12, fontWeight: 600, marginRight: 12, background: answered && idx === q.correct ? "#3DA87A" : "transparent", color: answered && idx === q.correct ? "#FFF" : color }}>{String.fromCharCode(65 + idx)}</span>
               {opt}
             </button>
@@ -264,7 +264,7 @@ function Quiz() {
         })}
       </div>
       {answered && (
-        <div style={{ background: selected === q.correct ? "#E6F5F0" : "#FDEEEB", borderRadius: 12, padding: "14px 18px", marginBottom: 16, fontSize: 14, lineHeight: 1.65, color: MUTED, fontFamily: "'Outfit', sans-serif", border: `1px solid ${selected === q.correct ? "#3DA87A33" : "#D94B2E33"}` }}>
+        <div style={{ background: selected === q.correct ? "#E6F5F0" : "#FDEEEB", borderRadius: 12, padding: "14px 18px", marginBottom: 16, fontSize: 14, lineHeight: 1.65, color: MUTED, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif", border: `1px solid ${selected === q.correct ? "#3DA87A33" : "#D94B2E33"}` }}>
           <strong style={{ color: selected === q.correct ? "#2A7A5A" : "#B83A20" }}>{selected === q.correct ? t("quizCorrectMark") : t("quizWrongMark")}</strong>
           {q.explanation}
         </div>
@@ -279,20 +279,20 @@ function MethodStep({ number, title, analogy, details, isOpen, onClick, thinkOfI
   return (
     <div onClick={onClick} style={{ background: CARD_BG, border: `1px solid ${isOpen ? `${TEAL}33` : LIGHT_BORDER}`, borderRadius: 16, padding: "22px 24px", cursor: "pointer", transition: "all 0.35s", boxShadow: isOpen ? `0 4px 24px ${TEAL}0D` : "none" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-        <div style={{ minWidth: 44, height: 44, borderRadius: 12, background: isOpen ? TEAL : "#F1F0EC", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Source Serif 4', serif", fontSize: 18, fontWeight: 700, color: isOpen ? "#FFF" : MUTED, transition: "all 0.35s" }}>{number}</div>
+        <div style={{ minWidth: 44, height: 44, borderRadius: 12, background: isOpen ? TEAL : "#F1F0EC", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Noto Sans TC', 'Source Serif 4', serif", fontSize: 18, fontWeight: 700, color: isOpen ? "#FFF" : MUTED, transition: "all 0.35s" }}>{number}</div>
         <div style={{ flex: 1 }}>
-          <h3 style={{ fontSize: 17, fontWeight: 600, color: DARK, fontFamily: "'Outfit', sans-serif", margin: 0 }}>{title}</h3>
-          {!isOpen && <p style={{ margin: "4px 0 0", fontSize: 13.5, color: "#B0AFAA", fontFamily: "'Outfit', sans-serif" }}>{analogy}</p>}
+          <h3 style={{ fontSize: 17, fontWeight: 600, color: DARK, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif", margin: 0 }}>{title}</h3>
+          {!isOpen && <p style={{ margin: "4px 0 0", fontSize: 13.5, color: "#B0AFAA", fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>{analogy}</p>}
         </div>
         <span style={{ fontSize: 18, color: isOpen ? TEAL : "#C0BFB9", transform: isOpen ? "rotate(45deg)" : "rotate(0)", transition: "transform 0.35s", fontWeight: 300 }}>+</span>
       </div>
       {isOpen && (
         <div style={{ marginTop: 16, paddingTop: 16, borderTop: `1px solid ${LIGHT_BORDER}` }}>
-          <div style={{ background: `${TEAL}08`, borderRadius: 10, padding: "10px 14px", marginBottom: 14, fontSize: 13.5, color: TEAL, lineHeight: 1.6, fontFamily: "'Outfit', sans-serif", fontStyle: "italic" }}>{thinkOfIt}{analogy}</div>
+          <div style={{ background: `${TEAL}08`, borderRadius: 10, padding: "10px 14px", marginBottom: 14, fontSize: 13.5, color: TEAL, lineHeight: 1.6, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif", fontStyle: "italic" }}>{thinkOfIt}{analogy}</div>
           {details.map((d, i) => (
             <div key={i} style={{ display: "flex", gap: 10, marginBottom: 8, alignItems: "flex-start" }}>
               <span style={{ color: TEAL, fontSize: 7, marginTop: 7 }}>●</span>
-              <span style={{ fontSize: 14, lineHeight: 1.65, color: MUTED, fontFamily: "'Outfit', sans-serif" }}>{d}</span>
+              <span style={{ fontSize: 14, lineHeight: 1.65, color: MUTED, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>{d}</span>
             </div>
           ))}
         </div>
@@ -332,9 +332,9 @@ export default function MetaAnalysisGuide() {
   ];
 
   return (
-    <div style={{ background: LIGHT_BG, color: DARK, fontFamily: "'Outfit', sans-serif", minHeight: "100vh" }}>
+    <div style={{ background: LIGHT_BG, color: DARK, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif", minHeight: "100vh" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600;700;900&family=Outfit:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700;900&family=Source+Serif+4:wght@400;600;700;900&family=Outfit:wght@300;400;500;600;700&display=swap');
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; }
         body { background: ${LIGHT_BG}; }
@@ -343,17 +343,17 @@ export default function MetaAnalysisGuide() {
 
       {/* NAV */}
       <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, height: 60, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 32px", background: scrollY > 60 ? "rgba(248,247,244,0.92)" : "transparent", backdropFilter: scrollY > 60 ? "blur(16px)" : "none", borderBottom: scrollY > 60 ? `1px solid ${LIGHT_BORDER}` : "none", transition: "all 0.35s" }}>
-        <div onClick={() => scrollTo("hero")} style={{ fontFamily: "'Source Serif 4', serif", fontSize: 17, fontWeight: 700, color: TEAL, cursor: "pointer", letterSpacing: -0.3 }}>
+        <div onClick={() => scrollTo("hero")} style={{ fontFamily: "'Noto Sans TC', 'Source Serif 4', serif", fontSize: 17, fontWeight: 700, color: TEAL, cursor: "pointer", letterSpacing: -0.3 }}>
           {t("navTitle")} <span style={{ fontWeight: 400, color: MUTED }}>{t("navTitleSuffix")}</span>
         </div>
         <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
           {navItems.map((n) => (
-            <button key={n.id} onClick={() => scrollTo(n.id)} style={{ background: "none", border: "none", color: MUTED, padding: "8px 14px", borderRadius: 8, fontSize: 13, cursor: "pointer", fontFamily: "'Outfit', sans-serif", fontWeight: 500, transition: "color 0.2s" }}
+            <button key={n.id} onClick={() => scrollTo(n.id)} style={{ background: "none", border: "none", color: MUTED, padding: "8px 14px", borderRadius: 8, fontSize: 13, cursor: "pointer", fontFamily: "'Noto Sans TC', 'Outfit', sans-serif", fontWeight: 500, transition: "color 0.2s" }}
               onMouseEnter={(e) => (e.target.style.color = TEAL)} onMouseLeave={(e) => (e.target.style.color = MUTED)}>
               {n.label}
             </button>
           ))}
-          <button onClick={toggleLang} style={{ background: `${TEAL}0D`, border: `1px solid ${TEAL}22`, color: TEAL, padding: "6px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif", marginLeft: 8, transition: "all 0.2s", letterSpacing: 0.5 }}
+          <button onClick={toggleLang} style={{ background: `${TEAL}0D`, border: `1px solid ${TEAL}22`, color: TEAL, padding: "6px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "'Noto Sans TC', 'Outfit', sans-serif", marginLeft: 8, transition: "all 0.2s", letterSpacing: 0.5 }}
             onMouseEnter={(e) => { e.target.style.background = TEAL; e.target.style.color = "#FFF"; }}
             onMouseLeave={(e) => { e.target.style.background = `${TEAL}0D`; e.target.style.color = TEAL; }}>
             {t("langSwitch")}
@@ -371,7 +371,7 @@ export default function MetaAnalysisGuide() {
             <div style={{ display: "inline-block", padding: "6px 18px", borderRadius: 20, background: `${TEAL}0D`, border: `1px solid ${TEAL}22`, fontSize: 12, color: TEAL, fontWeight: 600, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 28 }}>{t("heroBadge")}</div>
           </FadeIn>
           <FadeIn delay={0.1}>
-            <h1 style={{ fontFamily: "'Source Serif 4', serif", fontSize: "clamp(36px, 7vw, 64px)", fontWeight: 900, lineHeight: 1.08, marginBottom: 20, color: DARK }}>
+            <h1 style={{ fontFamily: "'Noto Sans TC', 'Source Serif 4', serif", fontSize: "clamp(36px, 7vw, 64px)", fontWeight: 900, lineHeight: 1.08, marginBottom: 20, color: DARK }}>
               {t("heroTitle1")}
               <span style={{ background: `linear-gradient(135deg, ${TEAL}, #3AAFB8)`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>{t("heroTitle2")}</span>
               {t("heroTitle3")}
@@ -469,7 +469,7 @@ export default function MetaAnalysisGuide() {
       <Section id="how" accent>
         <FadeIn><SectionLabel text={t("howLabel")} /><SectionTitle>{t("howTitle")}</SectionTitle>
           <Paragraph style={{ marginBottom: 12 }}>{t("howDesc")}</Paragraph>
-          <p style={{ fontSize: 12, color: `${TEAL}88`, marginBottom: 32, fontStyle: "italic", fontFamily: "'Outfit', sans-serif" }}>{t("howNote")}</p>
+          <p style={{ fontSize: 12, color: `${TEAL}88`, marginBottom: 32, fontStyle: "italic", fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>{t("howNote")}</p>
         </FadeIn>
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {steps.map((step, i) => (
@@ -484,15 +484,15 @@ export default function MetaAnalysisGuide() {
       <Section id="tools">
         <FadeIn><SectionLabel text={t("forestLabel")} /><SectionTitle>{t("forestTitle")}</SectionTitle>
           <Paragraph style={{ marginBottom: 12 }}>{t("forestDesc")}</Paragraph>
-          <p style={{ fontSize: 13, color: MUTED, marginBottom: 32, fontFamily: "'Outfit', sans-serif" }}>{t("forestNote")}</p>
+          <p style={{ fontSize: 13, color: MUTED, marginBottom: 32, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>{t("forestNote")}</p>
         </FadeIn>
         <FadeIn delay={0.1}><ForestPlotExplainer /></FadeIn>
         <FadeIn delay={0.15}>
           <div style={{ marginTop: 40, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 14 }}>
             {glossary.map((item, i) => (
               <div key={i} style={{ background: CARD_BG, border: `1px solid ${LIGHT_BORDER}`, borderRadius: 14, padding: "18px 20px" }}>
-                <h4 style={{ fontSize: 14, fontWeight: 600, color: TEAL, marginBottom: 6, fontFamily: "'Outfit', sans-serif" }}>{item.term}</h4>
-                <p style={{ fontSize: 13, lineHeight: 1.65, color: MUTED, fontFamily: "'Outfit', sans-serif" }}>{item.def}</p>
+                <h4 style={{ fontSize: 14, fontWeight: 600, color: TEAL, marginBottom: 6, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>{item.term}</h4>
+                <p style={{ fontSize: 13, lineHeight: 1.65, color: MUTED, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>{item.def}</p>
               </div>
             ))}
           </div>
@@ -509,10 +509,10 @@ export default function MetaAnalysisGuide() {
 
       {/* FOOTER */}
       <footer style={{ padding: "48px 24px", textAlign: "center", borderTop: `1px solid ${LIGHT_BORDER}`, background: LIGHT_BG }}>
-        <p style={{ fontSize: 13, color: "#B0AFAA", fontFamily: "'Outfit', sans-serif", lineHeight: 1.8, maxWidth: 600, margin: "0 auto" }}>
+        <p style={{ fontSize: 13, color: "#B0AFAA", fontFamily: "'Noto Sans TC', 'Outfit', sans-serif", lineHeight: 1.8, maxWidth: 600, margin: "0 auto" }}>
           {t("footerText")}
         </p>
-        <div style={{ marginTop: 16, fontFamily: "'Source Serif 4', serif", fontSize: 14, color: TEAL, fontWeight: 600 }}>{t("footerBrand")}</div>
+        <div style={{ marginTop: 16, fontFamily: "'Noto Sans TC', 'Source Serif 4', serif", fontSize: 14, color: TEAL, fontWeight: 600 }}>{t("footerBrand")}</div>
       </footer>
     </div>
   );
