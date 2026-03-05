@@ -456,9 +456,9 @@ function EggHuntGame() {
   if (phase === "welcome") {
     return (
       <div style={{ background: CARD_BG, borderRadius: 20, border: `1px solid ${LIGHT_BORDER}`, padding: "48px 32px", textAlign: "center", boxShadow: "0 2px 20px rgba(0,0,0,0.04)" }}>
-        <div style={{ display: "flex", justifyContent: "center", gap: 16, marginBottom: 28 }}>
+        <div style={{ display: "flex", justifyContent: "center", gap: 12, marginBottom: 28 }}>
           {[EGG_COLORS["what-why"], EGG_COLORS["data"], EGG_COLORS["forest"], EGG_COLORS["heterogeneity"], EGG_COLORS["search"], EGG_COLORS["bias"], EGG_COLORS["interpretation"]].map((color, i) => (
-            <StylishEgg key={i} color={color} size={52} variant="dashed" animate="bob" delay={i * 0.3} />
+            <StylishEgg key={i} color={color} size={48} variant="dashed" animate="bob" delay={i * 0.3} />
           ))}
         </div>
         <h3 style={{ fontFamily: serifFont, fontSize: 28, fontWeight: 700, color: DARK, marginBottom: 10 }}>
@@ -489,13 +489,13 @@ function EggHuntGame() {
         </div>
 
         {/* Basket */}
-        <div style={{ display: "flex", justifyContent: "center", gap: 14, marginBottom: 28, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", justifyContent: "center", gap: 10, marginBottom: 28, flexWrap: "wrap" }}>
           {results.map((r, i) => {
             const cat = catObj(r.category);
             const color = EGG_COLORS[r.category];
             return (
               <div key={i} style={{ textAlign: "center" }}>
-                <StylishEgg color={color} size={62} variant={r.correct ? "cracked-correct" : "cracked-wrong"} />
+                <StylishEgg color={color} size={54} variant={r.correct ? "cracked-correct" : "cracked-wrong"} />
                 <span style={{ fontSize: 11, color: r.correct ? DARK : MUTED, fontFamily: font, fontWeight: r.correct ? 600 : 400, marginTop: 6, display: "block" }}>
                   {t(cat.nameKey)}
                 </span>
@@ -578,14 +578,14 @@ function EggHuntGame() {
       {/* Progress eggs */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
         <span style={{ fontSize: 12, color: MUTED, fontFamily: font }}>{t("eggHuntProgress", current + 1)}</span>
-        <div style={{ display: "flex", gap: 6 }}>
+        <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
           {Array.from({ length: 7 }).map((_, i) => {
             const pastResult = results[i];
             let bg = "#E8E6E1";
             if (i < current) bg = pastResult?.correct ? EGG_COLORS[pastResult.category] : "#DDD";
             else if (i === current) bg = eggColor;
             return (
-              <StylishEgg key={i} color={bg} size={26} variant={i <= current ? "solid" : "ghost"} />
+              <StylishEgg key={i} color={bg} size={22} variant={i <= current ? "solid" : "ghost"} />
             );
           })}
         </div>
