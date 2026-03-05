@@ -399,7 +399,7 @@ function shuffle(arr) {
 
 function selectQuestions(t) {
   const all = getEggQuestions(t);
-  const cats = shuffle(["what-why", "data", "forest", "heterogeneity", "search", "bias", "interpretation"]).slice(0, 5);
+  const cats = shuffle(["what-why", "data", "forest", "heterogeneity", "search", "bias", "interpretation"]).slice(0, 7);
   return cats.map(cat => {
     const pool = all.filter(q => q.category === cat);
     return pool[Math.floor(Math.random() * pool.length)];
@@ -437,7 +437,7 @@ function EggHuntGame() {
   };
 
   const nextEgg = () => {
-    if (current < 4) {
+    if (current < 6) {
       setCurrent(c => c + 1);
       setSelected(null);
       setAnswered(false);
@@ -457,7 +457,7 @@ function EggHuntGame() {
     return (
       <div style={{ background: CARD_BG, borderRadius: 20, border: `1px solid ${LIGHT_BORDER}`, padding: "48px 32px", textAlign: "center", boxShadow: "0 2px 20px rgba(0,0,0,0.04)" }}>
         <div style={{ display: "flex", justifyContent: "center", gap: 16, marginBottom: 28 }}>
-          {[EGG_COLORS["what-why"], EGG_COLORS["data"], EGG_COLORS["forest"], EGG_COLORS["heterogeneity"], EGG_COLORS["search"]].map((color, i) => (
+          {[EGG_COLORS["what-why"], EGG_COLORS["data"], EGG_COLORS["forest"], EGG_COLORS["heterogeneity"], EGG_COLORS["search"], EGG_COLORS["bias"], EGG_COLORS["interpretation"]].map((color, i) => (
             <StylishEgg key={i} color={color} size={52} variant="dashed" animate="bob" delay={i * 0.3} />
           ))}
         </div>
@@ -475,10 +475,10 @@ function EggHuntGame() {
 
   // Results screen
   if (phase === "results") {
-    const tier = score >= 5 ? "master" : score >= 4 ? "explorer" : score >= 3 ? "apprentice" : "keep";
-    const tierEmoji = score >= 5 ? "\uD83C\uDFC6" : score >= 4 ? "\uD83E\uDD48" : score >= 3 ? "\uD83E\uDD49" : "\uD83D\uDD0D";
-    const tierLabel = score >= 5 ? t("eggHuntMaster") : score >= 4 ? t("eggHuntExplorer") : score >= 3 ? t("eggHuntApprentice") : t("eggHuntKeepTrying");
-    const unlockAll = score >= 4;
+    const tier = score >= 7 ? "master" : score >= 5 ? "explorer" : score >= 3 ? "apprentice" : "keep";
+    const tierEmoji = score >= 7 ? "\uD83C\uDFC6" : score >= 5 ? "\uD83E\uDD48" : score >= 3 ? "\uD83E\uDD49" : "\uD83D\uDD0D";
+    const tierLabel = score >= 7 ? t("eggHuntMaster") : score >= 5 ? t("eggHuntExplorer") : score >= 3 ? t("eggHuntApprentice") : t("eggHuntKeepTrying");
+    const unlockAll = score >= 5;
 
     return (
       <div style={{ background: CARD_BG, borderRadius: 20, border: `1px solid ${LIGHT_BORDER}`, padding: "40px 28px", boxShadow: "0 2px 20px rgba(0,0,0,0.04)" }}>
@@ -533,7 +533,7 @@ function EggHuntGame() {
                   </a>
                 );
               })}
-              {score >= 5 && (
+              {score >= 7 && (
                 <a href="#" onClick={(e) => {
                     e.preventDefault();
                     EGG_CATEGORIES.forEach((c, idx) => {
@@ -579,7 +579,7 @@ function EggHuntGame() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
         <span style={{ fontSize: 12, color: MUTED, fontFamily: font }}>{t("eggHuntProgress", current + 1)}</span>
         <div style={{ display: "flex", gap: 6 }}>
-          {Array.from({ length: 5 }).map((_, i) => {
+          {Array.from({ length: 7 }).map((_, i) => {
             const pastResult = results[i];
             let bg = "#E8E6E1";
             if (i < current) bg = pastResult?.correct ? EGG_COLORS[pastResult.category] : "#DDD";
@@ -653,7 +653,7 @@ function EggHuntGame() {
       {answered && (
         <div style={{ textAlign: "right" }}>
           <button onClick={nextEgg} style={btnPrimary}>
-            {current < 4 ? t("eggHuntNext") : t("eggHuntResults")}
+            {current < 6 ? t("eggHuntNext") : t("eggHuntResults")}
           </button>
         </div>
       )}
