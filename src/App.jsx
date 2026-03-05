@@ -695,6 +695,7 @@ export default function MetaAnalysisGuide() {
   const { t, lang, toggleLang } = useI18n();
   const [openStep, setOpenStep] = useState(null);
   const [scrollY, setScrollY] = useState(0);
+  const [mobileMenu, setMobileMenu] = useState(false);
   useEffect(() => { const h = () => setScrollY(window.scrollY); window.addEventListener("scroll", h); return () => window.removeEventListener("scroll", h); }, []);
   const scrollTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
 
@@ -728,14 +729,22 @@ export default function MetaAnalysisGuide() {
         html { scroll-behavior: smooth; }
         body { background: ${LIGHT_BG}; }
         ::selection { background: ${TEAL}22; color: ${DARK}; }
+        @media (max-width: 768px) {
+          .desktop-nav { display: none !important; }
+          .mobile-menu-btn { display: block !important; }
+        }
+        @media (min-width: 769px) {
+          .mobile-menu-btn { display: none !important; }
+        }
       `}</style>
 
       {/* NAV */}
-      <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, height: 60, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 32px", background: scrollY > 60 ? "rgba(248,247,244,0.92)" : "transparent", backdropFilter: scrollY > 60 ? "blur(16px)" : "none", borderBottom: scrollY > 60 ? `1px solid ${LIGHT_BORDER}` : "none", transition: "all 0.35s" }}>
-        <div onClick={() => scrollTo("hero")} style={{ fontFamily: "'Noto Sans TC', 'Source Serif 4', serif", fontSize: 17, fontWeight: 700, color: TEAL, cursor: "pointer", letterSpacing: -0.3 }}>
+      <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, height: 60, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 16px", background: scrollY > 60 ? "rgba(248,247,244,0.92)" : "transparent", backdropFilter: scrollY > 60 ? "blur(16px)" : "none", borderBottom: scrollY > 60 ? `1px solid ${LIGHT_BORDER}` : "none", transition: "all 0.35s" }}>
+        <div onClick={() => scrollTo("hero")} style={{ fontFamily: "'Noto Sans TC', 'Source Serif 4', serif", fontSize: 17, fontWeight: 700, color: TEAL, cursor: "pointer", letterSpacing: -0.3, whiteSpace: "nowrap" }}>
           {t("navTitle")} <span style={{ fontWeight: 400, color: MUTED }}>{t("navTitleSuffix")}</span>
         </div>
-        <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+        {/* Desktop nav */}
+        <div style={{ display: "flex", gap: 4, alignItems: "center" }} className="desktop-nav">
           {navItems.map((n) => (
             <button key={n.id} onClick={() => scrollTo(n.id)} style={{ background: "none", border: "none", color: MUTED, padding: "8px 14px", borderRadius: 8, fontSize: 13, cursor: "pointer", fontFamily: "'Noto Sans TC', 'Outfit', sans-serif", fontWeight: 500, transition: "color 0.2s" }}
               onMouseEnter={(e) => (e.target.style.color = TEAL)} onMouseLeave={(e) => (e.target.style.color = MUTED)}>
@@ -748,7 +757,28 @@ export default function MetaAnalysisGuide() {
             {t("langSwitch")}
           </button>
         </div>
+        {/* Mobile hamburger */}
+        <button className="mobile-menu-btn" onClick={() => setMobileMenu(!mobileMenu)} style={{ background: "none", border: "none", cursor: "pointer", padding: 8, display: "none" }}>
+          <div style={{ width: 22, height: 2, background: DARK, marginBottom: 5, borderRadius: 1, transition: "all 0.3s", transform: mobileMenu ? "rotate(45deg) translateY(7px)" : "none" }} />
+          <div style={{ width: 22, height: 2, background: DARK, marginBottom: 5, borderRadius: 1, transition: "all 0.3s", opacity: mobileMenu ? 0 : 1 }} />
+          <div style={{ width: 22, height: 2, background: DARK, borderRadius: 1, transition: "all 0.3s", transform: mobileMenu ? "rotate(-45deg) translateY(-7px)" : "none" }} />
+        </button>
       </nav>
+
+      {/* Mobile menu overlay */}
+      {mobileMenu && (
+        <div style={{ position: "fixed", top: 60, left: 0, right: 0, bottom: 0, zIndex: 99, background: "rgba(248,247,244,0.97)", backdropFilter: "blur(16px)", padding: "24px 24px", display: "flex", flexDirection: "column", gap: 4 }}>
+          {navItems.map((n) => (
+            <button key={n.id} onClick={() => { scrollTo(n.id); setMobileMenu(false); }}
+              style={{ background: "none", border: "none", color: DARK, padding: "16px 12px", fontSize: 18, fontWeight: 500, cursor: "pointer", fontFamily: "'Noto Sans TC', 'Outfit', sans-serif", textAlign: "left", borderBottom: `1px solid ${LIGHT_BORDER}`, transition: "color 0.2s" }}>
+              {n.label}
+            </button>
+          ))}
+          <button onClick={toggleLang} style={{ background: `${TEAL}0D`, border: `1px solid ${TEAL}22`, color: TEAL, padding: "14px 20px", borderRadius: 10, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "'Noto Sans TC', 'Outfit', sans-serif", marginTop: 12, letterSpacing: 0.5 }}>
+            {t("langSwitch")}
+          </button>
+        </div>
+      )}
 
       {/* HERO */}
       <section id="hero" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
