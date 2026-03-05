@@ -171,9 +171,9 @@ const translations = {
 
     // Egg Hunt UI
     eggHuntLabel: "自測",
-    eggHuntTitle: "彩蛋狩獵",
+    eggHuntTitle: "蒐集彩蛋",
     eggHuntDesc: "找到7個隱藏的彩蛋，測試你的統合分析知識！每個正確答案都能收集一個彩蛋到你的籃子裡。",
-    eggHuntStart: "開始狩獵 →",
+    eggHuntStart: "開始蒐集 →",
     eggHuntProgress: (current) => `第${current}個蛋，共7個`,
     eggHuntCorrect: (name) => `你找到了${name}！`,
     eggHuntWrong: "蛋碎了……",
