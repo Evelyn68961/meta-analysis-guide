@@ -55,6 +55,132 @@ function Paragraph({ children, style = {} }) {
 const btnPrimary = { background: TEAL, border: "none", color: "#FFF", padding: "12px 28px", borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "'Noto Sans TC', 'Outfit', sans-serif", transition: "all 0.2s" };
 const btnSecondary = { background: "transparent", border: `1.5px solid ${TEAL}`, color: TEAL, padding: "11px 26px", borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" };
 
+// ═══ STYLISH SVG EGG ═══
+function StylishEgg({ color = "#3498DB", size = 64, variant = "solid", animate = null, delay = 0, style = {} }) {
+  const w = Math.round(size * 0.77);
+  const h = size;
+  const id = `egg-${color.replace("#", "")}-${size}-${Math.random().toString(36).slice(2, 6)}`;
+
+  const hexToRgb = (hex) => {
+    const c = hex.replace("#", "");
+    return [parseInt(c.slice(0, 2), 16), parseInt(c.slice(2, 4), 16), parseInt(c.slice(4, 6), 16)];
+  };
+  const rgbToHex = (r, g, b) => "#" + [r, g, b].map(v => Math.min(255, Math.max(0, Math.round(v))).toString(16).padStart(2, "0")).join("");
+  const lighten = (hex, amt) => { const [r, g, b] = hexToRgb(hex); return rgbToHex(r + (255 - r) * amt, g + (255 - g) * amt, b + (255 - b) * amt); };
+  const darken = (hex, amt) => { const [r, g, b] = hexToRgb(hex); return rgbToHex(r * (1 - amt), g * (1 - amt), b * (1 - amt)); };
+
+  const animationName =
+    animate === "bob" ? "eggBob" :
+    animate === "collect" ? "eggCollect" :
+    animate === "crack" ? "eggCrack" : "none";
+
+  const wrapperStyle = {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: w,
+    height: h,
+    animation: animationName !== "none" ? `${animationName} ${animate === "bob" ? "2s" : "0.6s"} ease-${animate === "bob" ? "in-out" : "out"} ${delay}s ${animate === "bob" ? "infinite" : "1"}` : "none",
+    transition: "all 0.3s",
+    ...style,
+  };
+
+  if (variant === "ghost") {
+    return (
+      <div style={wrapperStyle}>
+        <svg width={w} height={h} viewBox="0 0 60 78" fill="none">
+          <ellipse cx="30" cy="42" rx="26" ry="34" fill="#E8E6E1" opacity="0.5" />
+        </svg>
+      </div>
+    );
+  }
+
+  if (variant === "dashed") {
+    return (
+      <div style={wrapperStyle}>
+        <svg width={w} height={h} viewBox="0 0 60 78" fill="none">
+          <defs>
+            <radialGradient id={`${id}-bg`} cx="40%" cy="35%" r="60%">
+              <stop offset="0%" stopColor={lighten(color, 0.85)} />
+              <stop offset="100%" stopColor={lighten(color, 0.7)} />
+            </radialGradient>
+          </defs>
+          <ellipse cx="30" cy="42" rx="26" ry="34" fill={`url(#${id}-bg)`} />
+          <ellipse cx="30" cy="42" rx="26" ry="34" fill="none"
+            stroke={color} strokeWidth="2" strokeDasharray="5 4" opacity="0.55" />
+          <ellipse cx="22" cy="30" rx="8" ry="12" fill="white" opacity="0.25" transform="rotate(-15 22 30)" />
+        </svg>
+      </div>
+    );
+  }
+
+  if (variant === "cracked-correct" || variant === "cracked-wrong") {
+    const isCorrect = variant === "cracked-correct";
+    const baseColor = isCorrect ? color : "#CCCCCC";
+    return (
+      <div style={wrapperStyle}>
+        <svg width={w} height={h} viewBox="0 0 60 78" fill="none">
+          <defs>
+            <radialGradient id={`${id}-bg`} cx="40%" cy="35%" r="65%">
+              <stop offset="0%" stopColor={lighten(baseColor, 0.3)} />
+              <stop offset="100%" stopColor={darken(baseColor, 0.1)} />
+            </radialGradient>
+            <linearGradient id={`${id}-shine`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="white" stopOpacity="0.35" />
+              <stop offset="100%" stopColor="white" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <ellipse cx="30" cy="42" rx="26" ry="34" fill={`url(#${id}-bg)`} />
+          <path d="M8 40 Q20 35 30 37 Q40 35 52 40" stroke={darken(baseColor, 0.2)} strokeWidth="1.5" fill="none" opacity="0.4" />
+          <path d="M8 44 Q20 48 30 46 Q40 48 52 44" stroke={darken(baseColor, 0.2)} strokeWidth="1.5" fill="none" opacity="0.4" />
+          <path d="M24 30 L28 38 L22 42 L30 48 L26 54" stroke={isCorrect ? darken(color, 0.3) : "#999"}
+            strokeWidth="1.8" fill="none" strokeLinecap="round" opacity="0.6" />
+          <ellipse cx="22" cy="28" rx="9" ry="14" fill={`url(#${id}-shine)`} transform="rotate(-15 22 28)" />
+          {isCorrect ? (
+            <text x="30" y="46" textAnchor="middle" fontSize="18" fill="white" fontWeight="bold">✓</text>
+          ) : (
+            <text x="30" y="46" textAnchor="middle" fontSize="16" fill="#999">✗</text>
+          )}
+        </svg>
+      </div>
+    );
+  }
+
+  // Default "solid" variant
+  return (
+    <div style={wrapperStyle}>
+      <svg width={w} height={h} viewBox="0 0 60 78" fill="none">
+        <defs>
+          <radialGradient id={`${id}-bg`} cx="38%" cy="32%" r="65%">
+            <stop offset="0%" stopColor={lighten(color, 0.25)} />
+            <stop offset="70%" stopColor={color} />
+            <stop offset="100%" stopColor={darken(color, 0.15)} />
+          </radialGradient>
+          <radialGradient id={`${id}-hi`} cx="50%" cy="30%" r="40%">
+            <stop offset="0%" stopColor="white" stopOpacity="0.45" />
+            <stop offset="100%" stopColor="white" stopOpacity="0" />
+          </radialGradient>
+          <radialGradient id={`${id}-sh`} cx="50%" cy="95%" r="40%">
+            <stop offset="0%" stopColor={darken(color, 0.35)} stopOpacity="0.3" />
+            <stop offset="100%" stopColor={darken(color, 0.35)} stopOpacity="0" />
+          </radialGradient>
+        </defs>
+        <ellipse cx="30" cy="74" rx="18" ry="3" fill={darken(color, 0.3)} opacity="0.12" />
+        <ellipse cx="30" cy="42" rx="26" ry="34" fill={`url(#${id}-bg)`} />
+        <path d="M6 38 Q15 33 22 36 Q30 40 38 35 Q46 30 54 36" stroke={lighten(color, 0.35)} strokeWidth="2.5" fill="none" opacity="0.5" />
+        <path d="M6 43 Q15 48 22 45 Q30 41 38 46 Q46 51 54 45" stroke={lighten(color, 0.35)} strokeWidth="2.5" fill="none" opacity="0.5" />
+        <circle cx="18" cy="40" r="2" fill={lighten(color, 0.5)} opacity="0.5" />
+        <circle cx="30" cy="39" r="2.5" fill={lighten(color, 0.5)} opacity="0.5" />
+        <circle cx="42" cy="40" r="2" fill={lighten(color, 0.5)} opacity="0.5" />
+        <ellipse cx="22" cy="28" rx="10" ry="15" fill={`url(#${id}-hi)`} transform="rotate(-12 22 28)" />
+        <ellipse cx="30" cy="42" rx="26" ry="34" fill={`url(#${id}-sh)`} />
+        <circle cx="20" cy="22" r="2" fill="white" opacity="0.6" />
+        <circle cx="17" cy="26" r="1" fill="white" opacity="0.35" />
+      </svg>
+    </div>
+  );
+}
+
 // ═══ STUDY COMBINER ═══
 function StudyCombiner() {
   const { t } = useI18n();
@@ -332,7 +458,7 @@ function EggHuntGame() {
       <div style={{ background: CARD_BG, borderRadius: 20, border: `1px solid ${LIGHT_BORDER}`, padding: "48px 32px", textAlign: "center", boxShadow: "0 2px 20px rgba(0,0,0,0.04)" }}>
         <div style={{ display: "flex", justifyContent: "center", gap: 16, marginBottom: 28 }}>
           {[EGG_COLORS["what-why"], EGG_COLORS["data"], EGG_COLORS["forest"], EGG_COLORS["heterogeneity"], EGG_COLORS["search"]].map((color, i) => (
-            <div key={i} style={{ width: 40, height: 52, borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%", background: `${color}22`, border: `2px dashed ${color}55`, transition: "all 0.3s", animation: `eggBob 2s ease-in-out ${i * 0.3}s infinite` }} />
+            <StylishEgg key={i} color={color} size={52} variant="dashed" animate="bob" delay={i * 0.3} />
           ))}
         </div>
         <h3 style={{ fontFamily: serifFont, fontSize: 28, fontWeight: 700, color: DARK, marginBottom: 10 }}>
@@ -369,19 +495,8 @@ function EggHuntGame() {
             const color = EGG_COLORS[r.category];
             return (
               <div key={i} style={{ textAlign: "center" }}>
-                <div style={{
-                  width: 48, height: 62, borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%",
-                  background: r.correct ? color : "#DDD",
-                  opacity: r.correct ? 1 : 0.4,
-                  margin: "0 auto 6px",
-                  boxShadow: r.correct ? `0 4px 12px ${color}33` : "none",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 20,
-                  transition: "all 0.3s",
-                }}>
-                  {r.correct ? "" : "💔"}
-                </div>
-                <span style={{ fontSize: 11, color: r.correct ? DARK : MUTED, fontFamily: font, fontWeight: r.correct ? 600 : 400 }}>
+                <StylishEgg color={color} size={62} variant={r.correct ? "cracked-correct" : "cracked-wrong"} />
+                <span style={{ fontSize: 11, color: r.correct ? DARK : MUTED, fontFamily: font, fontWeight: r.correct ? 600 : 400, marginTop: 6, display: "block" }}>
                   {t(cat.nameKey)}
                 </span>
               </div>
@@ -458,12 +573,7 @@ function EggHuntGame() {
             if (i < current) bg = pastResult?.correct ? EGG_COLORS[pastResult.category] : "#DDD";
             else if (i === current) bg = eggColor;
             return (
-              <div key={i} style={{
-                width: 20, height: 26, borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%",
-                background: bg, opacity: i <= current ? 1 : 0.4,
-                transition: "all 0.3s",
-                boxShadow: i === current ? `0 2px 8px ${eggColor}44` : "none",
-              }} />
+              <StylishEgg key={i} color={bg} size={26} variant={i <= current ? "solid" : "ghost"} />
             );
           })}
         </div>
@@ -471,18 +581,10 @@ function EggHuntGame() {
 
       {/* Egg display */}
       <div style={{ textAlign: "center", marginBottom: 20 }}>
-        <div style={{
-          width: 64, height: 82, borderRadius: "50% 50% 50% 50% / 60% 60% 40% 40%",
-          background: cracked && !isCorrect && answered ? "#DDD" : eggColor,
-          margin: "0 auto 12px", display: "flex", alignItems: "center", justifyContent: "center",
-          boxShadow: `0 4px 16px ${eggColor}33`,
-          animation: cracked ? (isCorrect ? "eggCollect 0.6s ease-out" : "eggCrack 0.5s ease-out") : "none",
-          position: "relative",
-          transition: "background 0.3s",
-        }}>
-          {cracked && answered && (
-            <span style={{ fontSize: 24 }}>{isCorrect ? "✓" : "✗"}</span>
-          )}
+        <div style={{ margin: "0 auto 12px" }}>
+          <StylishEgg color={eggColor} size={82}
+            variant={cracked && answered ? (isCorrect ? "cracked-correct" : "cracked-wrong") : "solid"}
+            animate={cracked ? (isCorrect ? "collect" : "crack") : null} />
         </div>
         <span style={{ fontSize: 12, fontWeight: 600, color: eggColor, fontFamily: font, letterSpacing: 1, textTransform: "uppercase" }}>
           {t(cat.nameKey)}
