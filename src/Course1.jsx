@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useI18n } from "./i18n";
+import CuteDino from "./CuteDino";
 
 // ═══ DESIGN TOKENS (matching existing site) ═══
 const TEAL = "#0E7C86";
@@ -81,57 +82,7 @@ function DragonEgg({ color = "#3498DB", size = 80, state = "idle", delay = 0 }) 
   );
 }
 
-// ═══ SVG CUTE DINOSAUR ═══
-function CuteDino({ color = "#E8734A", size = 100, name = "", delay = 0 }) {
-  const lighten = (hex, amt) => { const c = hex.replace("#", ""); const [r, g, b] = [parseInt(c.slice(0, 2), 16), parseInt(c.slice(2, 4), 16), parseInt(c.slice(4, 6), 16)]; return "#" + [r + (255 - r) * amt, g + (255 - g) * amt, b + (255 - b) * amt].map(v => Math.min(255, Math.round(v)).toString(16).padStart(2, "0")).join(""); };
-  const darken = (hex, amt) => { const c = hex.replace("#", ""); const [r, g, b] = [parseInt(c.slice(0, 2), 16), parseInt(c.slice(2, 4), 16), parseInt(c.slice(4, 6), 16)]; return "#" + [r * (1 - amt), g * (1 - amt), b * (1 - amt)].map(v => Math.max(0, Math.round(v)).toString(16).padStart(2, "0")).join(""); };
-  const id = `dino-${Math.random().toString(36).slice(2, 8)}`;
-  const belly = lighten(color, 0.55);
-
-  return (
-    <div style={{ display: "inline-flex", flexDirection: "column", alignItems: "center", animation: `dinoAppear 0.8s ease-out ${delay}s both` }}>
-      <svg width={size} height={size} viewBox="0 0 120 120" fill="none">
-        <defs><radialGradient id={`${id}-b`} cx="45%" cy="40%" r="55%"><stop offset="0%" stopColor={lighten(color, 0.15)} /><stop offset="100%" stopColor={darken(color, 0.1)} /></radialGradient></defs>
-        {/* Tail */}
-        <path d="M30 75 Q15 80 10 70 Q5 60 15 55" stroke={color} strokeWidth="8" fill="none" strokeLinecap="round" />
-        {/* Back spikes */}
-        <path d="M48 35 L52 22 L56 35" fill={darken(color, 0.15)} />
-        <path d="M56 32 L60 20 L64 32" fill={darken(color, 0.15)} />
-        <path d="M64 35 L67 24 L70 35" fill={darken(color, 0.15)} />
-        {/* Body */}
-        <ellipse cx="60" cy="65" rx="28" ry="30" fill={`url(#${id}-b)`} />
-        {/* Belly */}
-        <ellipse cx="62" cy="72" rx="16" ry="18" fill={belly} />
-        {/* Head */}
-        <circle cx="78" cy="42" r="20" fill={color} />
-        {/* Cheek blush */}
-        <circle cx="88" cy="50" r="5" fill={lighten(color, 0.4)} opacity="0.6" />
-        {/* Eye */}
-        <circle cx="82" cy="38" r="6" fill="white" />
-        <circle cx="83" cy="37" r="3.5" fill={DARK} />
-        <circle cx="84.5" cy="35.5" r="1.5" fill="white" />
-        {/* Horn */}
-        <path d="M76 24 L78 16 L82 24" fill={darken(color, 0.2)} />
-        {/* Smile */}
-        <path d="M82 48 Q86 52 90 48" stroke={darken(color, 0.3)} strokeWidth="1.8" fill="none" strokeLinecap="round" />
-        {/* Arms */}
-        <path d="M42 58 Q34 55 32 60 Q30 65 36 66" stroke={color} strokeWidth="5" fill="none" strokeLinecap="round" />
-        <path d="M78 58 Q86 54 90 58 Q94 62 88 65" stroke={color} strokeWidth="5" fill="none" strokeLinecap="round" />
-        {/* Legs */}
-        <ellipse cx="48" cy="92" rx="9" ry="6" fill={darken(color, 0.1)} />
-        <ellipse cx="72" cy="92" rx="9" ry="6" fill={darken(color, 0.1)} />
-        {/* Toes */}
-        <circle cx="42" cy="95" r="2.5" fill={darken(color, 0.15)} />
-        <circle cx="48" cy="96" r="2.5" fill={darken(color, 0.15)} />
-        <circle cx="54" cy="95" r="2.5" fill={darken(color, 0.15)} />
-        <circle cx="66" cy="95" r="2.5" fill={darken(color, 0.15)} />
-        <circle cx="72" cy="96" r="2.5" fill={darken(color, 0.15)} />
-        <circle cx="78" cy="95" r="2.5" fill={darken(color, 0.15)} />
-      </svg>
-      {name && <span style={{ fontSize: 12, fontWeight: 600, color, marginTop: 4, letterSpacing: 0.5 }}>{name}</span>}
-    </div>
-  );
-}
+// CuteDino is now imported from ./CuteDino.jsx
 
 // ═══ PICO CARD ═══
 function PicoCard({ letter, color, title, desc, example, tip, delay = 0 }) {
@@ -171,15 +122,34 @@ function TrapCard({ number, title, bad, good, delay = 0 }) {
 }
 
 // ═══ DRAGON EGG HATCHING GAME ═══
-function DragonEggGame({ t }) {
-  const [phase, setPhase] = useState("welcome");
+function DragonEggGame({ t, lang }) {
+  const [phase, setPhase] = useState("welcome"); // welcome | pick | playing | results
+  const [chosenEgg, setChosenEgg] = useState(null);
+  const [questions, setQuestions] = useState([]);
   const [current, setCurrent] = useState(0);
   const [selected, setSelected] = useState(null);
   const [answered, setAnswered] = useState(false);
-  const [results, setResults] = useState([]);
-  const [eggState, setEggState] = useState("idle");
+  const [correctCount, setCorrectCount] = useState(0);
+  const [wrongCount, setWrongCount] = useState(0);
+  const [eggStage, setEggStage] = useState(0); // 0-5 crack stages
+  const [iceStage, setIceStage] = useState(0); // 0-3 freeze stages
+  const [gameOver, setGameOver] = useState(false);
+  const [particles, setParticles] = useState([]); // { id, type: "sun"|"snow", x, delay }
 
-  const questions = [
+  const spawnParticles = (type) => {
+    const newParticles = Array.from({ length: type === "sun" ? 8 : 12 }, (_, i) => ({
+      id: Date.now() + i,
+      type,
+      x: 10 + Math.random() * 80, // random horizontal position %
+      delay: Math.random() * 0.5,
+      size: type === "sun" ? 16 + Math.random() * 12 : 12 + Math.random() * 10,
+      duration: 1.2 + Math.random() * 0.8,
+    }));
+    setParticles(newParticles);
+    setTimeout(() => setParticles([]), 2500);
+  };
+
+  const allQuestions = [
     { q: t("c1q1"), opts: [t("c1q1a"), t("c1q1b"), t("c1q1c"), t("c1q1d")], correct: t("c1q1correct"), exp: t("c1q1exp") },
     { q: t("c1q2"), opts: [t("c1q2a"), t("c1q2b"), t("c1q2c"), t("c1q2d")], correct: t("c1q2correct"), exp: t("c1q2exp") },
     { q: t("c1q3"), opts: [t("c1q3a"), t("c1q3b"), t("c1q3c"), t("c1q3d")], correct: t("c1q3correct"), exp: t("c1q3exp") },
@@ -189,39 +159,89 @@ function DragonEggGame({ t }) {
     { q: t("c1q7"), opts: [t("c1q7a"), t("c1q7b"), t("c1q7c"), t("c1q7d")], correct: t("c1q7correct"), exp: t("c1q7exp") },
   ];
 
-  const startGame = () => { setCurrent(0); setSelected(null); setAnswered(false); setResults([]); setEggState("idle"); setPhase("playing"); };
+  const pickEgg = (index) => {
+    setChosenEgg(index);
+    // Shuffle and pick 5 questions
+    const shuffled = [...allQuestions].sort(() => Math.random() - 0.5);
+    setQuestions(shuffled);
+    setCurrent(0); setSelected(null); setAnswered(false);
+    setCorrectCount(0); setWrongCount(0);
+    setEggStage(0); setIceStage(0); setGameOver(false);
+    setPhase("playing");
+  };
 
   const handleSelect = (idx) => {
-    if (answered) return;
+    if (answered || gameOver) return;
     setSelected(idx);
     setAnswered(true);
     const isCorrect = idx === questions[current].correct;
-    setResults(prev => [...prev, isCorrect]);
-    setEggState(isCorrect ? "crack" : "frozen");
+    if (isCorrect) {
+      const newCorrect = correctCount + 1;
+      setCorrectCount(newCorrect);
+      setEggStage(newCorrect);
+      spawnParticles("sun");
+      if (newCorrect >= 5) {
+        setTimeout(() => setPhase("results"), 1200);
+      }
+    } else {
+      const newWrong = wrongCount + 1;
+      setWrongCount(newWrong);
+      setIceStage(newWrong);
+      spawnParticles("snow");
+      if (newWrong >= 3) {
+        setGameOver(true);
+        setTimeout(() => setPhase("results"), 1200);
+      }
+    }
   };
 
   const nextQuestion = () => {
-    if (current < 6) { setCurrent(c => c + 1); setSelected(null); setAnswered(false); setEggState("idle"); }
-    else { setPhase("results"); }
+    setParticles([]);
+    if (current < 6 && !gameOver) {
+      setCurrent(c => c + 1);
+      setSelected(null);
+      setAnswered(false);
+    } else {
+      setPhase("results");
+    }
   };
 
-  const score = results.filter(Boolean).length;
-  const wrongCount = results.filter(r => !r).length;
-  const hatched = wrongCount < 3;
+  const reset = () => {
+    setPhase("welcome");
+    setChosenEgg(null);
+    setQuestions([]);
+    setCurrent(0); setSelected(null); setAnswered(false);
+    setCorrectCount(0); setWrongCount(0);
+    setEggStage(0); setIceStage(0); setGameOver(false);
+  };
 
+  const hatched = correctCount >= 5;
+  const frozen = wrongCount >= 3;
+  const eggColor = chosenEgg !== null ? DINO_COLORS[chosenEgg] : TEAL;
+  const dinoNames = t("c1dinoNames");
+
+  // ── Welcome: show all 7 eggs ──
   if (phase === "welcome") {
     return (
       <div style={{ background: CARD_BG, borderRadius: 20, border: `1px solid ${LIGHT_BORDER}`, padding: "48px 32px", textAlign: "center", boxShadow: "0 2px 20px rgba(0,0,0,0.04)" }}>
-        <div style={{ display: "flex", justifyContent: "center", gap: 14, marginBottom: 28, flexWrap: "wrap" }}>
-          {DINO_COLORS.map((c, i) => <DragonEgg key={i} color={c} size={56} state="idle" delay={i * 0.4} />)}
+        <h3 style={{ fontSize: 26, fontWeight: 700, color: DARK, marginBottom: 10 }}>{t("c1gameTitle")}</h3>
+        <p style={{ fontSize: 15, color: MUTED, marginBottom: 12, maxWidth: 460, margin: "0 auto 12px" }}>{t("c1gameDesc")}</p>
+        <p style={{ fontSize: 14, color: TEAL, fontWeight: 600, marginBottom: 28 }}>{lang === "zh" ? "選擇一顆龍蛋開始孵化！" : "Pick a dragon egg to hatch!"}</p>
+        <div style={{ display: "flex", justifyContent: "center", gap: 16, flexWrap: "wrap", marginBottom: 12 }}>
+          {DINO_COLORS.map((c, i) => (
+            <div key={i} onClick={() => pickEgg(i)} style={{ cursor: "pointer", textAlign: "center", transition: "transform 0.2s" }}
+              onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-6px)"}
+              onMouseLeave={(e) => e.currentTarget.style.transform = "translateY(0)"}>
+              <DragonEgg color={c} size={64} state="idle" delay={i * 0.3} />
+              <div style={{ fontSize: 11, color: MUTED, marginTop: 4 }}>{Array.isArray(dinoNames) ? dinoNames[i] : `Egg ${i+1}`}</div>
+            </div>
+          ))}
         </div>
-        <h3 style={{ fontSize: 28, fontWeight: 700, color: DARK, marginBottom: 10 }}>{t("c1gameTitle")}</h3>
-        <p style={{ fontSize: 15, color: MUTED, marginBottom: 32, maxWidth: 440, margin: "0 auto 32px" }}>{t("c1gameDesc")}</p>
-        <button onClick={startGame} style={{ ...btnPrimary, padding: "14px 32px", fontSize: 16 }}>{t("c1gameStart")}</button>
       </div>
     );
   }
 
+  // ── Results ──
   if (phase === "results") {
     return (
       <div style={{ background: CARD_BG, borderRadius: 20, border: `1px solid ${LIGHT_BORDER}`, padding: "48px 28px", textAlign: "center", boxShadow: "0 2px 20px rgba(0,0,0,0.04)" }}>
@@ -229,51 +249,150 @@ function DragonEggGame({ t }) {
           <>
             <h3 style={{ fontSize: 28, fontWeight: 700, color: DARK, marginBottom: 8 }}>{t("c1gameHatched")}</h3>
             <p style={{ fontSize: 15, color: MUTED, marginBottom: 8 }}>{t("c1gameHatchedDesc")}</p>
-            <p style={{ fontSize: 17, color: TEAL, fontWeight: 600, marginBottom: 28 }}>{t("c1gameScore")(score)}</p>
-            <div style={{ display: "flex", justifyContent: "center", gap: 16, flexWrap: "wrap", marginBottom: 32 }}>
-              {DINO_COLORS.map((c, i) => <CuteDino key={i} color={c} size={100} name={t("c1dinoNames")[i]} delay={i * 0.3} />)}
+            <p style={{ fontSize: 17, color: TEAL, fontWeight: 600, marginBottom: 28 }}>{t("c1gameScore", correctCount)}</p>
+            <div style={{ marginBottom: 32 }}>
+              <CuteDino color={eggColor} size={140} name={Array.isArray(dinoNames) ? dinoNames[chosenEgg] : ""} delay={0.2} index={chosenEgg} />
             </div>
           </>
         ) : (
           <>
             <h3 style={{ fontSize: 28, fontWeight: 700, color: "#6BA3C4", marginBottom: 8 }}>{t("c1gameFrozen")}</h3>
             <p style={{ fontSize: 15, color: MUTED, marginBottom: 8 }}>{t("c1gameFrozenDesc")}</p>
-            <p style={{ fontSize: 17, color: CORAL, fontWeight: 600, marginBottom: 28 }}>{t("c1gameScore")(score)}</p>
-            <div style={{ display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap", marginBottom: 28 }}>
-              {DINO_COLORS.map((c, i) => <DragonEgg key={i} color={c} size={64} state="frozen" delay={i * 0.15} />)}
+            <p style={{ fontSize: 17, color: CORAL, fontWeight: 600, marginBottom: 28 }}>{t("c1gameScore", correctCount)}</p>
+            <div style={{ marginBottom: 32 }}>
+              <DragonEgg color={eggColor} size={100} state="frozen" />
             </div>
           </>
         )}
         <div style={{ display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
-          <button onClick={startGame} style={{ ...btnPrimary, background: hatched ? TEAL : CORAL }}>{t("c1gameRetry")}</button>
-          {hatched && <button style={{ background: "transparent", border: `1.5px solid ${TEAL}`, color: TEAL, padding: "11px 26px", borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>{t("c1gameContinue")}</button>}
+          <button onClick={reset} style={{ ...btnPrimary, background: hatched ? TEAL : CORAL }}>
+            {lang === "zh" ? "選另一顆蛋 🥚" : "Pick another egg 🥚"}
+          </button>
+          {hatched && (
+            <button style={{ background: "transparent", border: `1.5px solid ${TEAL}`, color: TEAL, padding: "11px 26px", borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>{t("c1gameContinue")}</button>
+          )}
         </div>
       </div>
     );
   }
 
-  // Playing
+  // ── Playing ──
   const q = questions[current];
   const isCorrect = selected !== null && selected === q.correct;
-  const currentColor = DINO_COLORS[current];
+  // Determine egg visual state based on stages
+  const eggVisualState = frozen ? "frozen" : eggStage >= 5 ? "hatch" : eggStage > 0 ? "crack" : iceStage > 0 ? "chilled" : "idle";
 
   return (
     <div style={{ background: CARD_BG, borderRadius: 20, border: `1px solid ${LIGHT_BORDER}`, padding: "32px 24px", boxShadow: "0 2px 20px rgba(0,0,0,0.04)" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-        <span style={{ fontSize: 13, color: MUTED, fontWeight: 500 }}>{t("c1gameQ")(current + 1)}</span>
-        <div style={{ display: "flex", gap: 6 }}>
-          {[0, 1, 2, 3, 4, 5, 6].map(i => {
-            let bg = LIGHT_BORDER;
-            if (i < current) bg = results[i] ? "#3DA87A" : CORAL;
-            else if (i === current) bg = currentColor;
-            return <div key={i} style={{ width: 28, height: 6, borderRadius: 3, background: bg, transition: "all 0.3s" }} />;
-          })}
+      {/* Status bar */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <span style={{ fontSize: 13, color: MUTED, fontWeight: 500 }}>{t("c1gameQ", current + 1)}</span>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <span style={{ fontSize: 12, color: "#3DA87A" }}>☀️ {correctCount}</span>
+          <span style={{ fontSize: 12, color: CORAL }}>❄️ {wrongCount}/3</span>
         </div>
       </div>
-      <div style={{ textAlign: "center", marginBottom: 20 }}>
-        <DragonEgg color={currentColor} size={80} state={eggState} />
+
+      {/* Egg with progress visualization */}
+      <div style={{ textAlign: "center", marginBottom: 20, position: "relative", minHeight: 180 }}>
+        {/* Particle layer */}
+        <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 10 }}>
+          {particles.map(p => (
+            <div key={p.id} style={{
+              position: "absolute",
+              left: `${p.x}%`,
+              top: "-10%",
+              fontSize: p.size,
+              animation: `${p.type === "sun" ? "sunFall" : "snowFall"} ${p.duration}s ease-in ${p.delay}s forwards`,
+              opacity: 0,
+            }}>
+              {p.type === "sun" ? "☀️" : "❄️"}
+            </div>
+          ))}
+        </div>
+
+        {/* Persistent warm glow — grows with each correct answer */}
+        {eggStage > 0 && (
+          <div style={{
+            position: "absolute", left: "50%", top: "42%", transform: "translate(-50%, -50%)",
+            width: 80 + eggStage * 20, height: 80 + eggStage * 20, borderRadius: "50%",
+            background: `radial-gradient(circle, rgba(255,179,71,${0.08 + eggStage * 0.06}) 0%, rgba(255,220,100,${0.04 + eggStage * 0.03}) 50%, transparent 70%)`,
+            transition: "all 0.8s ease-out",
+            pointerEvents: "none",
+            boxShadow: `0 0 ${eggStage * 12}px ${eggStage * 4}px rgba(255,179,71,${eggStage * 0.06})`,
+          }} />
+        )}
+
+        {/* Persistent frost glow — grows with each wrong answer */}
+        {iceStage > 0 && (
+          <div style={{
+            position: "absolute", left: "50%", top: "42%", transform: "translate(-50%, -50%)",
+            width: 80 + iceStage * 24, height: 80 + iceStage * 24, borderRadius: "50%",
+            background: `radial-gradient(circle, rgba(158,216,234,${0.1 + iceStage * 0.08}) 0%, rgba(180,230,250,${0.05 + iceStage * 0.04}) 50%, transparent 70%)`,
+            transition: "all 0.8s ease-out",
+            pointerEvents: "none",
+            boxShadow: `0 0 ${iceStage * 14}px ${iceStage * 5}px rgba(158,216,234,${iceStage * 0.08})`,
+          }} />
+        )}
+
+        {/* Answer flash glow */}
+        {answered && (
+          <div style={{
+            position: "absolute", left: "50%", top: "42%", transform: "translate(-50%, -50%)",
+            width: 140, height: 140, borderRadius: "50%",
+            background: isCorrect
+              ? "radial-gradient(circle, rgba(255,179,71,0.4) 0%, transparent 70%)"
+              : "radial-gradient(circle, rgba(158,216,234,0.4) 0%, transparent 70%)",
+            animation: "glowPulse 1s ease-out",
+            pointerEvents: "none",
+          }} />
+        )}
+
+        <div style={{ position: "relative", display: "inline-block" }}>
+          <DragonEgg color={eggColor} size={90} state={answered ? (isCorrect ? "crack" : (frozen ? "frozen" : "idle")) : "idle"} />
+        </div>
+
+        {/* Progress indicators — suns and snowflakes row */}
+        <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 12, alignItems: "center" }}>
+          {[0,1,2,3,4].map(i => (
+            <div key={`sun-${i}`} style={{
+              width: 28, height: 28, borderRadius: "50%",
+              background: i < eggStage ? "linear-gradient(135deg, #FFD700, #FFB347)" : `${LIGHT_BORDER}88`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 14,
+              transition: "all 0.5s ease-out",
+              boxShadow: i < eggStage ? "0 0 8px rgba(255,179,71,0.5)" : "none",
+              transform: i < eggStage ? "scale(1)" : "scale(0.85)",
+            }}>
+              {i < eggStage ? "☀️" : "○"}
+            </div>
+          ))}
+          <div style={{ width: 1, height: 20, background: LIGHT_BORDER, margin: "0 4px" }} />
+          {[0,1,2].map(i => (
+            <div key={`ice-${i}`} style={{
+              width: 28, height: 28, borderRadius: "50%",
+              background: i < iceStage ? "linear-gradient(135deg, #B8E4F0, #9ED8EA)" : `${LIGHT_BORDER}88`,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 14,
+              transition: "all 0.5s ease-out",
+              boxShadow: i < iceStage ? "0 0 8px rgba(158,216,234,0.5)" : "none",
+              transform: i < iceStage ? "scale(1)" : "scale(0.85)",
+            }}>
+              {i < iceStage ? "❄️" : "○"}
+            </div>
+          ))}
+        </div>
+        <div style={{ fontSize: 11, color: MUTED, marginTop: 6 }}>
+          {lang === "zh"
+            ? `☀️ ${eggStage}/5 孵化   ❄️ ${iceStage}/3 凍結`
+            : `☀️ ${eggStage}/5 hatch   ❄️ ${iceStage}/3 freeze`}
+        </div>
       </div>
+
+      {/* Question */}
       <h3 style={{ fontSize: 17, fontWeight: 600, color: DARK, marginBottom: 18, lineHeight: 1.5 }}>{q.q}</h3>
+
+      {/* Options */}
       <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 18 }}>
         {q.opts.map((opt, idx) => {
           let bg = "#FAFAF7", border = LIGHT_BORDER, col = DARK;
@@ -289,68 +408,474 @@ function DragonEggGame({ t }) {
           );
         })}
       </div>
+
+      {/* Feedback */}
       {answered && (
-        <div style={{ background: isCorrect ? "#E6F5F0" : "#FDEEEB", borderRadius: 12, padding: "14px 18px", marginBottom: 16, fontSize: 13.5, lineHeight: 1.65, color: MUTED, border: `1px solid ${isCorrect ? "#3DA87A33" : "#D94B2E33"}` }}>
-          <strong style={{ color: isCorrect ? "#2A7A5A" : "#B83A20" }}>{isCorrect ? t("c1gameCorrect") : t("c1gameWrong")}</strong>{" "}{q.exp}
+        <div style={{
+          background: isCorrect ? "#FFF8E6" : "#EDF6FC", borderRadius: 12,
+          padding: "14px 18px", marginBottom: 16, fontSize: 13.5, lineHeight: 1.65, color: MUTED,
+          border: `1px solid ${isCorrect ? "#FFB34733" : "#9ED8EA33"}`,
+        }}>
+          <strong style={{ color: isCorrect ? "#C8860A" : "#4A90B8" }}>
+            {isCorrect
+              ? (lang === "zh" ? "☀️ 陽光照射！龍蛋裂開了一些！" : "☀️ Sunshine! The egg is cracking!")
+              : (lang === "zh" ? "❄️ 一陣寒風！龍蛋感到冰冷……" : "❄️ A cold wind! The egg feels icy…")}
+          </strong>{" "}{q.exp}
         </div>
       )}
-      {answered && (
+
+      {/* Next / Game Over */}
+      {answered && !gameOver && (
         <div style={{ textAlign: "right" }}>
-          <button onClick={nextQuestion} style={btnPrimary}>{current < 6 ? t("c1gameNext") : t("c1gameResults")}</button>
+          <button onClick={nextQuestion} style={btnPrimary}>
+            {current < 6 ? t("c1gameNext") : t("c1gameResults")}
+          </button>
+        </div>
+      )}
+      {gameOver && (
+        <div style={{ textAlign: "center", marginTop: 8 }}>
+          <p style={{ fontSize: 14, color: CORAL, fontWeight: 600, marginBottom: 12 }}>
+            {lang === "zh" ? "龍蛋被凍住了……" : "The egg froze…"}
+          </p>
+          <button onClick={() => setPhase("results")} style={{ ...btnPrimary, background: CORAL }}>
+            {t("c1gameResults")}
+          </button>
         </div>
       )}
     </div>
   );
 }
 
-// ═══ INTERACTIVE PICO BUILDER ═══
-function PicoBuilder({ t }) {
+
+// ═══ INTERACTIVE PICO BUILDER (Multiple Choice) ═══
+function PicoBuilder({ t, lang }) {
+  const [scenario, setScenario] = useState(null);
+  const [currentField, setCurrentField] = useState(0);
+  const [selections, setSelections] = useState({});
+  const [answered, setAnswered] = useState(false);
+  const [showSummary, setShowSummary] = useState(false);
+
+  const fields = ["p", "i", "c", "o"];
+  const fieldMeta = {
+    p: { letter: "P", color: CORAL, labelZh: "Population 族群", labelEn: "Population" },
+    i: { letter: "I", color: "#7B68C8", labelZh: "Intervention 介入措施", labelEn: "Intervention" },
+    c: { letter: "C", color: "#D4A843", labelZh: "Comparison 對照組", labelEn: "Comparison" },
+    o: { letter: "O", color: "#5B9E5F", labelZh: "Outcome 結果指標", labelEn: "Outcome" },
+  };
+
+  const scenarios = {
+    A: {
+      title: lang === "zh" ? "心血管：SGLT2 抑制劑治療心衰竭" : "Cardiology: SGLT2 inhibitors for heart failure",
+      p: {
+        options: lang === "zh" ? ["所有心臟病患者", "射出分率降低的心衰竭 (HFrEF) 成年患者，NYHA class II-IV", "有心血管風險因子的人", "65歲以上老年人"] : ["All heart disease patients", "Adults with HFrEF, NYHA class II-IV", "People with cardiovascular risk factors", "Adults over 65"],
+        correct: 1,
+        explanationZh: "選項 B 精確定義了心衰竭類型（HFrEF）、功能分級（NYHA II-IV）和年齡（成人）。其他選項太廣泛。",
+        explanationEn: "Option B precisely defines HF type (HFrEF), functional class (NYHA II-IV), and age (adults). Others are too broad.",
+      },
+      i: {
+        options: lang === "zh" ? ["心衰竭的藥物治療", "SGLT2 抑制劑 (Dapagliflozin 10mg 或 Empagliflozin 10mg) 加上標準治療", "Dapagliflozin", "新型降糖藥"] : ["Drug therapy for heart failure", "SGLT2 inhibitor (Dapagliflozin 10mg or Empagliflozin 10mg) plus standard therapy", "Dapagliflozin", "Novel glucose-lowering agents"],
+        correct: 1,
+        explanationZh: "選項 B 指定了藥物類別、具體藥名、劑量，並說明是「加上」標準治療。選項 C 缺少劑量。",
+        explanationEn: "Option B specifies drug class, specific agents, doses, and notes it\'s \'plus standard therapy.\' Option C lacks dose.",
+      },
+      c: {
+        options: lang === "zh" ? ["不治療", "其他心衰竭藥物", "安慰劑加上標準治療", "健康對照組"] : ["No treatment", "Other heart failure drugs", "Placebo plus standard therapy", "Healthy controls"],
+        correct: 2,
+        explanationZh: "安慰劑加上標準治療確保兩組唯一的差異就是 SGLT2 抑制劑。「不治療」在心衰竭中不符合倫理。",
+        explanationEn: "Placebo plus standard therapy ensures the only difference is the SGLT2 inhibitor. \'No treatment\' is unethical in HF.",
+      },
+      o: {
+        options: lang === "zh" ? ["病人有沒有好轉", "所有不良事件", "心血管死亡或心衰竭住院的複合終點；次要：全因死亡率、KCCQ", "住院天數"] : ["Whether patients improved", "All adverse events", "Composite of CV death or HF hospitalization; Secondary: all-cause mortality, KCCQ", "Length of hospital stay"],
+        correct: 2,
+        explanationZh: "選項 C 定義了具體的主要複合終點和次要指標，與 DAPA-HF 和 EMPEROR-Reduced 一致。",
+        explanationEn: "Option C defines specific primary composite and secondary endpoints, consistent with DAPA-HF and EMPEROR-Reduced.",
+      },
+    },
+    B: {
+      title: lang === "zh" ? "感染科：延長輸注 β-lactam 抗生素" : "Infectious Disease: Prolonged β-lactam infusion",
+      p: {
+        options: lang === "zh" ? ["所有接受抗生素的患者", "加護病房中接受 β-lactam 抗生素治療的重症成人患者", "住院的感染患者", "有肺炎的成年人"] : ["All patients receiving antibiotics", "Critically ill adults in ICU receiving β-lactam antibiotics", "Hospitalized patients with infections", "Adults with pneumonia"],
+        correct: 1,
+        explanationZh: "選項 B 精確限定了場域（ICU）、藥物類別（β-lactam）、嚴重度（重症）和年齡（成人）。",
+        explanationEn: "Option B precisely defines setting (ICU), drug class (β-lactam), severity (critically ill), and age (adults).",
+      },
+      i: {
+        options: lang === "zh" ? ["延長輸注 (≥3小時持續輸注或間歇延長輸注)", "抗生素治療", "高劑量抗生素", "持續靜脈輸注"] : ["Prolonged infusion (≥3h continuous or extended intermittent infusion)", "Antibiotic therapy", "High-dose antibiotics", "Continuous IV infusion"],
+        correct: 0,
+        explanationZh: "選項 A 明確定義了「延長輸注」的時間閾值（≥3小時）和兩種模式。選項 D 只涵蓋持續輸注。",
+        explanationEn: "Option A clearly defines \'prolonged infusion\' with a time threshold and two possible modes.",
+      },
+      c: {
+        options: lang === "zh" ? ["口服抗生素", "不使用抗生素", "傳統間歇輸注 (30分鐘 bolus)", "其他類型抗生素"] : ["Oral antibiotics", "No antibiotics", "Conventional intermittent infusion (30-min bolus)", "Different antibiotic class"],
+        correct: 2,
+        explanationZh: "傳統間歇輸注是正確的對照——同一種藥、同一種途徑，唯一差異就是輸注時間。",
+        explanationEn: "Conventional intermittent infusion is the right comparator — same drug, same route, only duration differs.",
+      },
+      o: {
+        options: lang === "zh" ? ["主要：院內死亡率；次要：臨床治癒率、ICU 住院天數", "抗生素的副作用", "細菌培養結果", "病人有沒有出院"] : ["Primary: in-hospital mortality; Secondary: clinical cure rate, ICU LOS", "Antibiotic side effects", "Bacterial culture results", "Whether patients were discharged"],
+        correct: 0,
+        explanationZh: "選項 A 定義了分層明確的主要和次要結果指標，涵蓋最重要的臨床結局。",
+        explanationEn: "Option A defines clearly tiered primary and secondary outcomes covering the most important endpoints.",
+      },
+    },
+    C: {
+      title: lang === "zh" ? "精神科：CBT 治療重度憂鬱症" : "Psychiatry: CBT for major depression",
+      p: {
+        options: lang === "zh" ? ["心情不好的人", "符合 DSM-5 重度憂鬱症診斷標準的成年患者 (18歲以上)", "有憂鬱症狀的青少年和成人", "精神科門診患者"] : ["People feeling sad", "Adults (≥18y) meeting DSM-5 criteria for major depressive disorder", "Adolescents and adults with depressive symptoms", "Psychiatric outpatients"],
+        correct: 1,
+        explanationZh: "選項 B 用了標準診斷標準（DSM-5）和明確的年齡限制。「心情不好」太主觀。",
+        explanationEn: "Option B uses standardized diagnostic criteria (DSM-5) with clear age limits.",
+      },
+      i: {
+        options: lang === "zh" ? ["心理治療", "認知行為治療 (CBT)，每週 1 次，持續 12-16 週", "諮商", "CBT 加上藥物"] : ["Psychotherapy", "CBT, weekly sessions for 12-16 weeks", "Counseling", "CBT plus medication"],
+        correct: 1,
+        explanationZh: "選項 B 指定了具體的治療方式（CBT）、頻率（每週）和持續時間（12-16週）。",
+        explanationEn: "Option B specifies exact therapy (CBT), frequency (weekly), and duration (12-16 weeks).",
+      },
+      c: {
+        options: lang === "zh" ? ["什麼都不做", "藥物治療 (SSRI) 單獨使用、或等待名單對照", "其他心理治療", "運動治療"] : ["Nothing", "Pharmacotherapy (SSRI) alone, or wait-list control", "Other psychotherapy", "Exercise therapy"],
+        correct: 1,
+        explanationZh: "選項 B 提供了積極對照（SSRI）和消極對照（等待名單）兩種有意義的比較。",
+        explanationEn: "Option B provides both active (SSRI) and passive (wait-list) comparators.",
+      },
+      o: {
+        options: lang === "zh" ? ["病人感覺有沒有好一點", "主要：憂鬱量表分數變化 (PHQ-9 或 HAM-D)；次要：緩解率、復發率", "回診率", "治療師的評估"] : ["Whether patients feel better", "Primary: depression score change (PHQ-9/HAM-D); Secondary: remission rate, relapse rate", "Follow-up visit rate", "Therapist\'s assessment"],
+        correct: 1,
+        explanationZh: "選項 B 使用標準化量表（PHQ-9、HAM-D）並區分主要和次要結果。",
+        explanationEn: "Option B uses standardized instruments (PHQ-9, HAM-D) with primary/secondary separation.",
+      },
+    },
+  };
+
+  const handleScenarioSelect = (s) => { setScenario(s); setCurrentField(0); setSelections({}); setAnswered(false); setShowSummary(false); };
+  const handleOptionSelect = (idx) => { if (answered) return; setSelections(prev => ({ ...prev, [fields[currentField]]: idx })); setAnswered(true); };
+  const nextField = () => { if (currentField < 3) { setCurrentField(c => c + 1); setAnswered(false); } else { setShowSummary(true); } };
+  const reset = () => { setScenario(null); setCurrentField(0); setSelections({}); setAnswered(false); setShowSummary(false); };
+
+  const sc = scenario ? scenarios[scenario] : null;
+  const field = fields[currentField];
+  const meta = fieldMeta[field];
+  const fieldData = sc ? sc[field] : null;
+  const isCorrect = fieldData && selections[field] === fieldData.correct;
+  const score = sc ? fields.filter(f => selections[f] === sc[f].correct).length : 0;
+
+  // Scenario selection
+  if (!scenario) {
+    return (
+      <div style={{ background: CARD_BG, borderRadius: 20, border: "1px solid " + LIGHT_BORDER, padding: "32px 24px", boxShadow: "0 2px 20px rgba(0,0,0,0.04)" }}>
+        <h4 style={{ fontSize: 15, fontWeight: 600, color: DARK, marginBottom: 16 }}>{t("c1s4Scenario")}</h4>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {["A", "B", "C"].map(s => (
+            <button key={s} onClick={() => handleScenarioSelect(s)} style={{ background: "#FAFAF7", border: "1.5px solid " + LIGHT_BORDER, borderRadius: 14, padding: "18px 20px", textAlign: "left", fontSize: 15, color: DARK, fontWeight: 500, cursor: "pointer", transition: "all 0.2s" }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = TEAL + "44"; e.currentTarget.style.background = TEAL + "06"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = LIGHT_BORDER; e.currentTarget.style.background = "#FAFAF7"; }}>
+              {scenarios[s].title}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Summary
+  if (showSummary) {
+    return (
+      <div style={{ background: CARD_BG, borderRadius: 20, border: "1px solid " + LIGHT_BORDER, padding: "32px 24px", boxShadow: "0 2px 20px rgba(0,0,0,0.04)" }}>
+        <div style={{ textAlign: "center", marginBottom: 24 }}>
+          <div style={{ fontSize: 36, marginBottom: 8 }}>{score === 4 ? "\u{1F3C6}" : score >= 3 ? "\u{1F44D}" : "\u{1F4DD}"}</div>
+          <h3 style={{ fontSize: 22, fontWeight: 700, color: DARK, marginBottom: 6 }}>
+            {score === 4 ? (lang === "zh" ? "完美！全部正確！" : "Perfect! All correct!") : (lang === "zh" ? "答對 " + score + " / 4 題" : score + " / 4 correct")}
+          </h3>
+          <p style={{ fontSize: 14, color: MUTED }}>{sc.title}</p>
+        </div>
+        <div style={{ background: TEAL + "06", border: "1px solid " + TEAL + "18", borderRadius: 14, padding: "20px 22px", marginBottom: 20 }}>
+          <h4 style={{ fontSize: 14, fontWeight: 600, color: TEAL, marginBottom: 14 }}>{lang === "zh" ? "正確的 PICO" : "Correct PICO"}</h4>
+          {fields.map(f => {
+            const m = fieldMeta[f];
+            const fd = sc[f];
+            const userCorrect = selections[f] === fd.correct;
+            return (
+              <div key={f} style={{ display: "flex", gap: 10, marginBottom: 10, alignItems: "flex-start" }}>
+                <div style={{ minWidth: 26, height: 26, borderRadius: 7, background: m.color + "15", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: m.color, flexShrink: 0 }}>
+                  {userCorrect ? "\u2713" : m.letter}
+                </div>
+                <div>
+                  <p style={{ fontSize: 13.5, lineHeight: 1.6, color: userCorrect ? "#2A7A5A" : DARK, fontWeight: userCorrect ? 500 : 400, margin: 0 }}>{fd.options[fd.correct]}</p>
+                  {!userCorrect && (<p style={{ fontSize: 12, color: CORAL, marginTop: 4, lineHeight: 1.5 }}>{lang === "zh" ? "你選的：" : "You chose: "}{fd.options[selections[f]]}</p>)}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <button onClick={reset} style={{ background: "transparent", border: "1.5px solid " + TEAL, color: TEAL, padding: "10px 22px", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+          {lang === "zh" ? "換一個情境 \u21BB" : "Try another scenario \u21BB"}
+        </button>
+      </div>
+    );
+  }
+
+  // Question screen
+  return (
+    <div style={{ background: CARD_BG, borderRadius: 20, border: "1px solid " + LIGHT_BORDER, padding: "32px 24px", boxShadow: "0 2px 20px rgba(0,0,0,0.04)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+        <span style={{ fontSize: 12, color: MUTED }}>{sc.title}</span>
+        <div style={{ display: "flex", gap: 6 }}>
+          {fields.map((f, i) => {
+            const m = fieldMeta[f];
+            let bg = LIGHT_BORDER;
+            if (i < currentField) bg = selections[f] === sc[f].correct ? "#3DA87A" : CORAL;
+            else if (i === currentField) bg = m.color;
+            return <div key={f} style={{ width: 32, height: 6, borderRadius: 3, background: bg, transition: "all 0.3s" }} />;
+          })}
+        </div>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
+        <div style={{ width: 44, height: 44, borderRadius: 12, background: meta.color + "15", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, fontWeight: 800, color: meta.color }}>{meta.letter}</div>
+        <div>
+          <h3 style={{ fontSize: 18, fontWeight: 700, color: DARK, margin: 0 }}>{lang === "zh" ? meta.labelZh : meta.labelEn}</h3>
+          <p style={{ fontSize: 13, color: MUTED, margin: 0 }}>{lang === "zh" ? "選擇最恰當的定義" : "Pick the most appropriate definition"}</p>
+        </div>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 18 }}>
+        {fieldData.options.map((opt, idx) => {
+          let bg = "#FAFAF7", border = LIGHT_BORDER, col = DARK, fw = 400;
+          if (answered) {
+            if (idx === fieldData.correct) { bg = "#E6F5F0"; border = "#3DA87A"; col = "#2A7A5A"; fw = 600; }
+            else if (idx === selections[field] && idx !== fieldData.correct) { bg = "#FDEEEB"; border = "#D94B2E"; col = "#B83A20"; }
+          }
+          return (
+            <button key={idx} onClick={() => handleOptionSelect(idx)} style={{ background: bg, border: "1.5px solid " + border, borderRadius: 12, padding: "13px 16px", textAlign: "left", fontSize: 14, color: col, cursor: answered ? "default" : "pointer", transition: "all 0.2s", fontWeight: fw, lineHeight: 1.5 }}>
+              <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 24, height: 24, borderRadius: "50%", border: "1.5px solid " + border, fontSize: 12, fontWeight: 600, marginRight: 10, background: answered && idx === fieldData.correct ? "#3DA87A" : "transparent", color: answered && idx === fieldData.correct ? "#FFF" : col }}>{String.fromCharCode(65 + idx)}</span>
+              {opt}
+            </button>
+          );
+        })}
+      </div>
+      {answered && (
+        <div style={{ background: isCorrect ? "#E6F5F0" : "#FDEEEB", borderRadius: 12, padding: "14px 18px", marginBottom: 16, fontSize: 13.5, lineHeight: 1.65, color: MUTED, border: "1px solid " + (isCorrect ? "#3DA87A33" : "#D94B2E33") }}>
+          <strong style={{ color: isCorrect ? "#2A7A5A" : "#B83A20" }}>{isCorrect ? (lang === "zh" ? "\u2705 正確！" : "\u2705 Correct!") : (lang === "zh" ? "\u274C 不太對" : "\u274C Not quite")}</strong>{" "}
+          {lang === "zh" ? fieldData.explanationZh : fieldData.explanationEn}
+        </div>
+      )}
+      {answered && (
+        <div style={{ textAlign: "right" }}>
+          <button onClick={nextField} style={{ background: TEAL, border: "none", color: "#FFF", padding: "11px 24px", borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>
+            {currentField < 3 ? (lang === "zh" ? "下一個：" + fieldMeta[fields[currentField + 1]].letter + " \u2192" : "Next: " + fieldMeta[fields[currentField + 1]].letter + " \u2192") : (lang === "zh" ? "查看結果 \u2192" : "See Results \u2192")}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+// ═══ AI PICO WORKSHOP ═══
+function AIPicoWorkshop({ t, lang }) {
   const [scenario, setScenario] = useState("A");
   const [inputs, setInputs] = useState({ p: "", i: "", c: "", o: "" });
-  const [showRef, setShowRef] = useState(false);
+  const [feedback, setFeedback] = useState({ p: null, i: null, c: null, o: null });
+  const [loading, setLoading] = useState({ p: false, i: false, c: false, o: false });
+  const [overallFeedback, setOverallFeedback] = useState(null);
+  const [overallLoading, setOverallLoading] = useState(false);
 
-  const refs = { A: t("c1scenarioARef"), B: t("c1scenarioBRef"), C: t("c1scenarioCRef") };
-  const ref = refs[scenario];
+  const scenarioContext = {
+    A: { en: "SGLT2 inhibitors for heart failure (HFrEF)", zh: "SGLT2 抑制劑治療心衰竭 (HFrEF)" },
+    B: { en: "Prolonged β-lactam infusion in critically ill ICU patients", zh: "延長輸注 β-lactam 抗生素治療重症 ICU 患者" },
+    C: { en: "Cognitive behavioral therapy (CBT) for major depressive disorder", zh: "認知行為治療 (CBT) 治療重度憂鬱症" },
+  };
 
-  const handleScenarioChange = (s) => { setScenario(s); setInputs({ p: "", i: "", c: "", o: "" }); setShowRef(false); };
+  const picoLabels = {
+    p: { letter: "P", en: "Population", zh: "族群", color: CORAL },
+    i: { letter: "I", en: "Intervention", zh: "介入", color: "#7B68C8" },
+    c: { letter: "C", en: "Comparison", zh: "對照", color: "#D4A843" },
+    o: { letter: "O", en: "Outcome", zh: "結果", color: "#5B9E5F" },
+  };
+
+  const handleScenarioChange = (s) => {
+    setScenario(s);
+    setInputs({ p: "", i: "", c: "", o: "" });
+    setFeedback({ p: null, i: null, c: null, o: null });
+    setOverallFeedback(null);
+  };
+
+  const checkField = async (field) => {
+    if (!inputs[field].trim()) return;
+    setLoading(prev => ({ ...prev, [field]: true }));
+    setFeedback(prev => ({ ...prev, [field]: null }));
+
+    const label = picoLabels[field];
+    const scenarioText = scenarioContext[scenario][lang === "zh" ? "zh" : "en"];
+
+    const systemPrompt = lang === "zh"
+      ? `你是一位統合分析教學助手。學生正在練習為以下研究主題撰寫 PICO：「${scenarioText}」。請用繁體中文回答。
+請評估學生寫的 ${label.letter}（${label.zh}）是否恰當。回覆要簡短（2-3句），包含：
+1. 一個表情符號開頭：✅ 好的、⚠️ 需改進、或 💡 建議
+2. 具體說明哪裡好或哪裡需要改進
+3. 如果需要改進，給一個具體的修改建議
+不要重複學生的答案。不要使用 Markdown 格式。`
+      : `You are a meta-analysis teaching assistant. The student is practicing PICO for: "${scenarioText}".
+Evaluate their ${label.letter} (${label.en}). Keep it brief (2-3 sentences):
+1. Start with: ✅ Good, ⚠️ Needs improvement, or 💡 Suggestion
+2. Be specific about what's good or needs work
+3. If improvement needed, give a concrete suggestion
+Don't repeat the student's answer. Don't use Markdown formatting.`;
+
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          system: systemPrompt,
+          messages: [{ role: "user", content: `${label.letter} (${lang === "zh" ? label.zh : label.en}): ${inputs[field]}` }],
+        }),
+      });
+      const data = await response.json();
+      const text = data.content?.map(item => item.text || "").join("") || (lang === "zh" ? "無法取得回饋，請重試。" : "Could not get feedback. Please try again.");
+      setFeedback(prev => ({ ...prev, [field]: text }));
+    } catch (err) {
+      setFeedback(prev => ({ ...prev, [field]: lang === "zh" ? "連線錯誤，請檢查網路後重試。" : "Connection error. Please check your network and try again." }));
+    }
+    setLoading(prev => ({ ...prev, [field]: false }));
+  };
+
+  const checkOverall = async () => {
+    const filled = Object.values(inputs).every(v => v.trim());
+    if (!filled) return;
+    setOverallLoading(true);
+    setOverallFeedback(null);
+
+    const scenarioText = scenarioContext[scenario][lang === "zh" ? "zh" : "en"];
+
+    const systemPrompt = lang === "zh"
+      ? `你是一位統合分析教學助手。學生為以下主題撰寫了完整的 PICO：「${scenarioText}」。請用繁體中文回答。
+請給出整體評估（3-5句），包含：
+1. 整體評分：🏆 優秀、👍 良好、📝 需修改
+2. PICO 各元素之間的邏輯連貫性
+3. 這個 PICO 是否足夠精確到可以用來搜尋文獻
+4. 一個最重要的改進建議
+不要使用 Markdown 格式。`
+      : `You are a meta-analysis teaching assistant. The student wrote a complete PICO for: "${scenarioText}".
+Give an overall assessment (3-5 sentences):
+1. Rating: 🏆 Excellent, 👍 Good, or 📝 Needs revision
+2. Logical coherence between PICO elements
+3. Whether this PICO is precise enough for a literature search
+4. One key improvement suggestion
+Don't use Markdown formatting.`;
+
+    const picoText = `P: ${inputs.p}\nI: ${inputs.i}\nC: ${inputs.c}\nO: ${inputs.o}`;
+
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          system: systemPrompt,
+          messages: [{ role: "user", content: picoText }],
+        }),
+      });
+      const data = await response.json();
+      const text = data.content?.map(item => item.text || "").join("") || (lang === "zh" ? "無法取得回饋，請重試。" : "Could not get feedback.");
+      setOverallFeedback(text);
+    } catch (err) {
+      setOverallFeedback(lang === "zh" ? "連線錯誤，請檢查網路後重試。" : "Connection error. Please try again.");
+    }
+    setOverallLoading(false);
+  };
+
+  const allFilled = Object.values(inputs).every(v => v.trim());
 
   return (
     <div style={{ background: CARD_BG, borderRadius: 20, border: `1px solid ${LIGHT_BORDER}`, padding: "32px 24px", boxShadow: "0 2px 20px rgba(0,0,0,0.04)" }}>
-      <h4 style={{ fontSize: 14, fontWeight: 600, color: MUTED, marginBottom: 12 }}>{t("c1s4Scenario")}</h4>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 24 }}>
+      {/* Scenario selector */}
+      <h4 style={{ fontSize: 14, fontWeight: 600, color: MUTED, marginBottom: 12 }}>{t("c1aiScenario")}</h4>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 28 }}>
         {["A", "B", "C"].map(s => (
           <button key={s} onClick={() => handleScenarioChange(s)} style={{ background: scenario === s ? `${TEAL}0D` : "#FAFAF7", border: `1.5px solid ${scenario === s ? TEAL + "44" : LIGHT_BORDER}`, borderRadius: 12, padding: "12px 16px", textAlign: "left", fontSize: 14, color: scenario === s ? TEAL : DARK, fontWeight: scenario === s ? 600 : 400, cursor: "pointer", transition: "all 0.2s" }}>
-            {t(`scenario${s}`)}
+            {t(`c1scenario${s}`)}
           </button>
         ))}
       </div>
-      {[
-        { field: "p", color: CORAL },
-        { field: "i", color: "#7B68C8" },
-        { field: "c", color: "#D4A843" },
-        { field: "o", color: "#5B9E5F" },
-      ].map(({ field, color }) => (
-        <div key={field} style={{ marginBottom: 16 }}>
-          <label style={{ fontSize: 13, fontWeight: 600, color: DARK, marginBottom: 6, display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 22, height: 22, borderRadius: 6, background: `${color}15`, fontSize: 11, fontWeight: 700, color }}>{field.toUpperCase()}</span>
-            {t(`s4Your${field.toUpperCase()}`)}
-          </label>
-          <textarea value={inputs[field]} onChange={(e) => setInputs(prev => ({ ...prev, [field]: e.target.value }))} placeholder={t(`s4Placeholder${field.toUpperCase()}`)}
-            style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: `1.5px solid ${LIGHT_BORDER}`, fontSize: 14, lineHeight: 1.6, color: DARK, background: "#FAFAF7", resize: "vertical", minHeight: 48, outline: "none", transition: "border-color 0.2s", boxSizing: "border-box", marginTop: 6 }} />
-        </div>
-      ))}
-      <button onClick={() => setShowRef(!showRef)} style={{ background: "transparent", border: `1.5px solid ${TEAL}`, color: TEAL, padding: "10px 20px", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer", marginTop: 4, transition: "all 0.2s" }}>
-        {showRef ? t("c1s4HideAnswer") : t("c1s4ShowAnswer")}
-      </button>
-      {showRef && ref && (
-        <div style={{ marginTop: 16, background: `${TEAL}06`, border: `1px solid ${TEAL}18`, borderRadius: 14, padding: "20px 22px" }}>
-          <h4 style={{ fontSize: 14, fontWeight: 600, color: TEAL, marginBottom: 14 }}>📋 {t("c1s4RefTitle")}</h4>
-          {[{ label: "P", value: ref.p, color: CORAL }, { label: "I", value: ref.i, color: "#7B68C8" }, { label: "C", value: ref.c, color: "#D4A843" }, { label: "O", value: ref.o, color: "#5B9E5F" }].map(item => (
-            <div key={item.label} style={{ display: "flex", gap: 10, marginBottom: 10, alignItems: "flex-start" }}>
-              <div style={{ minWidth: 26, height: 26, borderRadius: 7, background: `${item.color}15`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: item.color, flexShrink: 0 }}>{item.label}</div>
-              <p style={{ fontSize: 13.5, lineHeight: 1.6, color: MUTED, margin: "2px 0 0" }}>{item.value}</p>
+
+      {/* PICO fields with AI check */}
+      {["p", "i", "c", "o"].map(field => {
+        const label = picoLabels[field];
+        return (
+          <div key={field} style={{ marginBottom: 20 }}>
+            <label style={{ fontSize: 13, fontWeight: 600, color: DARK, marginBottom: 6, display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 22, height: 22, borderRadius: 6, background: `${label.color}15`, fontSize: 11, fontWeight: 700, color: label.color }}>{label.letter}</span>
+              {t(`c1s4Your${field.toUpperCase()}`)}
+            </label>
+            <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
+              <textarea
+                value={inputs[field]}
+                onChange={(e) => { setInputs(prev => ({ ...prev, [field]: e.target.value })); setFeedback(prev => ({ ...prev, [field]: null })); }}
+                placeholder={t(`c1s4Placeholder${field.toUpperCase()}`)}
+                style={{ flex: 1, padding: "10px 14px", borderRadius: 10, border: `1.5px solid ${LIGHT_BORDER}`, fontSize: 14, lineHeight: 1.6, color: DARK, background: "#FAFAF7", resize: "vertical", minHeight: 48, outline: "none", transition: "border-color 0.2s", boxSizing: "border-box" }}
+              />
+              <button
+                onClick={() => checkField(field)}
+                disabled={!inputs[field].trim() || loading[field]}
+                style={{
+                  background: inputs[field].trim() ? `${label.color}12` : "#F5F5F3",
+                  border: `1.5px solid ${inputs[field].trim() ? label.color + "33" : LIGHT_BORDER}`,
+                  color: inputs[field].trim() ? label.color : "#CCC",
+                  borderRadius: 10, padding: "0 14px", fontSize: 12, fontWeight: 600,
+                  cursor: inputs[field].trim() ? "pointer" : "default",
+                  transition: "all 0.2s", whiteSpace: "nowrap", alignSelf: "flex-start", marginTop: 0, minHeight: 48,
+                }}
+              >
+                {loading[field] ? (lang === "zh" ? "分析中…" : "Checking…") : (lang === "zh" ? "AI 檢查" : "AI Check")}
+              </button>
             </div>
-          ))}
+            {/* Inline AI feedback */}
+            {feedback[field] && (
+              <div style={{
+                marginTop: 8, padding: "12px 16px", borderRadius: 10,
+                background: feedback[field].startsWith("✅") ? "#E6F5F0" : feedback[field].startsWith("⚠️") ? "#FFF8E6" : `${TEAL}06`,
+                border: `1px solid ${feedback[field].startsWith("✅") ? "#3DA87A22" : feedback[field].startsWith("⚠️") ? "#D4A84322" : TEAL + "18"}`,
+                fontSize: 13.5, lineHeight: 1.65, color: MUTED,
+                animation: "fadeInUp 0.3s ease-out",
+              }}>
+                {feedback[field]}
+              </div>
+            )}
+          </div>
+        );
+      })}
+
+      {/* Overall check button */}
+      <div style={{ borderTop: `1px solid ${LIGHT_BORDER}`, paddingTop: 20, marginTop: 8 }}>
+        <button
+          onClick={checkOverall}
+          disabled={!allFilled || overallLoading}
+          style={{
+            background: allFilled ? TEAL : "#E8E6E1",
+            border: "none", color: allFilled ? "#FFF" : MUTED,
+            padding: "13px 28px", borderRadius: 10, fontSize: 14, fontWeight: 600,
+            cursor: allFilled ? "pointer" : "default",
+            transition: "all 0.2s", width: "100%",
+            boxShadow: allFilled ? `0 2px 12px ${TEAL}33` : "none",
+          }}
+        >
+          {overallLoading ? (lang === "zh" ? "正在進行整體評估…" : "Running overall assessment…") : (lang === "zh" ? "AI 整體評估我的 PICO" : "AI Overall Assessment")}
+        </button>
+      </div>
+
+      {/* Overall feedback */}
+      {overallFeedback && (
+        <div style={{
+          marginTop: 16, padding: "18px 20px", borderRadius: 14,
+          background: overallFeedback.includes("🏆") ? `${TEAL}08` : overallFeedback.includes("👍") ? "#F0FAF5" : "#FFFAF0",
+          border: `1.5px solid ${overallFeedback.includes("🏆") ? TEAL + "22" : overallFeedback.includes("👍") ? "#3DA87A22" : "#D4A84322"}`,
+          fontSize: 14, lineHeight: 1.7, color: DARK,
+          animation: "fadeInUp 0.3s ease-out",
+        }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: TEAL, marginBottom: 8 }}>{lang === "zh" ? "整體評估" : "Overall Assessment"}</div>
+          {overallFeedback}
         </div>
       )}
     </div>
@@ -375,6 +900,10 @@ export default function Course1PICO({ onNavigate }) {
         @keyframes eggShake { 0% { transform: rotate(0); } 20% { transform: rotate(8deg); } 40% { transform: rotate(-8deg); } 60% { transform: rotate(5deg); } 80% { transform: rotate(-3deg); } 100% { transform: rotate(0); } }
         @keyframes eggFreeze { 0% { transform: scale(1); filter: saturate(1) brightness(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); filter: saturate(0.15) brightness(1.35); } }
         @keyframes dinoAppear { 0% { transform: scale(0) translateY(20px); opacity: 0; } 60% { transform: scale(1.1) translateY(-5px); } 100% { transform: scale(1) translateY(0); opacity: 1; } }
+        @keyframes fadeInUp { 0% { opacity: 0; transform: translateY(8px); } 100% { opacity: 1; transform: translateY(0); } }
+        @keyframes sunFall { 0% { opacity: 0; transform: translateY(0) scale(0.5) rotate(0deg); } 20% { opacity: 1; transform: translateY(20px) scale(1) rotate(30deg); } 80% { opacity: 0.8; transform: translateY(90px) scale(1.1) rotate(180deg); } 100% { opacity: 0; transform: translateY(120px) scale(0.6) rotate(220deg); } }
+        @keyframes snowFall { 0% { opacity: 0; transform: translateY(0) translateX(0) rotate(0deg); } 20% { opacity: 1; } 50% { transform: translateY(60px) translateX(10px) rotate(180deg); } 80% { opacity: 0.7; } 100% { opacity: 0; transform: translateY(130px) translateX(-5px) rotate(360deg); } }
+        @keyframes glowPulse { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); } 50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); } }
         textarea:focus { border-color: ${TEAL}66 !important; box-shadow: 0 0 0 3px ${TEAL}0D; }
         @media (max-width: 640px) {
           .pico-grid { grid-template-columns: 1fr !important; }
@@ -452,7 +981,7 @@ export default function Course1PICO({ onNavigate }) {
         <div style={{ maxWidth: 880, margin: "0 auto" }}>
           <FadeIn><SectionLabel text={t("c1s2Label")} /><SectionTitle>{t("c1s2Title")}</SectionTitle></FadeIn>
           <FadeIn delay={0.1}><Paragraph style={{ marginBottom: 32 }}>{t("c1s2Intro")}</Paragraph></FadeIn>
-          <div className="pico-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16, marginBottom: 32 }}>
+          <div className="pico-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16, marginBottom: 32 }}>
             <PicoCard letter="P" color={CORAL} title={t("c1pTitle")} desc={t("c1pDesc")} example={t("c1pExample")} tip={t("c1pTip")} delay={0.1} />
             <PicoCard letter="I" color="#7B68C8" title={t("c1iTitle")} desc={t("c1iDesc")} example={t("c1iExample")} tip={t("c1iTip")} delay={0.15} />
             <PicoCard letter="C" color="#D4A843" title={t("c1cTitle")} desc={t("c1cDesc")} example={t("c1cExample")} tip={t("c1cTip")} delay={0.2} />
@@ -489,27 +1018,27 @@ export default function Course1PICO({ onNavigate }) {
         </div>
       </section>
 
-      {/* S4: Interactive Builder */}
+      {/* S4: Common Mistakes (moved before Interactive Builder) */}
       <section id="s4" style={{ padding: "80px 24px", background: LIGHT_BG }}>
-        <div style={{ maxWidth: 880, margin: "0 auto" }}>
-          <FadeIn><SectionLabel text={t("c1s4Label")} /><SectionTitle>{t("c1s4Title")}</SectionTitle></FadeIn>
-          <FadeIn delay={0.1}><Paragraph style={{ marginBottom: 32 }}>{t("c1s4Intro")}</Paragraph></FadeIn>
-          <FadeIn delay={0.15}><PicoBuilder t={t} /></FadeIn>
-          <FadeIn delay={0.2}><div style={{ textAlign: "center", marginTop: 28 }}><button onClick={() => scrollTo("s5")} style={btnPrimary}>{t("c1s4Next")}</button></div></FadeIn>
-        </div>
-      </section>
-
-      {/* S5: Common Mistakes */}
-      <section id="s5" style={{ padding: "80px 24px", background: "#F1F0EC" }}>
         <div style={{ maxWidth: 880, margin: "0 auto" }}>
           <FadeIn><SectionLabel text={t("c1s5Label")} /><SectionTitle>{t("c1s5Title")}</SectionTitle></FadeIn>
           <FadeIn delay={0.1}><Paragraph style={{ marginBottom: 32 }}>{t("c1s5Intro")}</Paragraph></FadeIn>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 14 }}>
             {[1, 2, 3, 4, 5].map(n => (
-              <TrapCard key={n} number={n} title={t(`trap${n}Title`)} bad={t(`trap${n}Bad`)} good={t(`trap${n}Good`)} delay={n * 0.05} />
+              <TrapCard key={n} number={n} title={t(`c1trap${n}Title`)} bad={t(`c1trap${n}Bad`)} good={t(`c1trap${n}Good`)} delay={n * 0.05} />
             ))}
           </div>
-          <FadeIn delay={0.35}><div style={{ textAlign: "center", marginTop: 32 }}><button onClick={() => scrollTo("game")} style={{ ...btnPrimary, background: CORAL, boxShadow: `0 4px 20px ${CORAL}33` }}>{t("c1s5Next")}</button></div></FadeIn>
+          <FadeIn delay={0.35}><div style={{ textAlign: "center", marginTop: 32 }}><button onClick={() => scrollTo("s5")} style={btnPrimary}>{t("c1s4Next")}</button></div></FadeIn>
+        </div>
+      </section>
+
+      {/* S5: Interactive Builder (moved after Common Mistakes) */}
+      <section id="s5" style={{ padding: "80px 24px", background: "#F1F0EC" }}>
+        <div style={{ maxWidth: 880, margin: "0 auto" }}>
+          <FadeIn><SectionLabel text={t("c1s4Label")} /><SectionTitle>{t("c1s4Title")}</SectionTitle></FadeIn>
+          <FadeIn delay={0.1}><Paragraph style={{ marginBottom: 32 }}>{t("c1s4Intro")}</Paragraph></FadeIn>
+          <FadeIn delay={0.15}><PicoBuilder t={t} lang={lang} /></FadeIn>
+          <FadeIn delay={0.2}><div style={{ textAlign: "center", marginTop: 28 }}><button onClick={() => scrollTo("game")} style={{ ...btnPrimary, background: CORAL, boxShadow: `0 4px 20px ${CORAL}33` }}>{t("c1s5Next")}</button></div></FadeIn>
         </div>
       </section>
 
@@ -517,7 +1046,16 @@ export default function Course1PICO({ onNavigate }) {
       <section id="game" style={{ padding: "80px 24px", background: LIGHT_BG }}>
         <div style={{ maxWidth: 640, margin: "0 auto" }}>
           <FadeIn><SectionLabel text={t("c1gameLabel")} /></FadeIn>
-          <FadeIn delay={0.1}><DragonEggGame t={t} /></FadeIn>
+          <FadeIn delay={0.1}><DragonEggGame t={t} lang={lang} /></FadeIn>
+        </div>
+      </section>
+
+      {/* AI PICO WORKSHOP */}
+      <section id="ai-workshop" style={{ padding: "80px 24px", background: "#F1F0EC" }}>
+        <div style={{ maxWidth: 880, margin: "0 auto" }}>
+          <FadeIn><SectionLabel text={t("c1aiLabel")} /><SectionTitle>{t("c1aiTitle")}</SectionTitle></FadeIn>
+          <FadeIn delay={0.1}><Paragraph style={{ marginBottom: 32 }}>{t("c1aiDesc")}</Paragraph></FadeIn>
+          <FadeIn delay={0.15}><AIPicoWorkshop t={t} lang={lang} /></FadeIn>
         </div>
       </section>
 
