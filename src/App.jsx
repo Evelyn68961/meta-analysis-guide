@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useI18n } from "./i18n";
 import Course0 from "./Course0";
 import Course1 from "./Course1";
+import Course2 from "./Course2";
+import DinoIntro from "./DinoIntro";
 
 const TEAL = "#0E7C86";
 const CORAL = "#E8734A";
@@ -44,7 +46,7 @@ function CourseHub({ onNavigate }) {
       color: "#7B68C8",
       emoji: "🔍",
       gameKey: "hubC2Game",
-      status: "coming",
+      status: "available",
     },
     {
       id: "course3",
@@ -218,7 +220,6 @@ function CourseCard({ course, t, onNavigate }) {
 // ═══ MAIN APP (ROUTER) ═══
 export default function App() {
   const [currentPage, setCurrentPage] = useState(() => {
-    // Support URL hash routing
     const hash = window.location.hash.replace("#", "");
     return hash || "hub";
   });
@@ -243,6 +244,10 @@ export default function App() {
       return <Course0 onNavigate={navigate} />;
     case "course1":
       return <Course1 onNavigate={navigate} />;
+    case "course2":
+      return <Course2 onNavigate={navigate} />;
+    case "dino":
+      return <DinoIntro />;
     default:
       return <CourseHub onNavigate={navigate} />;
   }
