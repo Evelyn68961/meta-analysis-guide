@@ -40,56 +40,59 @@ function TRex({ color, size }) {
   const dark = darken(color, 0.15);
   const claw = darken(color, 0.3);
   return (
-    <svg width={size} height={size} viewBox="0 0 120 120" fill="none">
+    <svg width={size} height={size} viewBox="-5 0 120 120" fill="none">
       {/* Tail */}
-      <path d="M22 62 Q10 58 4 52 Q2 48 6 46" stroke={color} strokeWidth="12" fill="none" strokeLinecap="round" />
+      <path d="M26 74 Q10 66 4 60 Q2 56 6 54" stroke={color} strokeWidth="10" fill="none" strokeLinecap="round" />
       {/* Body */}
-      <ellipse cx="44" cy="58" rx="24" ry="22" fill={color} />
-      <ellipse cx="44" cy="40" rx="16" ry="4" fill={dark} opacity="0.2" />
-      <ellipse cx="48" cy="66" rx="14" ry="14" fill={belly} />
+      <ellipse cx="44" cy="66" rx="20" ry="26" fill={color} transform="rotate(15 44 66)" />
+      <ellipse cx="44" cy="48" rx="16" ry="4" fill={dark} opacity="0.2" />
+      <ellipse cx="48" cy="74" rx="12" ry="14" fill={belly} transform="rotate(15 48 74)" />
       {/* Head */}
-      <rect x="58" y="18" rx="14" ry="14" width="42" height="36" fill={color} />
-      {/* Lower jaw */}
-      <rect x="66" y="42" rx="8" ry="8" width="34" height="14" fill={darken(color, 0.05)} />
-      <path d="M68 48 L98 48" stroke={dark} strokeWidth="1.5" opacity="0.3" />
-      {/* Teeth */}
-      <path d="M72 42 L73 46 L74 42" fill="white" />
-      <path d="M77 42 L78 47 L79 42" fill="white" />
-      <path d="M82 42 L83 46 L84 42" fill="white" />
-      <path d="M87 42 L88 47 L89 42" fill="white" />
-      <path d="M92 42 L93 46 L94 42" fill="white" />
+      <rect x="54" y="18" rx="14" ry="14" width="42" height="36" fill={color} />
+      {/* Lower jaw — rounded, natural */}
+      <rect x="70" y="46" rx="6" ry="6" width="22" height="8" fill={darken(color, 0.05)} />
+      {/* Jaw line */}
+      <path d="M72 50 L90 50" stroke={dark} strokeWidth="1" opacity="0.3" />
+      {/* Teeth — 3, hanging from jaw edge */}
+      <path d="M76 50 L77 54 L78 50" fill="white" />
+      <path d="M81 50 L82 54 L83 50" fill="white" />
+      <path d="M86 50 L87 54 L88 50" fill="white" />
       {/* Brow ridge */}
-      <path d="M62 24 Q78 18 96 24" stroke={dark} strokeWidth="3" fill="none" strokeLinecap="round" />
+      <path d="M58 24 Q76 18 94 24" stroke={dark} strokeWidth="3" fill="none" strokeLinecap="round" />
       {/* Eye */}
-      <circle cx="74" cy="30" r="7" fill="white" />
-      <circle cx="76" cy="29" r="4.5" fill={DARK} />
-      <circle cx="78" cy="27" r="2" fill="white" />
+      <circle cx="72" cy="30" r="7" fill="white" />
+      <circle cx="74" cy="29" r="4.5" fill={DARK} />
+      <circle cx="76" cy="27" r="2" fill="white" />
       {/* Nostril */}
-      <circle cx="96" cy="28" r="2" fill={dark} opacity="0.4" />
+      <circle cx="94" cy="28" r="2" fill={dark} opacity="0.4" />
       {/* Cheek */}
-      <circle cx="70" cy="40" r="4" fill={lighten(color, 0.4)} opacity="0.4" />
-      {/* Tiny arms */}
-      <path d="M56 52 Q52 48 50 50" stroke={color} strokeWidth="3.5" fill="none" strokeLinecap="round" />
-      <path d="M50 50 L48 48" stroke={dark} strokeWidth="2" fill="none" strokeLinecap="round" />
-      <path d="M50 50 L48 51" stroke={dark} strokeWidth="2" fill="none" strokeLinecap="round" />
-      {/* Left leg */}
-      <ellipse cx="32" cy="78" rx="9" ry="14" fill={darken(color, 0.05)} />
-      {/* Left foot */}
-      <ellipse cx="25" cy="94" rx="4" ry="6" fill={dark} transform="rotate(-15 25 94)" />
-      <ellipse cx="32" cy="95" rx="4" ry="6.5" fill={dark} />
-      <ellipse cx="39" cy="94" rx="4" ry="6" fill={dark} transform="rotate(15 39 94)" />
-      <ellipse cx="24" cy="89" rx="1.5" ry="2.5" fill={claw} transform="rotate(-15 24 89)" />
-      <ellipse cx="32" cy="89" rx="1.5" ry="2.5" fill={claw} />
-      <ellipse cx="40" cy="89" rx="1.5" ry="2.5" fill={claw} transform="rotate(15 40 89)" />
-      {/* Right leg */}
-      <ellipse cx="58" cy="78" rx="9" ry="14" fill={darken(color, 0.05)} />
-      {/* Right foot */}
-      <ellipse cx="51" cy="94" rx="4" ry="6" fill={dark} transform="rotate(-15 51 94)" />
-      <ellipse cx="58" cy="95" rx="4" ry="6.5" fill={dark} />
-      <ellipse cx="65" cy="94" rx="4" ry="6" fill={dark} transform="rotate(15 65 94)" />
-      <ellipse cx="50" cy="89" rx="1.5" ry="2.5" fill={claw} transform="rotate(-15 50 89)" />
-      <ellipse cx="58" cy="89" rx="1.5" ry="2.5" fill={claw} />
-      <ellipse cx="66" cy="89" rx="1.5" ry="2.5" fill={claw} transform="rotate(15 66 89)" />
+      <circle cx="68" cy="40" r="4" fill={lighten(color, 0.4)} opacity="0.4" />
+      {/* Tiny arms — two, pointing downward */}
+      <path d="M64 60 Q70 64 76 62" stroke={color} strokeWidth="4" fill="none" strokeLinecap="round" />
+      <path d="M76 62 L79 62" stroke={dark} strokeWidth="2.5" fill="none" strokeLinecap="round" />
+      <path d="M76 62 L79 68" stroke={dark} strokeWidth="2.5" fill="none" strokeLinecap="round" />
+      <path d="M64 66 Q70 70 76 68" stroke={color} strokeWidth="4" fill="none" strokeLinecap="round" />
+      <path d="M76 68 L79 68" stroke={dark} strokeWidth="2.5" fill="none" strokeLinecap="round" />
+      <path d="M76 68 L79 74" stroke={dark} strokeWidth="2.5" fill="none" strokeLinecap="round" />
+      {/* Left leg: thigh → knee → shin → foot */}
+      <path d="M40 84 L36 96" stroke={color} strokeWidth="8" fill="none" strokeLinecap="round" />
+      <path d="M36 96 L42 108" stroke={darken(color, 0.05)} strokeWidth="6" fill="none" strokeLinecap="round" />
+      <path d="M42 108 L40 114" stroke={darken(color, 0.08)} strokeWidth="4" fill="none" strokeLinecap="round" />
+      {/* Left toes */}
+      <path d="M36 116 L40 114 L44 116" stroke={dark} strokeWidth="3" fill="none" strokeLinecap="round" />
+      <ellipse cx="36" cy="116.5" rx="2" ry="1.5" fill={claw} />
+      <ellipse cx="40" cy="117" rx="2" ry="1.5" fill={claw} />
+      <ellipse cx="44" cy="116.5" rx="2" ry="1.5" fill={claw} />
+
+      {/* Right leg: thigh → knee → shin → foot */}
+      <path d="M54 82 L52 94" stroke={color} strokeWidth="8" fill="none" strokeLinecap="round" />
+      <path d="M52 94 L58 106" stroke={darken(color, 0.05)} strokeWidth="6" fill="none" strokeLinecap="round" />
+      <path d="M58 106 L56 112" stroke={darken(color, 0.08)} strokeWidth="4" fill="none" strokeLinecap="round" />
+      {/* Right toes */}
+      <path d="M52 114 L56 112 L60 114" stroke={dark} strokeWidth="3" fill="none" strokeLinecap="round" />
+      <ellipse cx="52" cy="114.5" rx="2" ry="1.5" fill={claw} />
+      <ellipse cx="56" cy="115" rx="2" ry="1.5" fill={claw} />
+      <ellipse cx="60" cy="114.5" rx="2" ry="1.5" fill={claw} />
     </svg>
   );
 }
@@ -266,46 +269,75 @@ function Velociraptor({ color, size }) {
   const feather = darken(color, 0.1);
   const claw = darken(color, 0.3);
   return (
-    <svg width={size} height={size} viewBox="0 0 120 120" fill="none">
+<svg width={size} height={size} viewBox="0 0 120 120" fill="none">
+      {/* ═══ TAIL ═══ */}
       <path d="M24 42 L4 34" stroke={color} strokeWidth="6" fill="none" strokeLinecap="round" />
+      
+      {/* ═══ TAIL FEATHERS ═══ */}
       <path d="M8 34 L2 28 L6 32" fill={feather} />
       <path d="M6 36 L0 32 L4 34" fill={feather} />
       <path d="M8 32 L4 26 L8 30" fill={darken(color, 0.18)} />
+      
+      {/* ═══ BODY ═══ */}
       <ellipse cx="44" cy="48" rx="20" ry="16" fill={color} transform="rotate(-20 44 48)" />
+      {/* ═══ BELLY ═══ */}
       <ellipse cx="48" cy="54" rx="12" ry="10" fill={belly} transform="rotate(-15 48 54)" />
-      <path d="M52 44 Q44 32 36 28" stroke={color} strokeWidth="3" fill="none" strokeLinecap="round" />
-      <path d="M44 34 L38 26 L42 32" fill={feather} />
-      <path d="M42 36 L36 30 L40 34" fill={feather} />
-      <path d="M40 32 L34 24 L38 30" fill={darken(color, 0.18)} />
-      <path d="M36 28 L32 24" stroke={dark} strokeWidth="2" strokeLinecap="round" />
-      <path d="M36 28 L34 23" stroke={dark} strokeWidth="2" strokeLinecap="round" />
+      
+{/* ═══ TINY ARMS — two, pointing downward ═══ */}
+      <path d="M58 42 Q64 46 70 44" stroke={color} strokeWidth="3.5" fill="none" strokeLinecap="round" />
+      <path d="M70 44 L73 44" stroke={dark} strokeWidth="2" fill="none" strokeLinecap="round" />
+      <path d="M70 44 L73 50" stroke={dark} strokeWidth="2" fill="none" strokeLinecap="round" />
+      <path d="M58 48 Q64 52 70 50" stroke={color} strokeWidth="3.5" fill="none" strokeLinecap="round" />
+      <path d="M70 50 L73 50" stroke={dark} strokeWidth="2" fill="none" strokeLinecap="round" />
+      <path d="M70 50 L73 56" stroke={dark} strokeWidth="2" fill="none" strokeLinecap="round" />
+      
+      {/* ═══ HEAD ═══ */}
       <ellipse cx="72" cy="28" rx="14" ry="11" fill={color} transform="rotate(-10 72 28)" />
+      {/* ═══ SNOUT ═══ */}
       <ellipse cx="86" cy="28" rx="8" ry="5" fill={darken(color, 0.04)} transform="rotate(-5 86 28)" />
+      {/* ═══ NECK ═══ */}
       <path d="M58 40 Q64 32 68 28" stroke={color} strokeWidth="8" fill="none" strokeLinecap="round" />
+      
+      {/* ═══ EYE ═══ */}
       <circle cx="74" cy="24" r="5" fill="white" />
       <circle cx="75.5" cy="23" r="3.2" fill={DARK} />
       <circle cx="77" cy="21.5" r="1.3" fill="white" />
+      {/* ═══ SLIT PUPIL ═══ */}
       <ellipse cx="75.5" cy="23" rx="1.2" ry="3" fill="#111" />
+      
+      {/* ═══ TEETH ═══ */}
       <path d="M86 30 L87 33 L88 30" fill="white" />
       <path d="M90 30 L91 32 L92 30" fill="white" />
+      
+      {/* ═══ HEAD FEATHERS ═══ */}
       <path d="M68 18 L64 8 L70 16" fill={feather} />
       <path d="M72 16 L70 6 L74 14" fill={darken(color, 0.18)} />
       <path d="M76 18 L76 10 L78 16" fill={feather} />
+      
+      {/* ═══ LEFT LEG: thigh → knee → shin ═══ */}
       <path d="M38 60 L34 72" stroke={color} strokeWidth="6" fill="none" strokeLinecap="round" />
       <path d="M34 72 L40 84" stroke={darken(color, 0.05)} strokeWidth="4.5" fill="none" strokeLinecap="round" />
       <path d="M40 84 L38 90" stroke={darken(color, 0.08)} strokeWidth="3" fill="none" strokeLinecap="round" />
+      
+      {/* ═══ RIGHT LEG: thigh → knee → shin ═══ */}
       <path d="M50 58 L48 70" stroke={color} strokeWidth="6" fill="none" strokeLinecap="round" />
       <path d="M48 70 L54 82" stroke={darken(color, 0.05)} strokeWidth="4.5" fill="none" strokeLinecap="round" />
       <path d="M54 82 L52 88" stroke={darken(color, 0.08)} strokeWidth="3" fill="none" strokeLinecap="round" />
+      
+      {/* ═══ LEFT TOES ═══ */}
       <path d="M34 92 L38 90 L42 92" stroke={dark} strokeWidth="2.5" fill="none" strokeLinecap="round" />
       <ellipse cx="34" cy="92.5" rx="2" ry="1.5" fill={claw} />
       <ellipse cx="38" cy="93" rx="2" ry="1.5" fill={claw} />
       <ellipse cx="42" cy="92.5" rx="2" ry="1.5" fill={claw} />
+      {/* ═══ LEFT SICKLE CLAW ═══ */}
       <path d="M35 90 Q32 84 36 82" stroke={claw} strokeWidth="2.5" fill="none" strokeLinecap="round" />
+      
+      {/* ═══ RIGHT TOES ═══ */}
       <path d="M48 90 L52 88 L56 90" stroke={dark} strokeWidth="2.5" fill="none" strokeLinecap="round" />
       <ellipse cx="48" cy="90.5" rx="2" ry="1.5" fill={claw} />
       <ellipse cx="52" cy="91" rx="2" ry="1.5" fill={claw} />
       <ellipse cx="56" cy="90.5" rx="2" ry="1.5" fill={claw} />
+      {/* ═══ RIGHT SICKLE CLAW ═══ */}
       <path d="M49 88 Q46 82 50 80" stroke={claw} strokeWidth="2.5" fill="none" strokeLinecap="round" />
     </svg>
   );
