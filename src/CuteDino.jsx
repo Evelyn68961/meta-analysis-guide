@@ -344,62 +344,90 @@ function Velociraptor({ color, size }) {
 }
 
 // ═══════════════════════════════════════════
-// 7. ANKYLOSAURUS (Gray) — Scale armor, side spikes, tail club, flat head
+// 7. PACHYCEPHALOSAURUS (Gray) — Thick dome skull, bony bumps, bipedal
 // ═══════════════════════════════════════════
-function Ankylosaurus({ color, size }) {
-  const belly = lighten(color, 0.45);
+function Pachycephalosaurus({ color, size }) {
+  const belly = lighten(color, 0.5);
   const dark = darken(color, 0.15);
-  const armor = darken(color, 0.12);
+  const bone = lighten(color, 0.55);
   const claw = darken(color, 0.3);
   return (
-    <svg width={size} height={size} viewBox="0 0 120 120" fill="none">
-      {/* Tail with club */}
-      <path d="M20 66 Q10 62 6 58" stroke={color} strokeWidth="8" fill="none" strokeLinecap="round" />
-      <ellipse cx="4" cy="56" rx="10" ry="7" fill={armor} stroke={dark} strokeWidth="1.5" />
-      <ellipse cx="4" cy="56" rx="6" ry="4" fill={darken(color, 0.2)} />
-      {/* Legs behind body */}
-      <rect x="28" y="76" rx="6" ry="4" width="14" height="16" fill={darken(color, 0.07)} />
-      <rect x="48" y="76" rx="6" ry="4" width="14" height="16" fill={darken(color, 0.07)} />
-      <rect x="64" y="74" rx="5" ry="4" width="12" height="16" fill={darken(color, 0.1)} />
-      <rect x="78" y="72" rx="5" ry="4" width="11" height="16" fill={darken(color, 0.1)} />
-      <DinoFootStumpy cx={35} cy={94} color={dark} clawColor={claw} scale={0.65} />
-      <DinoFootStumpy cx={55} cy={94} color={dark} clawColor={claw} scale={0.65} />
-      <DinoFootStumpy cx={70} cy={92} color={dark} clawColor={claw} scale={0.55} />
-      <DinoFootStumpy cx={83} cy={90} color={dark} clawColor={claw} scale={0.55} />
-      {/* Body on top */}
-      <ellipse cx="54" cy="66" rx="36" ry="20" fill={color} />
-      {/* Armor shell */}
-      <path d="M22 54 Q54 40 86 54" fill={armor} stroke={dark} strokeWidth="1.5" />
-      {/* Hexagonal scale armor */}
-      <path d="M32 50 L36 46 L42 46 L46 50 L42 52 L36 52 Z" fill={darken(color, 0.16)} stroke={dark} strokeWidth="0.6" />
-      <path d="M48 46 L52 42 L58 42 L62 46 L58 48 L52 48 Z" fill={darken(color, 0.16)} stroke={dark} strokeWidth="0.6" />
-      <path d="M64 46 L68 42 L74 42 L78 46 L74 48 L68 48 Z" fill={darken(color, 0.16)} stroke={dark} strokeWidth="0.6" />
-      <path d="M40 56 L44 52 L50 52 L54 56 L50 58 L44 58 Z" fill={darken(color, 0.14)} stroke={dark} strokeWidth="0.5" />
-      <path d="M56 54 L60 50 L66 50 L70 54 L66 56 L60 56 Z" fill={darken(color, 0.14)} stroke={dark} strokeWidth="0.5" />
-      {/* Side spikes */}
-      <path d="M22 60 L12 52 L22 56" fill={dark} />
-      <path d="M24 66 L14 62 L24 62" fill={dark} />
-      <path d="M86 60 L96 52 L86 56" fill={dark} />
-      <path d="M84 66 L94 62 L84 62" fill={dark} />
+    <svg width={size} height={size} viewBox="-5 0 120 120" fill="none">
+      {/* Tail — thick, held out for balance */}
+      <path d="M24 62 Q12 56 4 50 Q2 46 6 46" stroke={color} strokeWidth="8" fill="none" strokeLinecap="round" />
+
+      {/* Body — slightly forward-leaning */}
+      <ellipse cx="44" cy="56" rx="22" ry="20" fill={color} transform="rotate(10 44 56)" />
       {/* Belly */}
-      <ellipse cx="54" cy="76" rx="26" ry="8" fill={belly} />
-      {/* Head — wide, flat, dinosaur-like */}
-      <path d="M82 52 L108 56 L108 64 L82 68 Q78 60 82 52" fill={color} />
-      <path d="M84 52 Q94 48 106 54" fill={armor} stroke={dark} strokeWidth="1" />
-      <path d="M104 52 L112 46 L106 54" fill={dark} />
-      <path d="M104 68 L112 74 L106 66" fill={dark} />
-      <path d="M106 56 L114 58 L114 62 L106 64" fill={darken(color, 0.2)} />
-      <circle cx="96" cy="56" r="4" fill="white" />
-      <circle cx="97" cy="55" r="2.5" fill={DARK} />
-      <circle cx="98" cy="54" r="1" fill="white" />
-      <circle cx="102" cy="62" r="2.5" fill={lighten(color, 0.35)} opacity="0.4" />
-      <path d="M106 66 Q110 68 112 66" stroke={dark} strokeWidth="1.2" fill="none" strokeLinecap="round" />
+      <ellipse cx="48" cy="64" rx="14" ry="12" fill={belly} transform="rotate(10 48 64)" />
+
+      {/* Tiny arms */}
+      <path d="M60 50 Q66 54 72 52" stroke={color} strokeWidth="3.5" fill="none" strokeLinecap="round" />
+      <path d="M72 52 L74 52" stroke={dark} strokeWidth="2" fill="none" strokeLinecap="round" />
+      <path d="M72 52 L74 56" stroke={dark} strokeWidth="2" fill="none" strokeLinecap="round" />
+      <path d="M60 56 Q66 60 72 58" stroke={color} strokeWidth="3.5" fill="none" strokeLinecap="round" />
+      <path d="M72 58 L74 58" stroke={dark} strokeWidth="2" fill="none" strokeLinecap="round" />
+      <path d="M72 58 L74 62" stroke={dark} strokeWidth="2" fill="none" strokeLinecap="round" />
+
+      {/* Neck */}
+      <path d="M58 46 Q66 36 70 30" stroke={color} strokeWidth="10" fill="none" strokeLinecap="round" />
+
+      {/* Head — oval base */}
+      <ellipse cx="78" cy="26" rx="16" ry="12" fill={color} transform="rotate(-5 78 26)" />
+
+      {/* ══ THE DOME — thick rounded top ══ */}
+      <path d="M64 20 Q70 4 80 2 Q90 4 94 20" fill={bone} stroke={darken(color, 0.1)} strokeWidth="1.5" />
+      {/* Dome inner shading */}
+      <path d="M68 18 Q74 6 80 4 Q86 6 90 18" fill={lighten(color, 0.65)} opacity="0.5" />
+
+      {/* Bony bumps around dome edge */}
+      <circle cx="64" cy="22" r="2.8" fill={bone} stroke={dark} strokeWidth="0.8" />
+      <circle cx="67" cy="18" r="2.2" fill={bone} stroke={dark} strokeWidth="0.7" />
+      <circle cx="93" cy="22" r="2.8" fill={bone} stroke={dark} strokeWidth="0.8" />
+      <circle cx="90" cy="18" r="2.2" fill={bone} stroke={dark} strokeWidth="0.7" />
+      {/* Small bumps on snout */}
+      <circle cx="92" cy="28" r="1.8" fill={bone} stroke={dark} strokeWidth="0.6" />
+      <circle cx="94" cy="32" r="1.5" fill={bone} stroke={dark} strokeWidth="0.6" />
+
+      {/* Eye */}
+      <circle cx="80" cy="28" r="5" fill="white" />
+      <circle cx="81.5" cy="27" r="3.2" fill={DARK} />
+      <circle cx="83" cy="25.5" r="1.3" fill="white" />
+
+      {/* Cheek */}
+      <circle cx="76" cy="34" r="3" fill={lighten(color, 0.4)} opacity="0.4" />
+
+      {/* Mouth — slight smile */}
+      <path d="M88 32 Q92 36 96 33" stroke={dark} strokeWidth="1.3" fill="none" strokeLinecap="round" />
+
+      {/* Nostril */}
+      <circle cx="94" cy="26" r="1.5" fill={dark} opacity="0.4" />
+
+      {/* Left leg */}
+      <path d="M36 72 L32 84" stroke={color} strokeWidth="8" fill="none" strokeLinecap="round" />
+      <path d="M32 84 L38 96" stroke={darken(color, 0.05)} strokeWidth="6" fill="none" strokeLinecap="round" />
+      <path d="M38 96 L36 102" stroke={darken(color, 0.08)} strokeWidth="4" fill="none" strokeLinecap="round" />
+      {/* Left toes */}
+      <path d="M32 104 L36 102 L40 104" stroke={dark} strokeWidth="2.5" fill="none" strokeLinecap="round" />
+      <ellipse cx="32" cy="104.5" rx="2" ry="1.5" fill={claw} />
+      <ellipse cx="36" cy="105" rx="2" ry="1.5" fill={claw} />
+      <ellipse cx="40" cy="104.5" rx="2" ry="1.5" fill={claw} />
+
+      {/* Right leg */}
+      <path d="M50 70 L48 82" stroke={color} strokeWidth="8" fill="none" strokeLinecap="round" />
+      <path d="M48 82 L54 94" stroke={darken(color, 0.05)} strokeWidth="6" fill="none" strokeLinecap="round" />
+      <path d="M54 94 L52 100" stroke={darken(color, 0.08)} strokeWidth="4" fill="none" strokeLinecap="round" />
+      {/* Right toes */}
+      <path d="M48 102 L52 100 L56 102" stroke={dark} strokeWidth="2.5" fill="none" strokeLinecap="round" />
+      <ellipse cx="48" cy="102.5" rx="2" ry="1.5" fill={claw} />
+      <ellipse cx="52" cy="103" rx="2" ry="1.5" fill={claw} />
+      <ellipse cx="56" cy="102.5" rx="2" ry="1.5" fill={claw} />
     </svg>
   );
 }
 
 // ═══ Species list — order matches DINO_COLORS index ═══
-const DINO_COMPONENTS = [TRex, Plesiosaur, Pterodactyl, Triceratops, Stegosaurus, Velociraptor, Ankylosaurus];
+const DINO_COMPONENTS = [TRex, Plesiosaur, Pterodactyl, Triceratops, Stegosaurus, Velociraptor, Pachycephalosaurus];
 
 // ═══ EXPORTED COMPONENT ═══
 // API: <CuteDino color="#2ECC71" size={100} name="Rex" delay={0.2} index={0} />
@@ -407,7 +435,7 @@ const DINO_COMPONENTS = [TRex, Plesiosaur, Pterodactyl, Triceratops, Stegosaurus
 //   - size: pixel size
 //   - name: optional label below
 //   - delay: animation delay in seconds
-//   - index: which species (0=TRex, 1=Plesiosaur, 2=Pterodactyl, 3=Triceratops, 4=Stegosaurus, 5=Velociraptor, 6=Ankylosaurus)
+//   - index: which species (0=TRex, 1=Plesiosaur, 2=Pterodactyl, 3=Triceratops, 4=Stegosaurus, 5=Velociraptor, 6=Pachycephalosaurus)
 export default function CuteDino({ color = "#E8734A", size = 100, name = "", delay = 0, index = 0 }) {
   const DinoComponent = DINO_COMPONENTS[index] || TRex;
   return (
