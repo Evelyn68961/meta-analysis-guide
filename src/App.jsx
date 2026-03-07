@@ -3,6 +3,7 @@ import { useI18n } from "./i18n";
 import Course0 from "./Course0";
 import Course1 from "./Course1";
 import Course2 from "./Course2";
+import Course3 from "./Course3";
 import DinoIntro from "./DinoIntro";
 
 const TEAL = "#0E7C86";
@@ -56,7 +57,7 @@ function CourseHub({ onNavigate }) {
       color: "#D4A843",
       emoji: "📋",
       gameKey: "hubC3Game",
-      status: "coming",
+      status: "available",
     },
     {
       id: "course4",
@@ -246,6 +247,8 @@ export default function App() {
       return <Course1 onNavigate={navigate} />;
     case "course2":
       return <Course2 onNavigate={navigate} />;
+    case "course3":
+      return <Course3 onNavigate={navigate} />;
     case "dino":
       return <DinoIntro />;
     default:
