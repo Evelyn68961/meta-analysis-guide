@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useI18n } from "./i18n";
-import CuteDino from "./CuteDino";
+import DinoFoodRescue from "./DinoFoodRescue";
 
 // ═══ DESIGN TOKENS (matching existing site) ═══
 const TEAL = "#0E7C86";
@@ -11,7 +11,6 @@ const LIGHT_BG = "#F8F7F4";
 const CARD_BG = "#FFFFFF";
 const MUTED = "#6B7A8D";
 const LIGHT_BORDER = "#E8E6E1";
-const DINO_COLORS = ["#2ECC71", "#3498DB", "#F1C40F", "#E74C3C", "#9B59B6", "#E67E22", "#95A5A6"];
 
 // ═══ REUSABLE COMPONENTS ═══
 function FadeIn({ children, delay = 0, style = {} }) {
@@ -290,167 +289,7 @@ function PrismaFlowDiagram({ t, lang }) {
   );
 }
 
-// ═══ SEARCH STRATEGY BUILDER GAME ═══
-function SearchStrategyGame({ t, lang }) {
-  const [phase, setPhase] = useState("welcome"); // welcome | playing | results
-  const [questions, setQuestions] = useState([]);
-  const [current, setCurrent] = useState(0);
-  const [selected, setSelected] = useState(null);
-  const [answered, setAnswered] = useState(false);
-  const [correctCount, setCorrectCount] = useState(0);
-  const [chosenDino, setChosenDino] = useState(null);
 
-  const allQuestions = [
-    { q: t("c2gq1"), opts: [t("c2gq1a"), t("c2gq1b"), t("c2gq1c"), t("c2gq1d")], correct: t("c2gq1correct"), exp: t("c2gq1exp") },
-    { q: t("c2gq2"), opts: [t("c2gq2a"), t("c2gq2b"), t("c2gq2c"), t("c2gq2d")], correct: t("c2gq2correct"), exp: t("c2gq2exp") },
-    { q: t("c2gq3"), opts: [t("c2gq3a"), t("c2gq3b"), t("c2gq3c"), t("c2gq3d")], correct: t("c2gq3correct"), exp: t("c2gq3exp") },
-    { q: t("c2gq4"), opts: [t("c2gq4a"), t("c2gq4b"), t("c2gq4c"), t("c2gq4d")], correct: t("c2gq4correct"), exp: t("c2gq4exp") },
-    { q: t("c2gq5"), opts: [t("c2gq5a"), t("c2gq5b"), t("c2gq5c"), t("c2gq5d")], correct: t("c2gq5correct"), exp: t("c2gq5exp") },
-    { q: t("c2gq6"), opts: [t("c2gq6a"), t("c2gq6b"), t("c2gq6c"), t("c2gq6d")], correct: t("c2gq6correct"), exp: t("c2gq6exp") },
-    { q: t("c2gq7"), opts: [t("c2gq7a"), t("c2gq7b"), t("c2gq7c"), t("c2gq7d")], correct: t("c2gq7correct"), exp: t("c2gq7exp") },
-  ];
-
-  const startGame = (dinoIdx) => {
-    setChosenDino(dinoIdx);
-    const shuffled = [...allQuestions].sort(() => Math.random() - 0.5);
-    setQuestions(shuffled);
-    setCurrent(0); setSelected(null); setAnswered(false);
-    setCorrectCount(0);
-    setPhase("playing");
-  };
-
-  const handleSelect = (idx) => {
-    if (answered) return;
-    setSelected(idx);
-    setAnswered(true);
-    if (idx === questions[current].correct) {
-      setCorrectCount(c => c + 1);
-    }
-  };
-
-  const nextQuestion = () => {
-    if (current < questions.length - 1) {
-      setCurrent(c => c + 1);
-      setSelected(null);
-      setAnswered(false);
-    } else {
-      setPhase("results");
-    }
-  };
-
-  const reset = () => {
-    setPhase("welcome");
-    setChosenDino(null);
-    setQuestions([]);
-    setCurrent(0); setSelected(null); setAnswered(false);
-    setCorrectCount(0);
-  };
-
-  const dinoColor = chosenDino !== null ? DINO_COLORS[chosenDino] : PURPLE;
-
-  // Welcome
-  if (phase === "welcome") {
-    return (
-      <div style={{ background: CARD_BG, borderRadius: 20, border: `1px solid ${LIGHT_BORDER}`, padding: "48px 32px", textAlign: "center", boxShadow: "0 2px 20px rgba(0,0,0,0.04)" }}>
-        <h3 style={{ fontSize: 26, fontWeight: 700, color: DARK, marginBottom: 10 }}>{t("c2gameTitle")}</h3>
-        <p style={{ fontSize: 15, color: MUTED, marginBottom: 12, maxWidth: 460, margin: "0 auto 12px" }}>{t("c2gameDesc")}</p>
-        <p style={{ fontSize: 14, color: PURPLE, fontWeight: 600, marginBottom: 28 }}>{t("c2gamePickDino")}</p>
-        <div style={{ display: "flex", justifyContent: "center", gap: 14, flexWrap: "wrap" }}>
-          {DINO_COLORS.map((c, i) => (
-            <div key={i} onClick={() => startGame(i)} style={{ cursor: "pointer", textAlign: "center", transition: "transform 0.2s" }}
-              onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-6px)"}
-              onMouseLeave={(e) => e.currentTarget.style.transform = "translateY(0)"}>
-              <CuteDino color={c} size={60} index={i} />
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  // Results
-  if (phase === "results") {
-    const score = correctCount;
-    const total = questions.length;
-    const tier = score >= 6 ? "master" : score >= 4 ? "good" : "learning";
-    return (
-      <div style={{ background: CARD_BG, borderRadius: 20, border: `1px solid ${LIGHT_BORDER}`, padding: "48px 28px", textAlign: "center", boxShadow: "0 2px 20px rgba(0,0,0,0.04)" }}>
-        <div style={{ fontSize: 48, marginBottom: 12 }}>{tier === "master" ? "🏆" : tier === "good" ? "👍" : "📚"}</div>
-        <h3 style={{ fontSize: 26, fontWeight: 700, color: DARK, marginBottom: 8 }}>
-          {tier === "master" ? t("c2gameMaster") : tier === "good" ? t("c2gameGood") : t("c2gameLearning")}
-        </h3>
-        <p style={{ fontSize: 17, color: PURPLE, fontWeight: 600, marginBottom: 24 }}>{t("c2gameScore", score, total)}</p>
-        <div style={{ marginBottom: 32 }}>
-          <CuteDino color={dinoColor} size={tier === "master" ? 140 : 100} index={chosenDino} />
-        </div>
-        <div style={{ display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
-          <button onClick={reset} style={btnPrimary}>{t("c2gamePlayAgain")}</button>
-        </div>
-      </div>
-    );
-  }
-
-  // Playing
-  const q = questions[current];
-  const isCorrect = selected !== null && selected === q.correct;
-
-  return (
-    <div style={{ background: CARD_BG, borderRadius: 20, border: `1px solid ${LIGHT_BORDER}`, padding: "32px 24px", boxShadow: "0 2px 20px rgba(0,0,0,0.04)" }}>
-      {/* Status */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <span style={{ fontSize: 13, color: MUTED, fontWeight: 500 }}>{t("c2gameQ", current + 1, questions.length)}</span>
-        <div style={{ display: "flex", gap: 4 }}>
-          {questions.map((_, i) => (
-            <div key={i} style={{ width: 24, height: 5, borderRadius: 3, background: i < current ? (correctCount > i ? "#3DA87A" : CORAL) : i === current ? PURPLE : LIGHT_BORDER, transition: "all 0.3s" }} />
-          ))}
-        </div>
-      </div>
-
-      {/* Dino */}
-      <div style={{ textAlign: "center", marginBottom: 20 }}>
-        <CuteDino color={dinoColor} size={70} index={chosenDino} />
-      </div>
-
-      {/* Question */}
-      <h3 style={{ fontSize: 17, fontWeight: 600, color: DARK, marginBottom: 18, lineHeight: 1.5 }}>{q.q}</h3>
-
-      {/* Options */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 18 }}>
-        {q.opts.map((opt, idx) => {
-          let bg = "#FAFAF7", border = LIGHT_BORDER, col = DARK, fw = 400;
-          if (answered) {
-            if (idx === q.correct) { bg = "#E6F5F0"; border = "#3DA87A"; col = "#2A7A5A"; fw = 600; }
-            else if (idx === selected && idx !== q.correct) { bg = "#FDEEEB"; border = "#D94B2E"; col = "#B83A20"; }
-          }
-          return (
-            <button key={idx} onClick={() => handleSelect(idx)} style={{ background: bg, border: `1.5px solid ${border}`, borderRadius: 12, padding: "12px 16px", textAlign: "left", fontSize: 14, color: col, cursor: answered ? "default" : "pointer", transition: "all 0.2s", fontWeight: fw, lineHeight: 1.5 }}>
-              <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 24, height: 24, borderRadius: "50%", border: `1.5px solid ${border}`, fontSize: 12, fontWeight: 600, marginRight: 10, background: answered && idx === q.correct ? "#3DA87A" : "transparent", color: answered && idx === q.correct ? "#FFF" : col }}>{String.fromCharCode(65 + idx)}</span>
-              {opt}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Feedback */}
-      {answered && (
-        <div style={{ background: isCorrect ? "#E6F5F0" : "#FDEEEB", borderRadius: 12, padding: "14px 18px", marginBottom: 16, fontSize: 13.5, lineHeight: 1.65, color: MUTED, border: `1px solid ${isCorrect ? "#3DA87A33" : "#D94B2E33"}` }}>
-          <strong style={{ color: isCorrect ? "#2A7A5A" : "#B83A20" }}>
-            {isCorrect ? (lang === "zh" ? "✅ 正確！" : "✅ Correct!") : (lang === "zh" ? "❌ 不太對" : "❌ Not quite")}
-          </strong>{" "}{q.exp}
-        </div>
-      )}
-
-      {/* Next */}
-      {answered && (
-        <div style={{ textAlign: "right" }}>
-          <button onClick={nextQuestion} style={btnPrimary}>
-            {current < questions.length - 1 ? t("c2gameNext") : t("c2gameResults")}
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
 
 // ═══ AI SEARCH STRATEGY WORKSHOP ═══
 function AISearchWorkshop({ t, lang }) {
@@ -699,7 +538,7 @@ export default function Course2({ onNavigate }) {
       <section id="game" style={{ padding: "80px 24px", background: LIGHT_BG }}>
         <div style={{ maxWidth: 640, margin: "0 auto" }}>
           <FadeIn><SectionLabel text={t("c2gameLabel")} /></FadeIn>
-          <FadeIn delay={0.1}><SearchStrategyGame t={t} lang={lang} /></FadeIn>
+          <FadeIn delay={0.1}><DinoFoodRescue t={t} lang={lang} /></FadeIn>
         </div>
       </section>
 
