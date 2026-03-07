@@ -11,8 +11,8 @@ import { useState } from "react";
 import CuteDino from "./CuteDino";
 
 const COLORS = ["#2ECC71", "#3498DB", "#F1C40F", "#E74C3C", "#9B59B6", "#E67E22", "#95A5A6"];
-const NAMES = ["Rex", "Nessie", "Pterry", "Spike", "Stego", "Zippy", "Tank"];
-const SPECIES = ["T-Rex", "Plesiosaur", "Pterodactyl", "Triceratops", "Stegosaurus", "Velociraptor", "Ankylosaurus"];
+const NAMES = ["Rex", "Azure", "Zephyr", "Blaze", "Thistle", "Velo", "Dome"];
+const SPECIES = ["T-Rex", "Plesiosaur", "Pterodactyl", "Triceratops", "Stegosaurus", "Velociraptor", "Pachycephalosaurus"];
 
 export default function DinoIntro() {
   const [size, setSize] = useState(150);

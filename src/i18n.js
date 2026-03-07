@@ -618,7 +618,7 @@ const translations = {
     c1q7: "以下關於 PICO 各元素的描述，哪個是正確的？",
     c1q7a: "P 只需要寫疾病名稱就夠了", c1q7b: "I 和 C 可以是同一種藥物的不同劑量", c1q7c: "O 不需要指定量測的時間點", c1q7d: "C 不是必要的，可以省略",
     c1q7correct: 1, c1q7exp: "I 和 C 確實可以是同一種藥物的不同劑量（如高劑量 vs 低劑量比較）。P 需要更多細節（年齡、嚴重度等），O 應指定時間點，而 C 是因果推論的核心不可省略。",
-    c1dinoNames: ["小焰龍", "蒼藍龍", "金耀龍", "赤焰龍", "紫晶龍", "琥珀龍", "銀霧龍"],
+    c1dinoNames: ["翠牙龍", "蒼瀾龍", "金翼龍", "焰角龍", "紫棘龍", "珀爪龍", "鐵穹龍"],
 
     // AI PICO Workshop
     c1aiLabel: "AI 練習工坊",
@@ -1378,7 +1378,7 @@ const translations = {
     c1q7: "Which statement about PICO elements is correct?",
     c1q7a: "P only needs the disease name", c1q7b: "I and C can be different doses of the same drug", c1q7c: "O doesn't need a timepoint", c1q7d: "C is optional",
     c1q7correct: 1, c1q7exp: "I and C can indeed be different doses (e.g., high-dose vs low-dose). P needs more detail, O should specify timepoints, and C is essential.",
-    c1dinoNames: ["Ember", "Azure", "Goldie", "Blaze", "Amethyst", "Amber", "Misty"],
+    c1dinoNames: ["Rex", "Azure", "Zephyr", "Blaze", "Thistle", "Velo", "Dome"],
 
     // AI PICO Workshop
     c1aiLabel: "AI Workshop",
