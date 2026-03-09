@@ -5,6 +5,8 @@ import Course0 from "./Course0";
 import Course1 from "./Course1";
 import Course2 from "./Course2";
 import Course3 from "./Course3";
+import Course4 from "./Course4";
+import Course5 from "./Course5";
 import DinoIntro from "./DinoIntro";
 
 const TEAL = "#0E7C86";
@@ -65,20 +67,20 @@ function CourseHub({ onNavigate, user, onLogin, onLogout }) {
       number: "4",
       titleKey: "hubC4Title",
       descKey: "hubC4Desc",
-      color: "#5B9E5F",
+      color: "#2E86C1",
       emoji: "📊",
       gameKey: "hubC4Game",
-      status: "coming",
+      status: "available",
     },
     {
       id: "course5",
       number: "5",
       titleKey: "hubC5Title",
       descKey: "hubC5Desc",
-      color: "#C45B8A",
+      color: "#C0392B",
       emoji: "🔬",
       gameKey: "hubC5Game",
-      status: "coming",
+      status: "available",
     },
   ];
 
@@ -288,6 +290,10 @@ export default function App() {
       return <Course2 onNavigate={navigate} />;
     case "course3":
       return <Course3 onNavigate={navigate} />;
+    case "course4":
+      return <Course4 onNavigate={navigate} />;
+    case "course5":
+      return <Course5 onNavigate={navigate} />;
     case "dino":
       return <DinoIntro />;
     default:

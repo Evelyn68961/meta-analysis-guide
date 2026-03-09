@@ -652,8 +652,10 @@ export default function Course3({ onNavigate }) {
               onMouseLeave={(e) => { e.target.style.borderColor = LIGHT_BORDER; e.target.style.color = MUTED; }}>
               {lang === "zh" ? "課程總覽" : "Course Hub"}
             </button>
-            <button style={{ background: GOLD, border: "none", color: "#FFF", padding: "10px 22px", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "default", opacity: 0.5 }}>
-              {lang === "zh" ? "Course 4：即將推出" : "Course 4: Coming Soon"}
+            <button onClick={() => onNavigate("course4")} style={{ background: GOLD, border: "none", color: "#FFF", padding: "10px 22px", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.2s" }}
+              onMouseEnter={(e) => { e.target.style.boxShadow = `0 4px 16px ${GOLD}44`; }}
+              onMouseLeave={(e) => { e.target.style.boxShadow = "none"; }}>
+              {lang === "zh" ? "Course 4：效應量與森林圖 →" : "Course 4: Effect Sizes →"}
             </button>
           </div>
         )}
