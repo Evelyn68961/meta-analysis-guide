@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { supabase } from "./supabaseClient";
 import { useI18n } from "./i18n";
 import Course0 from "./Course0";
 import Course1 from "./Course1";
@@ -15,7 +16,7 @@ const MUTED = "#6B7A8D";
 const LIGHT_BORDER = "#E8E6E1";
 
 // ═══ COURSE HUB ═══
-function CourseHub({ onNavigate }) {
+function CourseHub({ onNavigate, user, onLogin, onLogout }) {
   const { t, lang, toggleLang } = useI18n();
 
   const courses = [
@@ -95,11 +96,26 @@ function CourseHub({ onNavigate }) {
         <div style={{ fontFamily: "'Noto Sans TC', 'Source Serif 4', serif", fontSize: 17, fontWeight: 700, color: TEAL, letterSpacing: -0.3 }}>
           {t("hubNavTitle")} <span style={{ fontWeight: 400, color: MUTED }}>{t("hubNavSuffix")}</span>
         </div>
-        <button onClick={toggleLang} style={{ background: `${TEAL}0D`, border: `1px solid ${TEAL}22`, color: TEAL, padding: "5px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer", letterSpacing: 0.5, transition: "all 0.2s" }}
-          onMouseEnter={(e) => { e.target.style.background = TEAL; e.target.style.color = "#FFF"; }}
-          onMouseLeave={(e) => { e.target.style.background = `${TEAL}0D`; e.target.style.color = TEAL; }}>
-          {t("langSwitch")}
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          {user ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <img src={user.user_metadata?.avatar_url || user.user_metadata?.picture} alt="" style={{ width: 28, height: 28, borderRadius: "50%" }} />
+              <span style={{ fontSize: 13, color: DARK, fontWeight: 500 }}>{user.user_metadata?.full_name || user.user_metadata?.name || "User"}</span>
+              <button onClick={onLogout} style={{ background: "none", border: `1px solid ${LIGHT_BORDER}`, color: MUTED, padding: "4px 10px", borderRadius: 6, fontSize: 11, cursor: "pointer" }}>
+                {lang === "zh" ? "登出" : "Logout"}
+              </button>
+            </div>
+          ) : (
+            <button onClick={onLogin} style={{ background: TEAL, border: "none", color: "#FFF", padding: "6px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ fontSize: 14 }}>G</span> {lang === "zh" ? "登入以儲存進度" : "Sign in to save progress"}
+            </button>
+          )}
+          <button onClick={toggleLang} style={{ background: `${TEAL}0D`, border: `1px solid ${TEAL}22`, color: TEAL, padding: "5px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer", letterSpacing: 0.5, transition: "all 0.2s" }}
+            onMouseEnter={(e) => { e.target.style.background = TEAL; e.target.style.color = "#FFF"; }}
+            onMouseLeave={(e) => { e.target.style.background = `${TEAL}0D`; e.target.style.color = TEAL; }}>
+            {t("langSwitch")}
+          </button>
+        </div>
       </nav>
 
       {/* HERO */}
@@ -224,6 +240,7 @@ export default function App() {
     const hash = window.location.hash.replace("#", "");
     return hash || "hub";
   });
+  const [user, setUser] = useState(null);
 
   const navigate = (page) => {
     setCurrentPage(page);
@@ -240,6 +257,28 @@ export default function App() {
     return () => window.removeEventListener("hashchange", onHashChange);
   }, []);
 
+  // Listen for auth state changes
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogin = async () => {
+    await supabase.auth.signInWithOAuth({ provider: "google" });
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+  };
+
   switch (currentPage) {
     case "course0":
       return <Course0 onNavigate={navigate} />;
@@ -252,6 +291,6 @@ export default function App() {
     case "dino":
       return <DinoIntro />;
     default:
-      return <CourseHub onNavigate={navigate} />;
+      return <CourseHub onNavigate={navigate} user={user} onLogin={handleLogin} onLogout={handleLogout} />;
   }
 }
