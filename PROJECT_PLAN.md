@@ -28,6 +28,8 @@ An interactive bilingual (ZH/EN) educational website teaching meta-analysis from
 ```
 src/
 ├── App.jsx              ← Router + Course Hub page (hash routing: #hub, #course0, #course1, #course2, #course3, #dino)
+│                           NOW INCLUDES: Supabase auth state, Google login/logout, user prop passed to CourseHub
+├── supabaseClient.js    ← [NEW] Supabase client initialization (imports URL + anon key from .env)
 ├── Course0.jsx          ← Course 0 (original site, accepts onNavigate prop)
 ├── Course1.jsx          ← Course 1: PICO (teaching sections + AI workshop; game extracted)
 ├── Course2.jsx          ← Course 2: Literature Search & PRISMA (teaching sections + AI workshop; game extracted)
@@ -40,6 +42,10 @@ src/
 ├── questionBank.js      ← Centralized bilingual question bank for all course games (210 Qs: 70 C1 + 70 C2 + 70 C3)
 ├── i18n.js              ← All translations (Course 0 + Hub + Course 1 + Course 2 + Course 3); game questions moved to questionBank.js
 └── index.js             ← Entry point (wraps App in I18nProvider)
+
+Root files:
+├── .env                 ← [NEW] REACT_APP_SUPABASE_URL + REACT_APP_SUPABASE_ANON_KEY (NOT in Git)
+└── .gitignore           ← Already includes .env
 ```
 
 ---
@@ -253,3 +259,11 @@ src/
   3. Returns AI feedback to frontend
 - Affects: Course 1 AI Workshop, Course 2 AI Workshop
 - Note: Course 3 does not have an AI workshop section (teaching content is self-contained with interactive demos)
+
+### Backend Status (Supabase Integration):
+- See `BACKEND_UPGRADE_PLAN.md` for full details
+- **Supabase project:** `meta-analysis-101` at `https://souaycpzgabrxdwvqpmq.supabase.co`
+- **Auth:** Google OAuth configured and working (login/logout tested locally)
+- **Database:** `profiles` and `progress` tables created with RLS policies + auto-profile trigger
+- **Frontend wiring:** `supabaseClient.js` created, `App.jsx` updated with auth state + login UI in CourseHub nav bar
+- **Next:** Wire progress saving into game components (Phase 3), then build Progress Dashboard (Phase 4)
