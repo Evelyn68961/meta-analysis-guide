@@ -4,24 +4,25 @@
 An interactive bilingual (ZH/EN) educational website teaching meta-analysis from beginner to advanced. Built with React, using a shared i18n system and hash-based routing between courses. Each course ends with a unique mini-game (2-3 min) to reinforce learning.
 
 ## Teaching Schedule
-- **Hour 1:** Courses 0–3 (Planning & Preparation) → **Midterm Checkpoint** (must have ≥3 dinos alive to proceed)
-- **Hour 2:** Courses 4–5 (Analysis & Interpretation) → **Final Exam** (comprehensive knowledge check)
+- **Precourse:** Course 0 (Introduction to Meta-Analysis)
+- **Foundations:** Courses 1–3 (PICO, Search, Data Extraction) → **Midterm** (checkpoint assessment)
+- **Advanced Courses:** Courses 4–5 (Analysis & Interpretation) → **Final Exam** (comprehensive knowledge check)
 - Games are kept short (2-3 min each) for live classroom use
 
 ---
 
 ## Course Structure
 
-| Course | Topic | Game | Status |
-|--------|-------|------|--------|
-| 0 | What is Meta-Analysis? | Dino Egg Hunt (7 eggs, 7 categories, 35-question bank, cheat sheet rewards) | ✅ Live on `main` |
-| 1 | PICO/PICOS Research Question | Dino Egg Hatch (pick 1 of 7 eggs, 7 Qs from 70-question bank, 5 correct = hatch, 3 wrong = freeze, sun/frost particles) | ✅ Built on `dev` |
-| 2 | Literature Search & PRISMA | Dino Food Rescue (pick 1 of 7 dinos, 7 Qs from 70-question bank, crack ice with pickaxe, second chance on wrong, species-matched food) | ✅ Built on `dev` |
-| 3 | Data Extraction & Risk of Bias | Dino Home Save (pick 1 of 7 dinos, 7 Qs from 70-question bank, 10s timer, correct = fire grows, wrong/timeout = fire dims, 5 correct = win, 3 wrong = lose) | ✅ Built on `dev` |
-| **—** | **Midterm Checkpoint** | **Gate: ≥3 dinos alive required to unlock Hour 2** | ❌ Not started |
-| 4 | Effect Sizes & Forest Plots | TBD (70-question bank ready) | ✅ Teaching built on `dev` (game TBD) |
-| 5 | Heterogeneity & Publication Bias | TBD (70-question bank ready) | ✅ Teaching built on `dev` (game TBD) |
-| **—** | **Final Exam** | **Comprehensive knowledge check across all courses** | ❌ Not started |
+| Section | Course | Topic | Game | Status |
+|---------|--------|-------|------|--------|
+| **Precourse** | 0 | What is Meta-Analysis? | Dino Egg Hunt (7 eggs, 7 categories, 35-question bank, cheat sheet rewards) | ✅ Live on `main` |
+| **Foundations** | 1 | PICO/PICOS Research Question | Dino Egg Hatch (pick 1 of 7 eggs, 7 Qs from 70-question bank, 5 correct = hatch, 3 wrong = freeze, sun/frost particles) | ✅ Built on `dev` |
+| | 2 | Literature Search & PRISMA | Dino Food Rescue (pick 1 of 7 dinos, 7 Qs from 70-question bank, crack ice with pickaxe, second chance on wrong, species-matched food) | ✅ Built on `dev` |
+| | 3 | Data Extraction & Risk of Bias | Dino Home Save (pick 1 of 7 dinos, 7 Qs from 70-question bank, 10s timer, correct = fire grows, wrong/timeout = fire dims, 5 correct = win, 3 wrong = lose) | ✅ Built on `dev` |
+| | **—** | **Midterm** | **Clickable checkpoint card in hub; assessment page TBD** | ❌ Not started |
+| **Advanced** | 4 | Effect Sizes & Forest Plots | TBD (70-question bank ready) | ✅ Teaching built on `dev` (game TBD) |
+| | 5 | Heterogeneity & Publication Bias | TBD (70-question bank ready) | ✅ Teaching built on `dev` (game TBD) |
+| | **—** | **Final Exam** | **Clickable checkpoint card in hub; 3-stage assessment TBD** | ❌ Not started |
 
 ---
 
@@ -29,11 +30,16 @@ An interactive bilingual (ZH/EN) educational website teaching meta-analysis from
 
 ```
 src/
-├── App.jsx              ← Router + Course Hub page (hash routing: #hub, #course0–#course5, #dino)
-│                           NOW INCLUDES: Supabase auth state, Google login/logout, user prop passed to CourseHub
+├── App.jsx              ← Router + Course Hub page (hash routing: #hub, #course0–#course5, #about, #profile, #dino, #midterm, #final)
+│                           Hub layout: Precourse (C0) → Foundations (C1-C3) + Midterm card → Advanced (C4-C5) + Final card
+│                           CourseCard component (course cards) + CheckpointCard component (Midterm/Final clickable cards)
+│                           Supabase auth state, Google login/logout, user props passed to all courses + pages
+├── SiteNav.jsx          ← Unified site-wide navbar (course dropdown, about, profile, login, lang toggle)
+├── AboutPage.jsx        ← About page with project info, audience, structure, sources
+├── ProfilePage.jsx      ← User progress dashboard (stats, dino collection, best scores)
 ├── supabaseClient.js    ← Supabase client initialization (imports URL + anon key from .env)
 │
-├── Course0.jsx          ← Course 0: What is Meta-Analysis? (teaching sections; game extracted to DinoEggHunt)
+├── Course0.jsx          ← Precourse: What is Meta-Analysis? (teaching sections; game extracted to DinoEggHunt)
 ├── Course1.jsx          ← Course 1: PICO (teaching sections + AI workshop; game extracted to DinoEggHatch)
 ├── Course2.jsx          ← Course 2: Literature Search & PRISMA (teaching sections + AI workshop; game extracted to DinoFoodRescue)
 ├── Course3.jsx          ← Course 3: Data Extraction & RoB (6 teaching sections; game extracted to DinoHomeSave)
@@ -55,7 +61,7 @@ src/
 ├── course4Questions.js  ← Course 4 question bank (70 Qs: 10 per category × 7 categories)
 ├── course5Questions.js  ← Course 5 question bank (70 Qs: 10 per category × 7 categories)
 │
-├── i18n.js              ← All translations (Course 0–5 + Hub); UI strings only — game questions in separate files
+├── i18n.js              ← All translations (Course 0–5 + Hub + Nav + About + Profile); UI strings only — game questions in separate files
 └── index.js             ← Entry point (wraps App in I18nProvider)
 
 Root files:
@@ -166,6 +172,7 @@ Root files:
 - Body: 'Noto Sans TC', 'Outfit', sans-serif
 
 ### Shared Components:
+- `SiteNav` — Unified site-wide navbar with course dropdown, about, profile, login, language toggle (lives in `SiteNav.jsx`)
 - `FadeIn` — Intersection observer scroll animation
 - `SectionLabel` — Uppercase colored label with line
 - `SectionTitle` — Responsive heading
@@ -175,18 +182,26 @@ Root files:
 - `StylishEgg` — SVG egg with variants: solid, ghost, dashed, cracked-correct, cracked-wrong (lives in `DinoEggHunt.jsx`, exported as named export)
 
 ### Navigation Pattern (all courses):
-- **Sticky sidebar catalog** — Fixed on left side (desktop ≥1100px only), shows numbered section list with active section highlighted. Uses course accent color (TEAL/CORAL/PURPLE/GOLD) for active indicator. Hides on mobile/tablet (<1100px).
+- **Unified site-wide navbar** (`SiteNav.jsx`) — Fixed, frosted glass. Present on every page (Hub, Courses 0–5, About, Profile). Contains:
+  - Site logo "統合分析 101" (clickable → Hub)
+  - Course selector dropdown (all 6 courses with emojis + active indicator)
+  - "About" link (→ `#about` page)
+  - User area: logged in = avatar (clickable → Profile) + name + logout; logged out = "Sign in" button
+  - Language toggle (EN/中)
+  - Inside courses: adds back arrow (← Hub) + course label badge with accent color + `/` separator
+  - Mobile (≤768px): hamburger menu with full course list, about, profile, hub link, login/logout, language toggle
+- **Sticky sidebar catalog** — Fixed on left side (desktop ≥1100px only), shows numbered section list with active section highlighted. Uses course accent color (TEAL/CORAL/PURPLE/GOLD/BLUE/CRIMSON) for active indicator. Hides on mobile/tablet (<1100px).
 - **Active section tracking** — IntersectionObserver watches all section IDs, updates `activeSection` state as user scrolls, highlights current item in sidebar.
 - **"Next →" buttons** — At the bottom of each teaching section, scrolls to next section. Last teaching section uses CORAL accent to signal game section.
-- **Top nav bar** — Fixed, frosted glass. Shows "← Hub" back button, course label, and language toggle.
-- **Footer navigation** — "← Back to Previous Course" + "Course Hub" + "Next Course →" buttons. Course 0 has no back button (first course). Course 5's "Next" is disabled (final course, shows "🎓 Course Complete!").
-- **Mobile** — Course 0 has hamburger menu; Courses 1–3 rely on "Next →" buttons for section navigation since sidebar is hidden.
+- **Footer navigation** — "← Back to Previous Course" + "Course Hub" + "Next Course →" buttons. Precourse (Course 0) has no back button (first course). Course 5's "Next" is disabled (final course, shows "🎓 Course Complete!").
+- **Mobile** — Navbar hamburger provides course navigation; sidebar hidden; "Next →" buttons for section navigation within courses.
 
 ### i18n Pattern:
 - All keys prefixed by course: `c1` for Course 1, `c2` for Course 2, `c3` for Course 3, `c4` for Course 4, `c5` for Course 5
 - Template literals like `` t(`c1trap${n}Title`) `` need the prefix inside the backtick
 - Function values (e.g., gameQ, gameScore) use `t("key", arg)` NOT `t("key")(arg)`
-- Hub keys use `hub` prefix
+- Hub keys use `hub` prefix: `hubPrecourse`, `hubPrecourseDesc`, `hubSection1`, `hubSection1Desc`, `hubSection2`, `hubSection2Desc`, `hubMidtermTitle`, `hubMidtermDesc`, `hubFinalTitle`, `hubFinalDesc`
+- Old `hubHour1`/`hubHour2` keys removed — replaced by section/checkpoint keys above
 - **Game questions are NOT in i18n.js** — they live in per-course question files (`course0Questions.js`, `course1Questions.js`, etc.) with bilingual text embedded per question object
 - **Cleaned up:** `eggQ_*` keys (Course 0 questions) and `c2gq*` keys (Course 2 game questions) removed from `i18n.js` — now in their respective question files
 
@@ -313,12 +328,13 @@ Root files:
 
 ---
 
-## Midterm Checkpoint (After Course 3)
+## Midterm (After Course 3)
 
 ### Concept:
-- **Gate between Hour 1 and Hour 2.** After completing Courses 0–3 (and their dino games), the user must have at least 3 dinos alive/healthy to unlock Course 4.
-- The "dinos alive" count is a cumulative tracker across the four Course 0–3 games. Each game can result in a dino surviving or not (depending on game outcome: hatch success, food rescued, home saved, etc.).
+- **Gate between Foundations and Advanced sections.** After completing Courses 1–3 (and their dino games), the user must have at least 3 dinos alive/healthy to unlock Course 4.
+- The "dinos alive" count is a cumulative tracker across the Course 1–3 games. Each game can result in a dino surviving or not (depending on game outcome: hatch success, food rescued, home saved, etc.).
 - This acts as a **midterm check** — ensuring the user has engaged with and understood the foundational material (PICO, search, PRISMA, data extraction, RoB) before moving to the quantitative/analysis courses.
+- **Hub integration:** Midterm appears as a clickable `CheckpointCard` (dashed border, tinted background) at the bottom of the Foundations section in the hub. Navigates to `#midterm`. Page not yet built.
 
 ### Design (TBD — not yet built):
 - **Trigger:** After Course 3 game ends, or when user tries to navigate to Course 4
@@ -336,9 +352,10 @@ Root files:
 ## Final Exam (After Course 5)
 
 ### Concept:
-- **Three-stage capstone assessment** after completing all 6 courses. Not a simple multiple-choice quiz — each stage tests a different skill level (apply → critique → create), mirroring Bloom's taxonomy.
+- **Three-stage capstone assessment** after completing all courses. Not a simple multiple-choice quiz — each stage tests a different skill level (apply → critique → create), mirroring Bloom's taxonomy.
 - Designed to feel like a real culmination, not a rehash of the mini-games.
 - All three stages must be passed to earn completion. Stages unlock sequentially.
+- **Hub integration:** Final Exam appears as a clickable `CheckpointCard` (dashed border, tinted background) at the bottom of the Advanced section in the hub. Navigates to `#final`. Page not yet built.
 
 ### Stage 1: Scenario Walk-Through (Apply)
 - **Format:** A complete meta-analysis scenario presented as a narrative case. The user makes decisions at each step of the workflow, walking through the full process they learned across Courses 0–5.
@@ -398,7 +415,7 @@ Root files:
 4. Create `courseNQuestions.js` with 70 bilingual questions (10 per category × 7 categories); import `pickBalanced` from `questionHelpers.js`
 5. Add translations to `i18n.js` with `cN` prefix (UI strings only — game questions stay in courseNQuestions.js)
 6. Add route in `App.jsx` switch statement
-7. Add course card in `App.jsx` CourseHub courses array
+7. Add course card in `App.jsx` — to `precourse`, `section1Courses`, or `section2Courses` as appropriate
 8. Update hub status from "coming" to "available"
 9. Update previous course's footer "Next Course" button from disabled/Coming Soon to active link
 
@@ -432,5 +449,8 @@ Root files:
 - **Supabase project:** `meta-analysis-101` at `https://souaycpzgabrxdwvqpmq.supabase.co`
 - **Auth:** Google OAuth configured and working (login/logout tested locally)
 - **Database:** `profiles` and `progress` tables created with RLS policies + auto-profile trigger
-- **Frontend wiring:** `supabaseClient.js` created, `App.jsx` updated with auth state + login UI in CourseHub nav bar
-- **Next:** Wire progress saving into game components (Phase 3), then build Progress Dashboard (Phase 4)
+- **Frontend wiring:** `supabaseClient.js` created, `App.jsx` updated with auth state, user props passed to all courses
+- **Unified navbar:** `SiteNav.jsx` — site-wide nav with login/profile UI, replaces per-course inline navs
+- **About page:** `AboutPage.jsx` — standalone page at `#about`
+- **Profile dashboard:** `ProfilePage.jsx` — progress dashboard at `#profile` (reads from `progress` table; UI built, awaiting Phase 3 data)
+- **Next:** Wire progress saving into game components (Phase 3), then data will populate in Profile page
