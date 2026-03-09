@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { supabase } from "./supabaseClient";
 import { useI18n } from "./i18n";
 import SiteNav from "./SiteNav";
+import AboutPage from "./AboutPage";
+import ProfilePage from "./ProfilePage";
 import Course0 from "./Course0";
 import Course1 from "./Course1";
 import Course2 from "./Course2";
@@ -22,17 +24,19 @@ const LIGHT_BORDER = "#E8E6E1";
 function CourseHub({ onNavigate, user, onLogin, onLogout }) {
   const { t, lang, toggleLang } = useI18n();
 
-  const courses = [
-    {
-      id: "course0",
-      number: "0",
-      titleKey: "hubC0Title",
-      descKey: "hubC0Desc",
-      color: TEAL,
-      emoji: "🧬",
-      gameKey: "hubC0Game",
-      status: "available",
-    },
+  const precourse = {
+    id: "course0",
+    number: "Pre",
+    titleKey: "hubC0Title",
+    descKey: "hubC0Desc",
+    color: TEAL,
+    emoji: "🧬",
+    gameKey: "hubC0Game",
+    status: "available",
+    labelKey: "hubPrecourse",
+  };
+
+  const section1Courses = [
     {
       id: "course1",
       number: "1",
@@ -63,6 +67,9 @@ function CourseHub({ onNavigate, user, onLogin, onLogout }) {
       gameKey: "hubC3Game",
       status: "available",
     },
+  ];
+
+  const section2Courses = [
     {
       id: "course4",
       number: "4",
@@ -117,36 +124,67 @@ function CourseHub({ onNavigate, user, onLogin, onLogout }) {
 
       {/* COURSE TIMELINE */}
       <section style={{ padding: "32px 24px 80px", maxWidth: 720, margin: "0 auto" }}>
-        {/* Hour 1 label */}
+
+        {/* ── Precourse (Course 0, standalone) ── */}
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
-          <div style={{ width: 40, height: 40, borderRadius: 12, background: `${TEAL}12`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 700, color: TEAL }}>1h</div>
+          <div style={{ width: 40, height: 40, borderRadius: 12, background: `${TEAL}12`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, color: TEAL }}>Pre</div>
           <div>
-            <div style={{ fontSize: 14, fontWeight: 600, color: DARK }}>{t("hubHour1")}</div>
-            <div style={{ fontSize: 12, color: MUTED }}>{t("hubHour1Desc")}</div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: DARK }}>{t("hubPrecourse")}</div>
+            <div style={{ fontSize: 12, color: MUTED }}>{t("hubPrecourseDesc")}</div>
           </div>
         </div>
-
-        {/* Course cards for hour 1 */}
         <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 40, paddingLeft: 20, borderLeft: `2px solid ${TEAL}22` }}>
-          {courses.slice(0, 4).map((course) => (
-            <CourseCard key={course.id} course={course} t={t} onNavigate={onNavigate} />
-          ))}
+          <CourseCard course={precourse} t={t} onNavigate={onNavigate} />
         </div>
 
-        {/* Hour 2 label */}
+        {/* ── Section 1: Foundations (Courses 1-3) ── */}
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
-          <div style={{ width: 40, height: 40, borderRadius: 12, background: `${CORAL}12`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 700, color: CORAL }}>2h</div>
+          <div style={{ width: 40, height: 40, borderRadius: 12, background: `${CORAL}12`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 700, color: CORAL }}>I</div>
           <div>
-            <div style={{ fontSize: 14, fontWeight: 600, color: DARK }}>{t("hubHour2")}</div>
-            <div style={{ fontSize: 12, color: MUTED }}>{t("hubHour2Desc")}</div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: DARK }}>{t("hubSection1")}</div>
+            <div style={{ fontSize: 12, color: MUTED }}>{t("hubSection1Desc")}</div>
           </div>
         </div>
-
-        {/* Course cards for hour 2 */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 12, paddingLeft: 20, borderLeft: `2px solid ${CORAL}22` }}>
-          {courses.slice(4).map((course) => (
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 12, paddingLeft: 20, borderLeft: `2px solid ${CORAL}22` }}>
+          {section1Courses.map((course) => (
             <CourseCard key={course.id} course={course} t={t} onNavigate={onNavigate} />
           ))}
+        </div>
+        {/* Midterm checkpoint card */}
+        <div style={{ paddingLeft: 20, borderLeft: `2px solid ${CORAL}22`, marginBottom: 40 }}>
+          <CheckpointCard
+            emoji="🏔️"
+            titleKey="hubMidtermTitle"
+            descKey="hubMidtermDesc"
+            color="#8B6914"
+            t={t}
+            onClick={() => onNavigate("midterm")}
+          />
+        </div>
+
+        {/* ── Section 2: Advanced (Courses 4-5) ── */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
+          <div style={{ width: 40, height: 40, borderRadius: 12, background: `${"#2E86C1"}12`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, fontWeight: 700, color: "#2E86C1" }}>II</div>
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: DARK }}>{t("hubSection2")}</div>
+            <div style={{ fontSize: 12, color: MUTED }}>{t("hubSection2Desc")}</div>
+          </div>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 12, paddingLeft: 20, borderLeft: `2px solid ${"#2E86C1"}22` }}>
+          {section2Courses.map((course) => (
+            <CourseCard key={course.id} course={course} t={t} onNavigate={onNavigate} />
+          ))}
+        </div>
+        {/* Final exam card */}
+        <div style={{ paddingLeft: 20, borderLeft: `2px solid ${"#2E86C1"}22`, marginBottom: 0 }}>
+          <CheckpointCard
+            emoji="🎓"
+            titleKey="hubFinalTitle"
+            descKey="hubFinalDesc"
+            color="#C0392B"
+            t={t}
+            onClick={() => onNavigate("final")}
+          />
         </div>
       </section>
 
@@ -162,6 +200,7 @@ function CourseHub({ onNavigate, user, onLogin, onLogout }) {
 function CourseCard({ course, t, onNavigate }) {
   const [hovered, setHovered] = useState(false);
   const available = course.status === "available";
+  const label = course.labelKey ? t(course.labelKey) : `Course ${course.number}`;
 
   return (
     <div
@@ -192,7 +231,7 @@ function CourseCard({ course, t, onNavigate }) {
         <div style={{ flex: 1 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
             <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: 1, textTransform: "uppercase", color: course.color }}>
-              Course {course.number}
+              {label}
             </span>
             {!available && (
               <span style={{ fontSize: 10, fontWeight: 600, color: MUTED, background: "#F1F0EC", padding: "2px 8px", borderRadius: 4 }}>
@@ -211,6 +250,44 @@ function CourseCard({ course, t, onNavigate }) {
         {available && (
           <div style={{ fontSize: 18, color: hovered ? course.color : "#C0BFB9", transition: "color 0.3s", flexShrink: 0 }}>→</div>
         )}
+      </div>
+    </div>
+  );
+}
+
+function CheckpointCard({ emoji, titleKey, descKey, color, t, onClick }) {
+  const [hovered, setHovered] = useState(false);
+
+  return (
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onClick={onClick}
+      style={{
+        background: `${color}08`,
+        border: `1.5px dashed ${hovered ? color + "66" : color + "30"}`,
+        borderRadius: 16,
+        padding: "18px 24px",
+        cursor: "pointer",
+        transition: "all 0.3s",
+        boxShadow: hovered ? `0 4px 16px ${color}14` : "none",
+        transform: hovered ? "translateY(-2px)" : "translateY(0)",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+        <div style={{
+          width: 42, height: 42, borderRadius: 12,
+          background: `${color}14`,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 20, flexShrink: 0,
+        }}>
+          {emoji}
+        </div>
+        <div style={{ flex: 1 }}>
+          <h3 style={{ fontSize: 15, fontWeight: 600, color, marginBottom: 2, lineHeight: 1.3 }}>{t(titleKey)}</h3>
+          <p style={{ fontSize: 12, color: MUTED, lineHeight: 1.5 }}>{t(descKey)}</p>
+        </div>
+        <div style={{ fontSize: 16, color: hovered ? color : "#C0BFB9", transition: "color 0.3s", flexShrink: 0 }}>→</div>
       </div>
     </div>
   );
@@ -274,6 +351,10 @@ export default function App() {
       return <Course4 onNavigate={navigate} user={user} onLogin={handleLogin} onLogout={handleLogout} />;
     case "course5":
       return <Course5 onNavigate={navigate} user={user} onLogin={handleLogin} onLogout={handleLogout} />;
+    case "about":
+      return <AboutPage onNavigate={navigate} user={user} onLogin={handleLogin} onLogout={handleLogout} />;
+    case "profile":
+      return <ProfilePage onNavigate={navigate} user={user} onLogin={handleLogin} onLogout={handleLogout} />;
     case "dino":
       return <DinoIntro />;
     default:
