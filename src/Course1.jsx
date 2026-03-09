@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useI18n } from "./i18n";
+import SiteNav from "./SiteNav";
 import CuteDino from "./CuteDino";
 import DinoEggHatch, { DragonEgg } from "./DinoEggHatch";
 
@@ -526,7 +527,7 @@ Don't use Markdown formatting.`;
 }
 
 // ═══ MAIN COURSE COMPONENT ═══
-export default function Course1PICO({ onNavigate }) {
+export default function Course1PICO({ onNavigate, user, onLogin, onLogout }) {
   const { t, lang, toggleLang } = useI18n();
   const [activeSection, setActiveSection] = useState("hero");
 
@@ -626,23 +627,13 @@ export default function Course1PICO({ onNavigate }) {
       <div className="main-content" style={{ marginLeft: 200 }}>
 
       {/* NAV */}
-      <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, height: 56, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 20px", background: "rgba(248,247,244,0.92)", backdropFilter: "blur(16px)", borderBottom: `1px solid ${LIGHT_BORDER}` }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          {onNavigate && (
-            <button onClick={() => onNavigate("hub")} style={{ background: "none", border: "none", color: MUTED, fontSize: 13, cursor: "pointer", padding: "4px 8px", borderRadius: 6, transition: "color 0.2s" }}
-              onMouseEnter={(e) => e.target.style.color = TEAL} onMouseLeave={(e) => e.target.style.color = MUTED}>
-              ←
-            </button>
-          )}
-          <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: 1.5, textTransform: "uppercase", color: TEAL, background: `${TEAL}0D`, padding: "3px 8px", borderRadius: 5, border: `1px solid ${TEAL}22` }}>{t("c1Label")}</span>
-          <span style={{ fontSize: 14, fontWeight: 600, color: DARK }}>{t("c1Subtitle")}</span>
-        </div>
-        <button onClick={toggleLang} style={{ background: `${TEAL}0D`, border: `1px solid ${TEAL}22`, color: TEAL, padding: "5px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer", letterSpacing: 0.5, transition: "all 0.2s" }}
-          onMouseEnter={(e) => { e.target.style.background = TEAL; e.target.style.color = "#FFF"; }}
-          onMouseLeave={(e) => { e.target.style.background = `${TEAL}0D`; e.target.style.color = TEAL; }}>
-          {t("langSwitch")}
-        </button>
-      </nav>
+      <SiteNav
+        onNavigate={onNavigate}
+        user={user} onLogin={onLogin} onLogout={onLogout}
+        courseId="course1"
+        courseLabel={t("c1Label")}
+        courseColor="#E8734A"
+      />
 
       {/* HERO */}
       <section id="hero" style={{ paddingTop: 100, paddingBottom: 64, textAlign: "center", position: "relative", overflow: "hidden" }}>

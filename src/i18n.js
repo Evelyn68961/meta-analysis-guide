@@ -213,6 +213,11 @@ const translations = {
     // ═══ COURSE HUB ═══
     hubNavTitle: "統合分析",
     hubNavSuffix: "101",
+    navCourses: "課程選單",
+    navAbout: "關於本站",
+    navLogin: "登入",
+    navLogout: "登出",
+    navLoginSave: "登入以儲存進度",
     hubBadge: "學習平台",
     hubTitle1: "從零到精通",
     hubTitle2: "統合分析",
@@ -794,6 +799,11 @@ const translations = {
     // ═══ COURSE HUB ═══
     hubNavTitle: "Meta-Analysis",
     hubNavSuffix: "101",
+    navCourses: "Courses",
+    navAbout: "About",
+    navLogin: "Sign In",
+    navLogout: "Logout",
+    navLoginSave: "Sign in to save progress",
     hubBadge: "LEARNING PLATFORM",
     hubTitle1: "Master ",
     hubTitle2: "Meta-Analysis",

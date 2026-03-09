@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useI18n } from "./i18n";
+import SiteNav from "./SiteNav";
 // Game component TBD — uncomment when created:
 // import DinoGameC4 from "./DinoGameC4";
 
@@ -579,7 +580,7 @@ function ForestPlotExercise({ lang }) {
 
 
 // ═══ MAIN COURSE 4 COMPONENT ═══
-export default function Course4({ onNavigate }) {
+export default function Course4({ onNavigate, user, onLogin, onLogout }) {
   const { t, lang, toggleLang } = useI18n();
   const [activeSection, setActiveSection] = useState("hero");
 
@@ -651,19 +652,13 @@ export default function Course4({ onNavigate }) {
       <div className="main-content" style={{ marginLeft: 200 }}>
 
       {/* NAV */}
-      <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, height: 56, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 20px", background: "rgba(248,247,244,0.92)", backdropFilter: "blur(16px)", borderBottom: `1px solid ${LIGHT_BORDER}` }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          {onNavigate && <button onClick={() => onNavigate("hub")} style={{ background: "none", border: "none", fontSize: 18, cursor: "pointer", color: MUTED, padding: 4 }}>←</button>}
-          <div style={{ fontFamily: "'Noto Sans TC', 'Source Serif 4', serif", fontSize: 15, fontWeight: 700, color: BLUE, letterSpacing: -0.3 }}>
-            Course 4 <span style={{ fontWeight: 400, color: MUTED, fontSize: 13 }}>{t("c4Subtitle")}</span>
-          </div>
-        </div>
-        <button onClick={toggleLang} style={{ background: `${BLUE}0D`, border: `1px solid ${BLUE}22`, color: BLUE, padding: "5px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer", letterSpacing: 0.5, transition: "all 0.2s" }}
-          onMouseEnter={(e) => { e.target.style.background = BLUE; e.target.style.color = "#FFF"; }}
-          onMouseLeave={(e) => { e.target.style.background = `${BLUE}0D`; e.target.style.color = BLUE; }}>
-          {t("langSwitch")}
-        </button>
-      </nav>
+      <SiteNav
+        onNavigate={onNavigate}
+        user={user} onLogin={onLogin} onLogout={onLogout}
+        courseId="course4"
+        courseLabel={t("c4Label")}
+        courseColor="#2E86C1"
+      />
 
       {/* HERO */}
       <section id="hero" style={{ paddingTop: 90, paddingBottom: 48, textAlign: "center", position: "relative", overflow: "hidden" }}>

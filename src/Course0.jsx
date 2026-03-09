@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useI18n } from "./i18n";
+import SiteNav from "./SiteNav";
 import DinoEggHunt from "./DinoEggHunt";
 
 const TEAL = "#0E7C86";
@@ -233,13 +234,10 @@ function MethodStep({ number, title, analogy, details, isOpen, onClick, thinkOfI
 }
 
 // ═══ MAIN APP ═══
-export default function Course0({ onNavigate }) {
+export default function Course0({ onNavigate, user, onLogin, onLogout }) {
   const { t, lang, toggleLang } = useI18n();
   const [openStep, setOpenStep] = useState(null);
-  const [scrollY, setScrollY] = useState(0);
-  const [mobileMenu, setMobileMenu] = useState(false);
   const [activeSection, setActiveSection] = useState("hero");
-  useEffect(() => { const h = () => setScrollY(window.scrollY); window.addEventListener("scroll", h); return () => window.removeEventListener("scroll", h); }, []);
   const scrollTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
 
   // Track which section is in view
@@ -259,7 +257,6 @@ export default function Course0({ onNavigate }) {
     return () => observers.forEach(obs => obs.disconnect());
   }, []);
 
-  const navItems = [{ id: "what", label: t("navWhat") }, { id: "why", label: t("navWhy") }, { id: "combiner", label: t("navDemo") }, { id: "how", label: t("navHow") }, { id: "tools", label: t("navPlots") }, { id: "quiz", label: t("navQuiz") }];
 
   // Sidebar catalog items with numbers
   const catalogItems = [
@@ -307,13 +304,8 @@ export default function Course0({ onNavigate }) {
         body { background: ${LIGHT_BG}; }
         ::selection { background: ${TEAL}22; color: ${DARK}; }
         @media (max-width: 768px) {
-          .desktop-nav { display: none !important; }
-          .mobile-menu-btn { display: block !important; }
           .sidebar-catalog { display: none !important; }
           .main-content { margin-left: 0 !important; }
-        }
-        @media (min-width: 769px) {
-          .mobile-menu-btn { display: none !important; }
         }
         @media (min-width: 769px) and (max-width: 1099px) {
           .sidebar-catalog { display: none !important; }
@@ -322,52 +314,13 @@ export default function Course0({ onNavigate }) {
       `}</style>
 
       {/* NAV */}
-      <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, height: 60, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 16px", background: scrollY > 60 ? "rgba(248,247,244,0.92)" : "transparent", backdropFilter: scrollY > 60 ? "blur(16px)" : "none", borderBottom: scrollY > 60 ? `1px solid ${LIGHT_BORDER}` : "none", transition: "all 0.35s" }}>
-        <div onClick={() => scrollTo("hero")} style={{ fontFamily: "'Noto Sans TC', 'Source Serif 4', serif", fontSize: 17, fontWeight: 700, color: TEAL, cursor: "pointer", letterSpacing: -0.3, whiteSpace: "nowrap" }}>
-          {t("navTitle")} <span style={{ fontWeight: 400, color: MUTED }}>{t("navTitleSuffix")}</span>
-        </div>
-        {/* Desktop nav */}
-        <div style={{ display: "flex", gap: 4, alignItems: "center" }} className="desktop-nav">
-          {onNavigate && (
-            <button onClick={() => onNavigate("hub")} style={{ background: "none", border: "none", color: MUTED, padding: "8px 10px", borderRadius: 8, fontSize: 13, cursor: "pointer", fontFamily: "'Noto Sans TC', 'Outfit', sans-serif", fontWeight: 500, transition: "color 0.2s" }}
-              onMouseEnter={(e) => (e.target.style.color = TEAL)} onMouseLeave={(e) => (e.target.style.color = MUTED)}>
-              {lang === "zh" ? "← 總覽" : "← Hub"}
-            </button>
-          )}
-          {navItems.map((n) => (
-            <button key={n.id} onClick={() => scrollTo(n.id)} style={{ background: "none", border: "none", color: MUTED, padding: "8px 14px", borderRadius: 8, fontSize: 13, cursor: "pointer", fontFamily: "'Noto Sans TC', 'Outfit', sans-serif", fontWeight: 500, transition: "color 0.2s" }}
-              onMouseEnter={(e) => (e.target.style.color = TEAL)} onMouseLeave={(e) => (e.target.style.color = MUTED)}>
-              {n.label}
-            </button>
-          ))}
-          <button onClick={toggleLang} style={{ background: `${TEAL}0D`, border: `1px solid ${TEAL}22`, color: TEAL, padding: "6px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "'Noto Sans TC', 'Outfit', sans-serif", marginLeft: 8, transition: "all 0.2s", letterSpacing: 0.5 }}
-            onMouseEnter={(e) => { e.target.style.background = TEAL; e.target.style.color = "#FFF"; }}
-            onMouseLeave={(e) => { e.target.style.background = `${TEAL}0D`; e.target.style.color = TEAL; }}>
-            {t("langSwitch")}
-          </button>
-        </div>
-        {/* Mobile hamburger */}
-        <button className="mobile-menu-btn" onClick={() => setMobileMenu(!mobileMenu)} style={{ background: "none", border: "none", cursor: "pointer", padding: 8, display: "none" }}>
-          <div style={{ width: 22, height: 2, background: DARK, marginBottom: 5, borderRadius: 1, transition: "all 0.3s", transform: mobileMenu ? "rotate(45deg) translateY(7px)" : "none" }} />
-          <div style={{ width: 22, height: 2, background: DARK, marginBottom: 5, borderRadius: 1, transition: "all 0.3s", opacity: mobileMenu ? 0 : 1 }} />
-          <div style={{ width: 22, height: 2, background: DARK, borderRadius: 1, transition: "all 0.3s", transform: mobileMenu ? "rotate(-45deg) translateY(-7px)" : "none" }} />
-        </button>
-      </nav>
-
-      {/* Mobile menu overlay */}
-      {mobileMenu && (
-        <div style={{ position: "fixed", top: 60, left: 0, right: 0, bottom: 0, zIndex: 99, background: "rgba(248,247,244,0.97)", backdropFilter: "blur(16px)", padding: "24px 24px", display: "flex", flexDirection: "column", gap: 4 }}>
-          {navItems.map((n) => (
-            <button key={n.id} onClick={() => { scrollTo(n.id); setMobileMenu(false); }}
-              style={{ background: "none", border: "none", color: DARK, padding: "16px 12px", fontSize: 18, fontWeight: 500, cursor: "pointer", fontFamily: "'Noto Sans TC', 'Outfit', sans-serif", textAlign: "left", borderBottom: `1px solid ${LIGHT_BORDER}`, transition: "color 0.2s" }}>
-              {n.label}
-            </button>
-          ))}
-          <button onClick={toggleLang} style={{ background: `${TEAL}0D`, border: `1px solid ${TEAL}22`, color: TEAL, padding: "14px 20px", borderRadius: 10, fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "'Noto Sans TC', 'Outfit', sans-serif", marginTop: 12, letterSpacing: 0.5 }}>
-            {t("langSwitch")}
-          </button>
-        </div>
-      )}
+      <SiteNav
+        onNavigate={onNavigate}
+        user={user} onLogin={onLogin} onLogout={onLogout}
+        courseId="course0"
+        courseLabel={lang === "zh" ? "Course 0 · 入門" : "Course 0 · Intro"}
+        courseColor={TEAL}
+      />
 
       {/* SIDEBAR CATALOG — sticky on left, desktop only (≥1100px) */}
       <div className="sidebar-catalog" style={{

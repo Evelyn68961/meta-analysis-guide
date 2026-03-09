@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "./supabaseClient";
 import { useI18n } from "./i18n";
+import SiteNav from "./SiteNav";
 import Course0 from "./Course0";
 import Course1 from "./Course1";
 import Course2 from "./Course2";
@@ -94,31 +95,10 @@ function CourseHub({ onNavigate, user, onLogin, onLogout }) {
       `}</style>
 
       {/* NAV */}
-      <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, height: 56, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 20px", background: "rgba(248,247,244,0.92)", backdropFilter: "blur(16px)", borderBottom: `1px solid ${LIGHT_BORDER}` }}>
-        <div style={{ fontFamily: "'Noto Sans TC', 'Source Serif 4', serif", fontSize: 17, fontWeight: 700, color: TEAL, letterSpacing: -0.3 }}>
-          {t("hubNavTitle")} <span style={{ fontWeight: 400, color: MUTED }}>{t("hubNavSuffix")}</span>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          {user ? (
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <img src={user.user_metadata?.avatar_url || user.user_metadata?.picture} alt="" style={{ width: 28, height: 28, borderRadius: "50%" }} />
-              <span style={{ fontSize: 13, color: DARK, fontWeight: 500 }}>{user.user_metadata?.full_name || user.user_metadata?.name || "User"}</span>
-              <button onClick={onLogout} style={{ background: "none", border: `1px solid ${LIGHT_BORDER}`, color: MUTED, padding: "4px 10px", borderRadius: 6, fontSize: 11, cursor: "pointer" }}>
-                {lang === "zh" ? "登出" : "Logout"}
-              </button>
-            </div>
-          ) : (
-            <button onClick={onLogin} style={{ background: TEAL, border: "none", color: "#FFF", padding: "6px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ fontSize: 14 }}>G</span> {lang === "zh" ? "登入以儲存進度" : "Sign in to save progress"}
-            </button>
-          )}
-          <button onClick={toggleLang} style={{ background: `${TEAL}0D`, border: `1px solid ${TEAL}22`, color: TEAL, padding: "5px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer", letterSpacing: 0.5, transition: "all 0.2s" }}
-            onMouseEnter={(e) => { e.target.style.background = TEAL; e.target.style.color = "#FFF"; }}
-            onMouseLeave={(e) => { e.target.style.background = `${TEAL}0D`; e.target.style.color = TEAL; }}>
-            {t("langSwitch")}
-          </button>
-        </div>
-      </nav>
+      <SiteNav
+        onNavigate={onNavigate}
+        user={user} onLogin={onLogin} onLogout={onLogout}
+      />
 
       {/* HERO */}
       <section style={{ paddingTop: 100, paddingBottom: 48, textAlign: "center", position: "relative", overflow: "hidden" }}>
@@ -283,17 +263,17 @@ export default function App() {
 
   switch (currentPage) {
     case "course0":
-      return <Course0 onNavigate={navigate} />;
+      return <Course0 onNavigate={navigate} user={user} onLogin={handleLogin} onLogout={handleLogout} />;
     case "course1":
-      return <Course1 onNavigate={navigate} />;
+      return <Course1 onNavigate={navigate} user={user} onLogin={handleLogin} onLogout={handleLogout} />;
     case "course2":
-      return <Course2 onNavigate={navigate} />;
+      return <Course2 onNavigate={navigate} user={user} onLogin={handleLogin} onLogout={handleLogout} />;
     case "course3":
-      return <Course3 onNavigate={navigate} />;
+      return <Course3 onNavigate={navigate} user={user} onLogin={handleLogin} onLogout={handleLogout} />;
     case "course4":
-      return <Course4 onNavigate={navigate} />;
+      return <Course4 onNavigate={navigate} user={user} onLogin={handleLogin} onLogout={handleLogout} />;
     case "course5":
-      return <Course5 onNavigate={navigate} />;
+      return <Course5 onNavigate={navigate} user={user} onLogin={handleLogin} onLogout={handleLogout} />;
     case "dino":
       return <DinoIntro />;
     default:
