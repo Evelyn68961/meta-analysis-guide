@@ -14,7 +14,7 @@ An interactive bilingual (ZH/EN) educational website teaching meta-analysis from
 
 | Course | Topic | Game | Status |
 |--------|-------|------|--------|
-| 0 | What is Meta-Analysis? | Egg Hunt (7 eggs, 7 categories, cheat sheet rewards) | ✅ Live on `main` |
+| 0 | What is Meta-Analysis? | Dino Egg Hunt (7 eggs, 7 categories, 35-question bank, cheat sheet rewards) | ✅ Live on `main` |
 | 1 | PICO/PICOS Research Question | Dino Egg Hatch (pick 1 of 7 eggs, 7 Qs from 70-question bank, 5 correct = hatch, 3 wrong = freeze, sun/frost particles) | ✅ Built on `dev` |
 | 2 | Literature Search & PRISMA | Dino Food Rescue (pick 1 of 7 dinos, 7 Qs from 70-question bank, crack ice with pickaxe, second chance on wrong, species-matched food) | ✅ Built on `dev` |
 | 3 | Data Extraction & Risk of Bias | Dino Home Save (pick 1 of 7 dinos, 7 Qs from 70-question bank, 10s timer, correct = fire grows, wrong/timeout = fire dims, 5 correct = win, 3 wrong = lose) | ✅ Built on `dev` |
@@ -29,22 +29,31 @@ An interactive bilingual (ZH/EN) educational website teaching meta-analysis from
 src/
 ├── App.jsx              ← Router + Course Hub page (hash routing: #hub, #course0, #course1, #course2, #course3, #dino)
 │                           NOW INCLUDES: Supabase auth state, Google login/logout, user prop passed to CourseHub
-├── supabaseClient.js    ← [NEW] Supabase client initialization (imports URL + anon key from .env)
-├── Course0.jsx          ← Course 0 (original site, accepts onNavigate prop)
-├── Course1.jsx          ← Course 1: PICO (teaching sections + AI workshop; game extracted)
-├── Course2.jsx          ← Course 2: Literature Search & PRISMA (teaching sections + AI workshop; game extracted)
-├── Course3.jsx          ← Course 3: Data Extraction & RoB (6 teaching sections; game extracted)
+├── supabaseClient.js    ← Supabase client initialization (imports URL + anon key from .env)
+│
+├── Course0.jsx          ← Course 0: What is Meta-Analysis? (teaching sections; game extracted to DinoEggHunt)
+├── Course1.jsx          ← Course 1: PICO (teaching sections + AI workshop; game extracted to DinoEggHatch)
+├── Course2.jsx          ← Course 2: Literature Search & PRISMA (teaching sections + AI workshop; game extracted to DinoFoodRescue)
+├── Course3.jsx          ← Course 3: Data Extraction & RoB (6 teaching sections; game extracted to DinoHomeSave)
+│
+├── DinoEggHunt.jsx      ← Course 0 game: egg hunt quiz (7 eggs, 7 categories, cheat sheet rewards; exports StylishEgg SVG)
+├── DinoEggHatch.jsx     ← Course 1 game: dragon egg hatching (exports DragonEgg SVG)
+├── DinoFoodRescue.jsx   ← Course 2 game: ice-breaking food rescue
+├── DinoHomeSave.jsx     ← Course 3 game: save dino's home from freezing
 ├── CuteDino.jsx         ← Shared dinosaur SVG component (7 unique species, used across courses)
-├── DinoEggHatch.jsx     ← Course 1 game: dragon egg hatching (standalone component, exports DragonEgg SVG)
-├── DinoFoodRescue.jsx   ← Course 2 game: ice-breaking food rescue (standalone component)
-├── DinoHomeSave.jsx     ← Course 3 game: save dino's home from freezing (standalone component)
 ├── DinoIntro.jsx        ← Dino preview/debug page (accessible at #dino)
-├── questionBank.js      ← Centralized bilingual question bank for all course games (210 Qs: 70 C1 + 70 C2 + 70 C3)
-├── i18n.js              ← All translations (Course 0 + Hub + Course 1 + Course 2 + Course 3); game questions moved to questionBank.js
+│
+├── questionHelpers.js   ← Shared helper functions: pickQuestions(), pickBalanced()
+├── course0Questions.js  ← Course 0 question bank (35 Qs: 5 per category × 7 categories)
+├── course1Questions.js  ← Course 1 question bank (70 Qs: 10 per category × 7 categories)
+├── course2Questions.js  ← Course 2 question bank (70 Qs: 10 per category × 7 categories)
+├── course3Questions.js  ← Course 3 question bank (70 Qs: 10 per category × 7 categories)
+│
+├── i18n.js              ← All translations (Course 0 + Hub + Course 1 + Course 2 + Course 3); UI strings only — game questions in separate files
 └── index.js             ← Entry point (wraps App in I18nProvider)
 
 Root files:
-├── .env                 ← [NEW] REACT_APP_SUPABASE_URL + REACT_APP_SUPABASE_ANON_KEY (NOT in Git)
+├── .env                 ← REACT_APP_SUPABASE_URL + REACT_APP_SUPABASE_ANON_KEY (NOT in Git)
 └── .gitignore           ← Already includes .env
 ```
 
@@ -72,7 +81,7 @@ Root files:
 ### Game Mechanics (Dino Egg Hatch):
 - Standalone component in `DinoEggHatch.jsx`, imported by `Course1.jsx` (same pattern as Course 2's DinoFoodRescue)
 - Also exports `DragonEgg` SVG component (named export) used decoratively in Course1 hero section
-- 70-question bank in `questionBank.js` (`course1Questions`), 10 per category × 7 categories:
+- 70-question bank in `course1Questions.js` (`course1Questions`), 10 per category × 7 categories:
   - Cat 0: Identifying correct PICO format
   - Cat 1: Population (P) — specificity & scope
   - Cat 2: Intervention (I) — defining the treatment
@@ -109,7 +118,7 @@ Root files:
 ### Game Mechanics (Dino Food Rescue):
 - Standalone component in `DinoFoodRescue.jsx`, imported by `Course2.jsx`
 - Pick 1 of 7 dinos → each has species-matched food trapped in ice cubes
-- 70-question bank in `questionBank.js` (`course2Questions`), 10 per category × 7 categories:
+- 70-question bank in `course2Questions.js` (`course2Questions`), 10 per category × 7 categories:
   - Cat 0: Systematic vs casual search
   - Cat 1: Databases (PubMed, Embase, Cochrane, etc.)
   - Cat 2: Boolean operators & search syntax (AND, OR, NOT, MeSH, truncation)
@@ -118,7 +127,6 @@ Root files:
   - Cat 5: Grey literature & search completeness
   - Cat 6: Search strategy pitfalls & best practices
 - 7 questions drawn per playthrough via `pickBalanced()` — different each time
-- Old i18n keys (`c2gq1`–`c2gq7`) to be replaced with questionBank import (same pattern as Course 1)
 - Correct → pickaxe swing animation → ice crack lines grow → ice shatters into particles → food pops out → dino bounces happily
 - Wrong → pickaxe bounces off → ice shakes → explanation shown → "Swing Again" retry button (second chance)
 - Score tracks first-try correct count; all food is always eventually rescued
@@ -129,8 +137,6 @@ Root files:
 - Bilingual UI strings handled internally (no new i18n keys needed)
 
 ### TODO:
-- Wire `DinoFoodRescue.jsx` to use `questionBank.js` (replace `c2gq*` i18n loop with `course2Questions` import + `pickBalanced`)
-- Remove old `c2gq*` keys from `i18n.js` after wiring
 - Fix AI workshop (backend proxy issue)
 
 ---
@@ -158,13 +164,23 @@ Root files:
 - `Paragraph` — Styled body text
 - `CuteDino` — 7 unique dinosaur SVGs (T-Rex, Plesiosaur, Pterodactyl, Triceratops, Stegosaurus, Velociraptor, Pachycephalosaurus)
 - `DragonEgg` — SVG egg with states: idle, crack, frozen (lives in `DinoEggHatch.jsx`, exported as named export)
+- `StylishEgg` — SVG egg with variants: solid, ghost, dashed, cracked-correct, cracked-wrong (lives in `DinoEggHunt.jsx`, exported as named export)
+
+### Navigation Pattern (all courses):
+- **Sticky sidebar catalog** — Fixed on left side (desktop ≥1100px only), shows numbered section list with active section highlighted. Uses course accent color (TEAL/CORAL/PURPLE/GOLD) for active indicator. Hides on mobile/tablet (<1100px).
+- **Active section tracking** — IntersectionObserver watches all section IDs, updates `activeSection` state as user scrolls, highlights current item in sidebar.
+- **"Next →" buttons** — At the bottom of each teaching section, scrolls to next section. Last teaching section uses CORAL accent to signal game section.
+- **Top nav bar** — Fixed, frosted glass. Shows "← Hub" back button, course label, and language toggle.
+- **Footer navigation** — "← Back to Previous Course" + "Course Hub" + "Next Course →" buttons. Course 0 has no back button (first course). Course 3's "Course 4" is disabled/Coming Soon.
+- **Mobile** — Course 0 has hamburger menu; Courses 1–3 rely on "Next →" buttons for section navigation since sidebar is hidden.
 
 ### i18n Pattern:
 - All keys prefixed by course: `c1` for Course 1, `c2` for Course 2, `c3` for Course 3
 - Template literals like `` t(`c1trap${n}Title`) `` need the prefix inside the backtick
 - Function values (e.g., gameQ, gameScore) use `t("key", arg)` NOT `t("key")(arg)`
 - Hub keys use `hub` prefix
-- **Game questions are NOT in i18n.js** — they live in `questionBank.js` with bilingual text embedded per question object
+- **Game questions are NOT in i18n.js** — they live in per-course question files (`course0Questions.js`, `course1Questions.js`, etc.) with bilingual text embedded per question object
+- **Cleaned up:** `eggQ_*` keys (Course 0 questions) and `c2gq*` keys (Course 2 game questions) removed from `i18n.js` — now in their respective question files
 
 ---
 
@@ -182,7 +198,7 @@ Root files:
 ### Game Mechanics (Dino Home Save):
 - Standalone component in `DinoHomeSave.jsx`, imported by `Course3.jsx`
 - Pick 1 of 7 dinos → each needs to keep their home warm during a blizzard
-- 70-question bank in `questionBank.js` (`course3Questions`), 10 per category × 7 categories:
+- 70-question bank in `course3Questions.js` (`course3Questions`), 10 per category × 7 categories:
   - Cat 0: Purpose and principles of data extraction
   - Cat 1: What to extract for dichotomous outcomes
   - Cat 2: What to extract for continuous outcomes + conversions (median→mean)
@@ -202,7 +218,7 @@ Root files:
 - Falling snow particles with intensity proportional to fire weakness
 - Background color transitions: warm gold (fire strong) → cold blue (fire weak)
 - Bilingual UI strings handled internally (no new i18n keys needed for game — all in-component)
-- `course3Categories` exported from `questionBank.js` for reference
+- `course3Categories` exported from `course3Questions.js` for reference
 
 ### Interactive Components:
 - **ExtractionTableDemo** — 8 clickable column cards, detail panel shows description + example data
@@ -228,23 +244,26 @@ Root files:
 
 ### Adding a New Course:
 1. Create `CourseN.jsx` with teaching sections + AI workshop
-2. Create game as standalone component (e.g., `DinoGameN.jsx`) — import by CourseN
-3. Add 70 bilingual questions to `questionBank.js` as `courseNQuestions` (10 per category × 7 categories)
-4. Add translations to `i18n.js` with `cN` prefix (UI strings only — game questions stay in questionBank)
-5. Add route in `App.jsx` switch statement
-6. Add course card in `App.jsx` CourseHub courses array
-7. Update hub status from "coming" to "available"
+2. Add sticky sidebar catalog with `catalogItems` array, `activeSection` state, and IntersectionObserver (copy pattern from any existing course)
+3. Create game as standalone component (e.g., `DinoGameN.jsx`) — import by CourseN
+4. Create `courseNQuestions.js` with 70 bilingual questions (10 per category × 7 categories); import `pickBalanced` from `questionHelpers.js`
+5. Add translations to `i18n.js` with `cN` prefix (UI strings only — game questions stay in courseNQuestions.js)
+6. Add route in `App.jsx` switch statement
+7. Add course card in `App.jsx` CourseHub courses array
+8. Update hub status from "coming" to "available"
+9. Update previous course's footer "Next Course" button from disabled/Coming Soon to active link
 
-### Question Bank Architecture (`questionBank.js`):
-- Centralized file for all course game questions — no questions in i18n.js
+### Question Bank Architecture (split per course):
+- Each course has its own question file: `course0Questions.js`, `course1Questions.js`, etc.
+- Shared helpers in `questionHelpers.js`: `pickQuestions()`, `pickBalanced()`
 - Each question: `{ id, category, zh: { q, opts, exp }, en: { q, opts, exp }, correct }`
-- `id` format: `"cN-XXX"` (e.g., `"c1-042"`, `"c2-015"`)
+- `id` format: `"cN-XXX"` (e.g., `"c0-WW01"`, `"c1-042"`, `"c2-015"`)
 - `category` (0–6) maps to 7 thematic groups per course
-- Helper functions exported:
+- Helper functions in `questionHelpers.js`:
   - `pickQuestions(pool, n)` — pure random pick
   - `pickBalanced(pool, n, numCategories)` — even coverage across categories, then shuffle
 - Game components localize at runtime: `q[lang].q`, `q[lang].opts`, `q.correct`, `q[lang].exp`
-- Currently: 210 questions total (70 Course 1 PICO + 70 Course 2 Literature Search + 70 Course 3 Data Extraction & RoB)
+- Currently: 245 questions total (35 Course 0 + 70 Course 1 + 70 Course 2 + 70 Course 3)
 
 ### Common Pitfalls:
 - Template literal translation keys MUST include prefix: `` t(`c1scenario${s}`) `` not `` t(`scenario${s}`) ``
