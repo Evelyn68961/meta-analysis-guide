@@ -15,7 +15,8 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import CuteDino from "./CuteDino";
-import { course3Questions, pickBalanced } from "./questionBank";
+import { pickBalanced } from "./questionHelpers";
+import { course3Questions } from "./course3Questions";
 
 // ═══ DESIGN TOKENS ═══
 const GOLD = "#D4A843";

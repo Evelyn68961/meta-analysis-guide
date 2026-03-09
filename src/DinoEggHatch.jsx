@@ -1,6 +1,7 @@
 import { useState } from "react";
 import CuteDino from "./CuteDino";
-import { course1Questions, pickBalanced } from "./questionBank";
+import { pickBalanced } from "./questionHelpers";
+import { course1Questions } from "./course1Questions";
 
 // ═══ DESIGN TOKENS ═══
 const TEAL = "#0E7C86";
