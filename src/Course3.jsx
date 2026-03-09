@@ -421,6 +421,34 @@ function TrafficLightDemo({ lang }) {
 // ═══ MAIN COURSE 3 COMPONENT ═══
 export default function Course3({ onNavigate }) {
   const { t, lang, toggleLang } = useI18n();
+  const [activeSection, setActiveSection] = useState("hero");
+
+  // Track which section is in view
+  useEffect(() => {
+    const sectionIds = ["hero", "s1", "s2", "s3", "s4", "s5", "s6", "game"];
+    const observers = [];
+    sectionIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const obs = new IntersectionObserver(
+        ([entry]) => { if (entry.isIntersecting) setActiveSection(id); },
+        { threshold: 0.25, rootMargin: "-60px 0px -40% 0px" }
+      );
+      obs.observe(el);
+      observers.push(obs);
+    });
+    return () => observers.forEach(obs => obs.disconnect());
+  }, []);
+
+  const catalogItems = [
+    { id: "s1", num: 1, label: lang === "zh" ? "為什麼重要" : "Why It Matters" },
+    { id: "s2", num: 2, label: lang === "zh" ? "萃取表格" : "Extraction Table" },
+    { id: "s3", num: 3, label: lang === "zh" ? "提取哪些數字" : "What Numbers" },
+    { id: "s4", num: 4, label: lang === "zh" ? "偏倚風險" : "Risk of Bias" },
+    { id: "s5", num: 5, label: lang === "zh" ? "評估工具" : "RoB Tools" },
+    { id: "s6", num: 6, label: lang === "zh" ? "整合應用" : "Putting It Together" },
+    { id: "game", num: 7, label: lang === "zh" ? "恐龍守護家園" : "Dino Home Save" },
+  ];
 
   return (
     <div style={{ background: LIGHT_BG, minHeight: "100vh", fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>
@@ -429,7 +457,51 @@ export default function Course3({ onNavigate }) {
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: ${LIGHT_BG}; }
         ::selection { background: ${GOLD}22; color: ${DARK}; }
+        @media (max-width: 1099px) {
+          .sidebar-catalog { display: none !important; }
+          .main-content { margin-left: 0 !important; }
+        }
       `}</style>
+
+      {/* SIDEBAR CATALOG — sticky on left, desktop ≥1100px only */}
+      <div className="sidebar-catalog" style={{
+        position: "fixed", top: 76, left: 0, width: 200, zIndex: 50,
+        padding: "20px 16px 20px 20px",
+        display: "flex", flexDirection: "column", gap: 2,
+      }}>
+        <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: 1.5, textTransform: "uppercase", color: GOLD, marginBottom: 10, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>
+          {lang === "zh" ? "課程大綱" : "Contents"}
+        </div>
+        {catalogItems.map((item) => {
+          const isActive = activeSection === item.id;
+          return (
+            <button key={item.id} onClick={() => scrollTo(item.id)} style={{
+              background: "none", border: "none", cursor: "pointer",
+              display: "flex", alignItems: "center", gap: 10,
+              padding: "8px 10px", borderRadius: 8,
+              transition: "all 0.25s",
+              borderLeft: `2.5px solid ${isActive ? GOLD : "transparent"}`,
+            }}>
+              <span style={{
+                fontSize: 11, fontWeight: 700, color: isActive ? GOLD : "#C0BFB9",
+                fontFamily: "'Noto Sans TC', 'Outfit', sans-serif",
+                minWidth: 16, textAlign: "right",
+                transition: "color 0.25s",
+              }}>{item.num}</span>
+              <span style={{
+                fontSize: 12.5, fontWeight: isActive ? 600 : 400,
+                color: isActive ? DARK : MUTED,
+                fontFamily: "'Noto Sans TC', 'Outfit', sans-serif",
+                textAlign: "left", lineHeight: 1.35,
+                transition: "all 0.25s",
+              }}>{item.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* MAIN CONTENT — shifted right on wide screens for sidebar */}
+      <div className="main-content" style={{ marginLeft: 200 }}>
 
       {/* NAV */}
       <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, height: 56, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 20px", background: "rgba(248,247,244,0.92)", backdropFilter: "blur(16px)", borderBottom: `1px solid ${LIGHT_BORDER}` }}>
@@ -449,7 +521,7 @@ export default function Course3({ onNavigate }) {
       </nav>
 
       {/* HERO */}
-      <section style={{ paddingTop: 90, paddingBottom: 48, textAlign: "center", position: "relative", overflow: "hidden" }}>
+      <section id="hero" style={{ paddingTop: 90, paddingBottom: 48, textAlign: "center", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, opacity: 0.15, backgroundImage: `radial-gradient(circle, ${GOLD}55 0.8px, transparent 0.8px)`, backgroundSize: "28px 28px", pointerEvents: "none" }} />
         <div style={{ position: "relative", zIndex: 1, padding: "0 24px", maxWidth: 680, margin: "0 auto" }}>
           <div style={{ display: "inline-block", padding: "6px 18px", borderRadius: 20, background: `${GOLD}0D`, border: `1px solid ${GOLD}22`, fontSize: 12, color: GOLD, fontWeight: 600, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 24 }}>{t("c3Label")}</div>
@@ -564,8 +636,10 @@ export default function Course3({ onNavigate }) {
         </div>
       </section>
 
+      </div>{/* end .main-content */}
+
       {/* FOOTER */}
-      <footer style={{ padding: "40px 24px", textAlign: "center", borderTop: `1px solid ${LIGHT_BORDER}`, background: LIGHT_BG }}>
+      <footer style={{ padding: "40px 24px", textAlign: "center", borderTop: `1px solid ${LIGHT_BORDER}`, background: LIGHT_BG, marginLeft: 0 }}>
         {onNavigate && (
           <div style={{ marginBottom: 24, display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
             <button onClick={() => onNavigate("course2")} style={{ background: "transparent", border: `1.5px solid ${LIGHT_BORDER}`, color: MUTED, padding: "10px 22px", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.2s" }}
