@@ -5,6 +5,7 @@ const TEAL = "#0E7C86";
 const DARK = "#1D2B3A";
 const MUTED = "#6B7A8D";
 const LIGHT_BORDER = "#E8E6E1";
+const FONT = "'Noto Sans TC', 'Outfit', sans-serif";
 
 const COURSES = [
   { id: "course0", num: "0", titleKey: "hubC0Title", color: "#0E7C86", emoji: "🧬" },
@@ -34,7 +35,7 @@ function CourseDropdown({ onNavigate, t, currentCourse }) {
         style={{
           background: "none", border: "none", color: open ? TEAL : MUTED,
           padding: "6px 10px", borderRadius: 8, fontSize: 13,
-          cursor: "pointer", fontFamily: "'Noto Sans TC', 'Outfit', sans-serif",
+          cursor: "pointer", fontFamily: FONT,
           fontWeight: 500, transition: "color 0.2s",
           display: "flex", alignItems: "center", gap: 4,
         }}
@@ -52,7 +53,7 @@ function CourseDropdown({ onNavigate, t, currentCourse }) {
         <div style={{
           position: "absolute", top: "calc(100% + 6px)", left: 0,
           background: "#FFFFFF", border: `1px solid ${LIGHT_BORDER}`,
-          borderRadius: 12, padding: "6px", minWidth: 260,
+          borderRadius: 12, padding: "6px", minWidth: 260, fontFamily: FONT,
           boxShadow: "0 8px 32px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04)",
           zIndex: 200, animation: "navDropIn 0.15s ease-out",
         }}>
@@ -67,17 +68,17 @@ function CourseDropdown({ onNavigate, t, currentCourse }) {
                   width: "100%", padding: "10px 12px", border: "none",
                   background: isActive ? `${c.color}0D` : "transparent",
                   borderRadius: 8, cursor: "pointer", transition: "background 0.15s",
-                  textAlign: "left",
+                  textAlign: "left", fontFamily: FONT,
                 }}
                 onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = "#F8F7F4"; }}
                 onMouseLeave={(e) => { e.currentTarget.style.background = isActive ? `${c.color}0D` : "transparent"; }}
               >
                 <span style={{ fontSize: 16, width: 24, textAlign: "center" }}>{c.emoji}</span>
                 <div>
-                  <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: 1, textTransform: "uppercase", color: c.color }}>
+                  <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: 1, textTransform: "uppercase", color: c.color, fontFamily: FONT }}>
                     Course {c.num}
                   </span>
-                  <div style={{ fontSize: 12.5, fontWeight: isActive ? 600 : 400, color: isActive ? DARK : MUTED, lineHeight: 1.3 }}>
+                  <div style={{ fontSize: 12.5, fontWeight: isActive ? 600 : 400, color: isActive ? DARK : MUTED, lineHeight: 1.3, fontFamily: FONT }}>
                     {t(c.titleKey)}
                   </div>
                 </div>
@@ -93,7 +94,7 @@ function CourseDropdown({ onNavigate, t, currentCourse }) {
               width: "100%", padding: "10px 12px", border: "none",
               background: "transparent", borderRadius: 8, cursor: "pointer",
               transition: "background 0.15s", textAlign: "left",
-              fontSize: 12.5, fontWeight: 500, color: TEAL,
+              fontSize: 12.5, fontWeight: 500, color: TEAL, fontFamily: FONT,
             }}
             onMouseEnter={(e) => (e.currentTarget.style.background = "#F8F7F4")}
             onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
@@ -130,7 +131,7 @@ export default function SiteNav({ onNavigate, user, onLogin, onLogout, courseId,
       <nav style={{
         position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, height: 56,
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "0 16px",
+        padding: "0 16px", fontFamily: FONT,
         background: "rgba(248,247,244,0.92)", backdropFilter: "blur(16px)",
         borderBottom: `1px solid ${LIGHT_BORDER}`,
       }}>
@@ -140,7 +141,7 @@ export default function SiteNav({ onNavigate, user, onLogin, onLogout, courseId,
             <button onClick={() => onNavigate("hub")} style={{
               background: "none", border: "none", cursor: "pointer", color: MUTED,
               fontSize: 16, padding: "4px 6px", borderRadius: 6, transition: "color 0.2s",
-              display: "flex", alignItems: "center",
+              display: "flex", alignItems: "center", fontFamily: FONT,
             }}
               onMouseEnter={(e) => (e.currentTarget.style.color = TEAL)}
               onMouseLeave={(e) => (e.currentTarget.style.color = MUTED)}
@@ -162,7 +163,7 @@ export default function SiteNav({ onNavigate, user, onLogin, onLogout, courseId,
                 fontSize: 11, fontWeight: 600, letterSpacing: 1, textTransform: "uppercase",
                 color: courseColor || TEAL, background: `${courseColor || TEAL}0D`,
                 padding: "3px 8px", borderRadius: 5, border: `1px solid ${courseColor || TEAL}22`,
-                whiteSpace: "nowrap",
+                whiteSpace: "nowrap", fontFamily: FONT,
               }}>{courseLabel}</span>
             </>
           )}
@@ -173,11 +174,11 @@ export default function SiteNav({ onNavigate, user, onLogin, onLogout, courseId,
           <CourseDropdown onNavigate={onNavigate} t={t} currentCourse={courseId} />
 
           <button
-            onClick={() => { onNavigate("hub"); setTimeout(() => { document.querySelector("footer")?.scrollIntoView({ behavior: "smooth" }); }, 300); }}
+            onClick={() => onNavigate("about")}
             style={{
               background: "none", border: "none", color: MUTED,
               padding: "6px 10px", borderRadius: 8, fontSize: 13,
-              cursor: "pointer", fontFamily: "'Noto Sans TC', 'Outfit', sans-serif",
+              cursor: "pointer", fontFamily: FONT,
               fontWeight: 500, transition: "color 0.2s",
             }}
             onMouseEnter={(e) => (e.currentTarget.style.color = TEAL)}
@@ -186,15 +187,23 @@ export default function SiteNav({ onNavigate, user, onLogin, onLogout, courseId,
 
           <div style={{ width: 1, height: 20, background: LIGHT_BORDER, margin: "0 4px" }} />
 
+          {/* User area — clickable avatar goes to profile */}
           {user ? (
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <img src={user.user_metadata?.avatar_url || user.user_metadata?.picture} alt="" style={{ width: 26, height: 26, borderRadius: "50%" }} />
-              <span style={{ fontSize: 12, color: DARK, fontWeight: 500, maxWidth: 100, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {user.user_metadata?.full_name || user.user_metadata?.name || "User"}
-              </span>
+              <div
+                onClick={() => onNavigate("profile")}
+                style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", padding: "3px 6px", borderRadius: 8, transition: "background 0.15s" }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "#F1F0EC")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+              >
+                <img src={user.user_metadata?.avatar_url || user.user_metadata?.picture} alt="" style={{ width: 26, height: 26, borderRadius: "50%" }} />
+                <span style={{ fontSize: 12, color: DARK, fontWeight: 500, maxWidth: 100, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontFamily: FONT }}>
+                  {user.user_metadata?.full_name || user.user_metadata?.name || "User"}
+                </span>
+              </div>
               <button onClick={onLogout} style={{
                 background: "none", border: `1px solid ${LIGHT_BORDER}`, color: MUTED,
-                padding: "3px 8px", borderRadius: 6, fontSize: 11, cursor: "pointer", transition: "all 0.2s",
+                padding: "3px 8px", borderRadius: 6, fontSize: 11, cursor: "pointer", transition: "all 0.2s", fontFamily: FONT,
               }}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#E8734A"; e.currentTarget.style.color = "#E8734A"; }}
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = LIGHT_BORDER; e.currentTarget.style.color = MUTED; }}
@@ -205,7 +214,7 @@ export default function SiteNav({ onNavigate, user, onLogin, onLogout, courseId,
               background: TEAL, border: "none", color: "#FFF",
               padding: "5px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600,
               cursor: "pointer", display: "flex", alignItems: "center", gap: 5,
-              transition: "all 0.2s", boxShadow: `0 2px 8px ${TEAL}22`,
+              transition: "all 0.2s", boxShadow: `0 2px 8px ${TEAL}22`, fontFamily: FONT,
             }}
               onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-1px)")}
               onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}
@@ -217,7 +226,7 @@ export default function SiteNav({ onNavigate, user, onLogin, onLogout, courseId,
           <button onClick={toggleLang} style={{
             background: `${TEAL}0D`, border: `1px solid ${TEAL}22`, color: TEAL,
             padding: "5px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600,
-            cursor: "pointer", letterSpacing: 0.5, transition: "all 0.2s", marginLeft: 2,
+            cursor: "pointer", letterSpacing: 0.5, transition: "all 0.2s", marginLeft: 2, fontFamily: FONT,
           }}
             onMouseEnter={(e) => { e.currentTarget.style.background = TEAL; e.currentTarget.style.color = "#FFF"; }}
             onMouseLeave={(e) => { e.currentTarget.style.background = `${TEAL}0D`; e.currentTarget.style.color = TEAL; }}
@@ -241,6 +250,7 @@ export default function SiteNav({ onNavigate, user, onLogin, onLogout, courseId,
           position: "fixed", top: 56, left: 0, right: 0, bottom: 0, zIndex: 99,
           background: "rgba(248,247,244,0.97)", backdropFilter: "blur(16px)",
           padding: "16px 20px", display: "flex", flexDirection: "column", gap: 2, overflowY: "auto",
+          fontFamily: FONT,
         }}>
           <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: 1.5, textTransform: "uppercase", color: TEAL, padding: "8px 4px" }}>
             {t("navCourses")}
@@ -248,7 +258,7 @@ export default function SiteNav({ onNavigate, user, onLogin, onLogout, courseId,
           {COURSES.map((c) => (
             <button key={c.id} onClick={() => { onNavigate(c.id); setMobileOpen(false); }} style={{
               display: "flex", alignItems: "center", gap: 10, width: "100%",
-              padding: "12px 8px", border: "none",
+              padding: "12px 8px", border: "none", fontFamily: FONT,
               background: courseId === c.id ? `${c.color}0D` : "transparent",
               borderRadius: 8, cursor: "pointer", textAlign: "left",
             }}>
@@ -262,31 +272,39 @@ export default function SiteNav({ onNavigate, user, onLogin, onLogout, courseId,
 
           <div style={{ borderTop: `1px solid ${LIGHT_BORDER}`, margin: "8px 0" }} />
 
-          <button onClick={() => { onNavigate("hub"); setMobileOpen(false); setTimeout(() => { document.querySelector("footer")?.scrollIntoView({ behavior: "smooth" }); }, 300); }} style={{
+          <button onClick={() => { onNavigate("about"); setMobileOpen(false); }} style={{
             background: "none", border: "none", color: MUTED, padding: "14px 8px",
-            fontSize: 15, fontWeight: 500, cursor: "pointer", textAlign: "left",
+            fontSize: 15, fontWeight: 500, cursor: "pointer", textAlign: "left", fontFamily: FONT,
           }}>{t("navAbout")}</button>
+
+          {user && (
+            <button onClick={() => { onNavigate("profile"); setMobileOpen(false); }} style={{
+              background: "none", border: "none", color: TEAL, padding: "14px 8px",
+              fontSize: 15, fontWeight: 500, cursor: "pointer", textAlign: "left", fontFamily: FONT,
+              display: "flex", alignItems: "center", gap: 8,
+            }}>
+              <img src={user.user_metadata?.avatar_url || user.user_metadata?.picture} alt="" style={{ width: 24, height: 24, borderRadius: "50%" }} />
+              {t("navProfile")}
+            </button>
+          )}
 
           <button onClick={() => { onNavigate("hub"); setMobileOpen(false); }} style={{
             background: "none", border: "none", color: TEAL, padding: "14px 8px",
-            fontSize: 15, fontWeight: 500, cursor: "pointer", textAlign: "left",
+            fontSize: 15, fontWeight: 500, cursor: "pointer", textAlign: "left", fontFamily: FONT,
           }}>← {t("hubNavTitle")} {t("hubNavSuffix")} Hub</button>
 
           <div style={{ borderTop: `1px solid ${LIGHT_BORDER}`, margin: "8px 0" }} />
 
           {user ? (
-            <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 8px" }}>
-              <img src={user.user_metadata?.avatar_url || user.user_metadata?.picture} alt="" style={{ width: 32, height: 32, borderRadius: "50%" }} />
-              <span style={{ fontSize: 14, color: DARK, fontWeight: 500, flex: 1 }}>{user.user_metadata?.full_name || user.user_metadata?.name || "User"}</span>
-              <button onClick={() => { onLogout(); setMobileOpen(false); }} style={{
-                background: "none", border: `1px solid ${LIGHT_BORDER}`, color: MUTED,
-                padding: "6px 12px", borderRadius: 6, fontSize: 12, cursor: "pointer",
-              }}>{t("navLogout")}</button>
-            </div>
+            <button onClick={() => { onLogout(); setMobileOpen(false); }} style={{
+              background: "none", border: `1px solid ${LIGHT_BORDER}`, color: MUTED,
+              padding: "12px 16px", borderRadius: 10, fontSize: 14, fontWeight: 500,
+              cursor: "pointer", fontFamily: FONT,
+            }}>{t("navLogout")}</button>
           ) : (
             <button onClick={() => { onLogin(); setMobileOpen(false); }} style={{
               background: TEAL, border: "none", color: "#FFF", padding: "12px 16px",
-              borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: "pointer",
+              borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: FONT,
               display: "flex", alignItems: "center", gap: 6, justifyContent: "center",
             }}>
               <span style={{ fontSize: 15 }}>G</span> {t("navLoginSave")}
@@ -296,7 +314,7 @@ export default function SiteNav({ onNavigate, user, onLogin, onLogout, courseId,
           <button onClick={toggleLang} style={{
             background: `${TEAL}0D`, border: `1px solid ${TEAL}22`, color: TEAL,
             padding: "12px 16px", borderRadius: 10, fontSize: 14, fontWeight: 600,
-            cursor: "pointer", letterSpacing: 0.5, marginTop: 4,
+            cursor: "pointer", letterSpacing: 0.5, marginTop: 4, fontFamily: FONT,
           }}>{t("langSwitch")}</button>
         </div>
       )}
