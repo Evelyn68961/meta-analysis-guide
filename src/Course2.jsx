@@ -378,8 +378,36 @@ Be concise. Don't use Markdown formatting. Use plain text with line breaks.`;
 // ═══ MAIN COURSE COMPONENT ═══
 export default function Course2({ onNavigate }) {
   const { t, lang, toggleLang } = useI18n();
+  const [activeSection, setActiveSection] = useState("hero");
 
   const scrollTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+
+  // Track which section is in view
+  useEffect(() => {
+    const sectionIds = ["hero", "s1", "s2", "s3", "s4", "s5", "game", "ai-workshop"];
+    const observers = [];
+    sectionIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const obs = new IntersectionObserver(
+        ([entry]) => { if (entry.isIntersecting) setActiveSection(id); },
+        { threshold: 0.25, rootMargin: "-60px 0px -40% 0px" }
+      );
+      obs.observe(el);
+      observers.push(obs);
+    });
+    return () => observers.forEach(obs => obs.disconnect());
+  }, []);
+
+  const catalogItems = [
+    { id: "s1", num: 1, label: lang === "zh" ? "為什麼要系統性搜尋" : "Why Systematic Search" },
+    { id: "s2", num: 2, label: lang === "zh" ? "文獻資料庫" : "Database Overview" },
+    { id: "s3", num: 3, label: lang === "zh" ? "布林邏輯" : "Boolean Operators" },
+    { id: "s4", num: 4, label: lang === "zh" ? "PRISMA 流程圖" : "PRISMA Flow" },
+    { id: "s5", num: 5, label: lang === "zh" ? "篩選技巧" : "Screening Tips" },
+    { id: "game", num: 6, label: lang === "zh" ? "恐龍食物救援" : "Dino Food Rescue" },
+    { id: "ai-workshop", num: 7, label: lang === "zh" ? "AI 工作坊" : "AI Workshop" },
+  ];
 
   return (
     <div style={{ background: LIGHT_BG, color: DARK, minHeight: "100vh", fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>
@@ -391,7 +419,51 @@ export default function Course2({ onNavigate }) {
         ::selection { background: ${PURPLE}22; color: ${DARK}; }
         @keyframes fadeInUp { 0% { opacity: 0; transform: translateY(8px); } 100% { opacity: 1; transform: translateY(0); } }
         textarea:focus { border-color: ${PURPLE}66 !important; box-shadow: 0 0 0 3px ${PURPLE}0D; }
+        @media (max-width: 1099px) {
+          .sidebar-catalog { display: none !important; }
+          .main-content { margin-left: 0 !important; }
+        }
       `}</style>
+
+      {/* SIDEBAR CATALOG — sticky on left, desktop ≥1100px only */}
+      <div className="sidebar-catalog" style={{
+        position: "fixed", top: 76, left: 0, width: 200, zIndex: 50,
+        padding: "20px 16px 20px 20px",
+        display: "flex", flexDirection: "column", gap: 2,
+      }}>
+        <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: 1.5, textTransform: "uppercase", color: PURPLE, marginBottom: 10, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>
+          {lang === "zh" ? "課程大綱" : "Contents"}
+        </div>
+        {catalogItems.map((item) => {
+          const isActive = activeSection === item.id;
+          return (
+            <button key={item.id} onClick={() => scrollTo(item.id)} style={{
+              background: "none", border: "none", cursor: "pointer",
+              display: "flex", alignItems: "center", gap: 10,
+              padding: "8px 10px", borderRadius: 8,
+              transition: "all 0.25s",
+              borderLeft: `2.5px solid ${isActive ? PURPLE : "transparent"}`,
+            }}>
+              <span style={{
+                fontSize: 11, fontWeight: 700, color: isActive ? PURPLE : "#C0BFB9",
+                fontFamily: "'Noto Sans TC', 'Outfit', sans-serif",
+                minWidth: 16, textAlign: "right",
+                transition: "color 0.25s",
+              }}>{item.num}</span>
+              <span style={{
+                fontSize: 12.5, fontWeight: isActive ? 600 : 400,
+                color: isActive ? DARK : MUTED,
+                fontFamily: "'Noto Sans TC', 'Outfit', sans-serif",
+                textAlign: "left", lineHeight: 1.35,
+                transition: "all 0.25s",
+              }}>{item.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* MAIN CONTENT — shifted right on wide screens for sidebar */}
+      <div className="main-content" style={{ marginLeft: 200 }}>
 
       {/* NAV */}
       <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, height: 56, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 20px", background: "rgba(248,247,244,0.92)", backdropFilter: "blur(16px)", borderBottom: `1px solid ${LIGHT_BORDER}` }}>
@@ -413,7 +485,7 @@ export default function Course2({ onNavigate }) {
       </nav>
 
       {/* HERO */}
-      <section style={{ paddingTop: 100, paddingBottom: 64, textAlign: "center", position: "relative", overflow: "hidden" }}>
+      <section id="hero" style={{ paddingTop: 100, paddingBottom: 64, textAlign: "center", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, opacity: 0.25, backgroundImage: "radial-gradient(circle, #C8C6C0 0.8px, transparent 0.8px)", backgroundSize: "28px 28px", pointerEvents: "none" }} />
         <div style={{ position: "absolute", top: "10%", right: "8%", width: 280, height: 280, borderRadius: "50%", background: `radial-gradient(circle, ${PURPLE}0A, transparent 70%)`, pointerEvents: "none" }} />
         <FadeIn>
@@ -551,8 +623,10 @@ export default function Course2({ onNavigate }) {
         </div>
       </section>
 
+      </div>{/* end .main-content */}
+
       {/* FOOTER */}
-      <footer style={{ padding: "40px 24px", textAlign: "center", borderTop: `1px solid ${LIGHT_BORDER}`, background: LIGHT_BG }}>
+      <footer style={{ padding: "40px 24px", textAlign: "center", borderTop: `1px solid ${LIGHT_BORDER}`, background: LIGHT_BG, marginLeft: 0 }}>
         {onNavigate && (
           <div style={{ marginBottom: 24, display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
             <button onClick={() => onNavigate("course1")} style={{ background: "transparent", border: `1.5px solid ${LIGHT_BORDER}`, color: MUTED, padding: "10px 22px", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.2s" }}
@@ -565,8 +639,10 @@ export default function Course2({ onNavigate }) {
               onMouseLeave={(e) => { e.target.style.borderColor = LIGHT_BORDER; e.target.style.color = MUTED; }}>
               {lang === "zh" ? "課程總覽" : "Course Hub"}
             </button>
-            <button style={{ background: PURPLE, border: "none", color: "#FFF", padding: "10px 22px", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "default", opacity: 0.5 }}>
-              {lang === "zh" ? "Course 3：即將推出" : "Course 3: Coming Soon"}
+            <button onClick={() => onNavigate("course3")} style={{ background: PURPLE, border: "none", color: "#FFF", padding: "10px 22px", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.2s", boxShadow: `0 2px 12px ${PURPLE}33` }}
+              onMouseEnter={(e) => { e.target.style.transform = "translateY(-1px)"; }}
+              onMouseLeave={(e) => { e.target.style.transform = "translateY(0)"; }}>
+              {lang === "zh" ? "前往 Course 3：數據萃取 →" : "Next: Course 3 — Data Extraction →"}
             </button>
           </div>
         )}
