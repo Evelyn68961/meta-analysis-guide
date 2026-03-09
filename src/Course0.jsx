@@ -238,10 +238,45 @@ export default function Course0({ onNavigate }) {
   const [openStep, setOpenStep] = useState(null);
   const [scrollY, setScrollY] = useState(0);
   const [mobileMenu, setMobileMenu] = useState(false);
+  const [activeSection, setActiveSection] = useState("hero");
   useEffect(() => { const h = () => setScrollY(window.scrollY); window.addEventListener("scroll", h); return () => window.removeEventListener("scroll", h); }, []);
   const scrollTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
 
+  // Track which section is in view
+  useEffect(() => {
+    const sectionIds = ["hero", "what", "why", "combiner", "how", "tools", "quiz"];
+    const observers = [];
+    sectionIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const obs = new IntersectionObserver(
+        ([entry]) => { if (entry.isIntersecting) setActiveSection(id); },
+        { threshold: 0.25, rootMargin: "-60px 0px -40% 0px" }
+      );
+      obs.observe(el);
+      observers.push(obs);
+    });
+    return () => observers.forEach(obs => obs.disconnect());
+  }, []);
+
   const navItems = [{ id: "what", label: t("navWhat") }, { id: "why", label: t("navWhy") }, { id: "combiner", label: t("navDemo") }, { id: "how", label: t("navHow") }, { id: "tools", label: t("navPlots") }, { id: "quiz", label: t("navQuiz") }];
+
+  // Sidebar catalog items with numbers
+  const catalogItems = [
+    { id: "what", num: 1, label: lang === "zh" ? "什麼是統合分析" : "What Is Meta-Analysis" },
+    { id: "why", num: 2, label: lang === "zh" ? "為什麼重要" : "Why It Matters" },
+    { id: "combiner", num: 3, label: lang === "zh" ? "互動合併器" : "Study Combiner Demo" },
+    { id: "how", num: 4, label: lang === "zh" ? "八步驟方法" : "8-Step Method" },
+    { id: "tools", num: 5, label: lang === "zh" ? "森林圖" : "Forest Plot" },
+    { id: "quiz", num: 6, label: lang === "zh" ? "彩蛋尋寶" : "Egg Hunt Game" },
+  ];
+
+  // Next section mapping for "Next →" buttons
+  const sectionOrder = ["what", "why", "combiner", "how", "tools", "quiz"];
+  const nextSection = (currentId) => {
+    const idx = sectionOrder.indexOf(currentId);
+    return idx < sectionOrder.length - 1 ? sectionOrder[idx + 1] : null;
+  };
 
   const steps = [
     { title: t("step1Title"), analogy: t("step1Analogy"), details: [t("step1Detail1"), t("step1Detail2"), t("step1Detail3"), t("step1Detail4")] },
@@ -274,9 +309,15 @@ export default function Course0({ onNavigate }) {
         @media (max-width: 768px) {
           .desktop-nav { display: none !important; }
           .mobile-menu-btn { display: block !important; }
+          .sidebar-catalog { display: none !important; }
+          .main-content { margin-left: 0 !important; }
         }
         @media (min-width: 769px) {
           .mobile-menu-btn { display: none !important; }
+        }
+        @media (min-width: 769px) and (max-width: 1099px) {
+          .sidebar-catalog { display: none !important; }
+          .main-content { margin-left: 0 !important; }
         }
       `}</style>
 
@@ -287,6 +328,12 @@ export default function Course0({ onNavigate }) {
         </div>
         {/* Desktop nav */}
         <div style={{ display: "flex", gap: 4, alignItems: "center" }} className="desktop-nav">
+          {onNavigate && (
+            <button onClick={() => onNavigate("hub")} style={{ background: "none", border: "none", color: MUTED, padding: "8px 10px", borderRadius: 8, fontSize: 13, cursor: "pointer", fontFamily: "'Noto Sans TC', 'Outfit', sans-serif", fontWeight: 500, transition: "color 0.2s" }}
+              onMouseEnter={(e) => (e.target.style.color = TEAL)} onMouseLeave={(e) => (e.target.style.color = MUTED)}>
+              {lang === "zh" ? "← 總覽" : "← Hub"}
+            </button>
+          )}
           {navItems.map((n) => (
             <button key={n.id} onClick={() => scrollTo(n.id)} style={{ background: "none", border: "none", color: MUTED, padding: "8px 14px", borderRadius: 8, fontSize: 13, cursor: "pointer", fontFamily: "'Noto Sans TC', 'Outfit', sans-serif", fontWeight: 500, transition: "color 0.2s" }}
               onMouseEnter={(e) => (e.target.style.color = TEAL)} onMouseLeave={(e) => (e.target.style.color = MUTED)}>
@@ -321,6 +368,46 @@ export default function Course0({ onNavigate }) {
           </button>
         </div>
       )}
+
+      {/* SIDEBAR CATALOG — sticky on left, desktop only (≥1100px) */}
+      <div className="sidebar-catalog" style={{
+        position: "fixed", top: 80, left: 0, width: 200, zIndex: 50,
+        padding: "20px 16px 20px 20px",
+        display: "flex", flexDirection: "column", gap: 2,
+      }}>
+        <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: 1.5, textTransform: "uppercase", color: TEAL, marginBottom: 10, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>
+          {lang === "zh" ? "課程大綱" : "Contents"}
+        </div>
+        {catalogItems.map((item) => {
+          const isActive = activeSection === item.id;
+          return (
+            <button key={item.id} onClick={() => scrollTo(item.id)} style={{
+              background: "none", border: "none", cursor: "pointer",
+              display: "flex", alignItems: "center", gap: 10,
+              padding: "8px 10px", borderRadius: 8,
+              transition: "all 0.25s",
+              borderLeft: `2.5px solid ${isActive ? TEAL : "transparent"}`,
+            }}>
+              <span style={{
+                fontSize: 11, fontWeight: 700, color: isActive ? TEAL : "#C0BFB9",
+                fontFamily: "'Noto Sans TC', 'Outfit', sans-serif",
+                minWidth: 16, textAlign: "right",
+                transition: "color 0.25s",
+              }}>{item.num}</span>
+              <span style={{
+                fontSize: 12.5, fontWeight: isActive ? 600 : 400,
+                color: isActive ? DARK : MUTED,
+                fontFamily: "'Noto Sans TC', 'Outfit', sans-serif",
+                textAlign: "left", lineHeight: 1.35,
+                transition: "all 0.25s",
+              }}>{item.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* MAIN CONTENT — shifted right on wide screens to make room for sidebar */}
+      <div className="main-content" style={{ marginLeft: 200 }}>
 
       {/* HERO */}
       <section id="hero" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
@@ -389,6 +476,13 @@ export default function Course0({ onNavigate }) {
             </div>
           </div>
         </FadeIn>
+        <FadeIn delay={0.25}>
+          <div style={{ textAlign: "center", marginTop: 40 }}>
+            <button onClick={() => scrollTo("why")} style={btnPrimary}>
+              {lang === "zh" ? "下一節：為什麼重要 →" : "Next: Why It Matters →"}
+            </button>
+          </div>
+        </FadeIn>
       </Section>
 
       {/* WHY */}
@@ -416,6 +510,13 @@ export default function Course0({ onNavigate }) {
             </FadeIn>
           ))}
         </div>
+        <FadeIn delay={0.35}>
+          <div style={{ textAlign: "center", marginTop: 40 }}>
+            <button onClick={() => scrollTo("combiner")} style={btnPrimary}>
+              {lang === "zh" ? "下一節：互動合併器 →" : "Next: Study Combiner →"}
+            </button>
+          </div>
+        </FadeIn>
       </Section>
 
       {/* COMBINER DEMO */}
@@ -424,6 +525,13 @@ export default function Course0({ onNavigate }) {
           <Paragraph style={{ marginBottom: 32 }}>{t("combinerDesc")}</Paragraph>
         </FadeIn>
         <FadeIn delay={0.1}><StudyCombiner /></FadeIn>
+        <FadeIn delay={0.15}>
+          <div style={{ textAlign: "center", marginTop: 40 }}>
+            <button onClick={() => scrollTo("how")} style={btnPrimary}>
+              {lang === "zh" ? "下一節：八步驟方法 →" : "Next: 8-Step Method →"}
+            </button>
+          </div>
+        </FadeIn>
       </Section>
 
       {/* HOW */}
@@ -439,6 +547,13 @@ export default function Course0({ onNavigate }) {
             </FadeIn>
           ))}
         </div>
+        <FadeIn delay={0.35}>
+          <div style={{ textAlign: "center", marginTop: 40 }}>
+            <button onClick={() => scrollTo("tools")} style={btnPrimary}>
+              {lang === "zh" ? "下一節：森林圖 →" : "Next: Forest Plot →"}
+            </button>
+          </div>
+        </FadeIn>
       </Section>
 
       {/* FOREST PLOT */}
@@ -458,6 +573,13 @@ export default function Course0({ onNavigate }) {
             ))}
           </div>
         </FadeIn>
+        <FadeIn delay={0.2}>
+          <div style={{ textAlign: "center", marginTop: 40 }}>
+            <button onClick={() => scrollTo("quiz")} style={{ ...btnPrimary, background: CORAL, boxShadow: `0 4px 20px ${CORAL}33` }}>
+              {lang === "zh" ? "下一節：彩蛋尋寶 🥚 →" : "Next: Egg Hunt 🥚 →"}
+            </button>
+          </div>
+        </FadeIn>
       </Section>
 
       {/* EGG HUNT */}
@@ -468,8 +590,10 @@ export default function Course0({ onNavigate }) {
         <FadeIn delay={0.1}><DinoEggHunt t={t} lang={lang} /></FadeIn>
       </Section>
 
+      </div>{/* end .main-content */}
+
       {/* FOOTER */}
-      <footer style={{ padding: "48px 24px", textAlign: "center", borderTop: `1px solid ${LIGHT_BORDER}`, background: LIGHT_BG }}>
+      <footer style={{ padding: "48px 24px", textAlign: "center", borderTop: `1px solid ${LIGHT_BORDER}`, background: LIGHT_BG, marginLeft: 0 }}>
         {onNavigate && (
           <div style={{ marginBottom: 24, display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
             <button onClick={() => onNavigate("hub")} style={{ background: "transparent", border: `1.5px solid ${LIGHT_BORDER}`, color: MUTED, padding: "10px 22px", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Noto Sans TC', 'Outfit', sans-serif", transition: "all 0.2s" }}
