@@ -13,6 +13,8 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import CuteDino from "./CuteDino";
+import { pickBalanced } from "./questionHelpers";
+import { course2Questions } from "./course2Questions";
 
 // ═══ DESIGN TOKENS ═══
 const PURPLE = "#7B68C8";
@@ -207,21 +209,20 @@ export default function DinoFoodRescue({ t, lang }) {
   const [dinoMood, setDinoMood] = useState("neutral"); // neutral | happy | sad | eating
   const [showExplanation, setShowExplanation] = useState(false);
 
-  // Build question set from i18n keys
-  const allQuestions = [];
-  for (let i = 1; i <= 7; i++) {
-    allQuestions.push({
-      q: t(`c2gq${i}`),
-      opts: [t(`c2gq${i}a`), t(`c2gq${i}b`), t(`c2gq${i}c`), t(`c2gq${i}d`)],
-      correct: t(`c2gq${i}correct`),
-      exp: t(`c2gq${i}exp`),
-    });
-  }
+  // Build localized question set from question bank
+  const buildQuestions = () => {
+    const picked = pickBalanced(course2Questions, 7, 7);
+    return picked.map(q => ({
+      q: (lang === "zh" ? q.zh : q.en).q,
+      opts: (lang === "zh" ? q.zh : q.en).opts,
+      exp: (lang === "zh" ? q.zh : q.en).exp,
+      correct: q.correct,
+    }));
+  };
 
   const startGame = (dinoIdx) => {
     setChosenDino(dinoIdx);
-    const shuffled = [...allQuestions].sort(() => Math.random() - 0.5);
-    setQuestions(shuffled);
+    setQuestions(buildQuestions());
     setCurrent(0);
     setSelected(null);
     setAnswered(false);
