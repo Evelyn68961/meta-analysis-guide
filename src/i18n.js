@@ -395,6 +395,20 @@ const translations = {
     c1aiDesc: "選擇一個臨床情境，寫下你自己的 PICO，然後讓 AI 逐一檢查每個元素，給你即時的個人化回饋。填完全部四個欄位後，還可以做整體評估！",
     c1aiScenario: "選擇情境：",
 
+    // AI Freestyle PICO
+    c1freeLabel: "自由練習",
+    c1freeTitle: "用你自己的主題練習 PICO",
+    c1freeDesc: "已經有想研究的題目了嗎？寫下你的研究主題，AI 會幫你檢查主題是否合適，然後逐一評估你的 PICO。這是從課堂練習到真實研究的第一步！",
+    c1freeTopic: "你的研究主題：",
+    c1freeTopicHint: "用一兩句話描述你想探討的臨床問題，例如：「我想研究 probiotics 能不能預防 ICU 病人的 C. diff 感染」",
+    c1freeTopicPlaceholder: "例如：SGLT2 抑制劑對慢性腎病進展的效果...",
+    c1freeTopicCheck: "AI 檢查主題",
+    c1freeNowPico: "現在寫下你的 PICO",
+    c1freePlaceholderP: "針對你的主題，定義研究族群...",
+    c1freePlaceholderI: "你要測試的介入措施...",
+    c1freePlaceholderC: "對照組是什麼...",
+    c1freePlaceholderO: "你要測量的結果指標...",
+
     // ═══ COURSE 2: Literature Search & PRISMA ═══
     // Nav / Meta
     c2Label: "Course 2",
@@ -976,6 +990,20 @@ const translations = {
     c1aiTitle: "Let AI Review Your PICO",
     c1aiDesc: "Pick a clinical scenario, write your own PICO, then let AI check each element and give you personalized feedback. Fill in all four fields for an overall assessment!",
     c1aiScenario: "Choose a scenario:",
+
+    // AI Freestyle PICO
+    c1freeLabel: "Freestyle",
+    c1freeTitle: "Practice PICO with Your Own Topic",
+    c1freeDesc: "Have a research question in mind? Write your topic and let AI check if it's suitable, then evaluate your PICO element by element. This is your first step from classroom exercises to real research!",
+    c1freeTopic: "Your research topic:",
+    c1freeTopicHint: "Describe your clinical question in 1-2 sentences, e.g. 'I want to study whether probiotics can prevent C. diff infection in ICU patients'",
+    c1freeTopicPlaceholder: "e.g. Effect of SGLT2 inhibitors on CKD progression...",
+    c1freeTopicCheck: "AI Check Topic",
+    c1freeNowPico: "Now write your PICO",
+    c1freePlaceholderP: "Define the study population for your topic...",
+    c1freePlaceholderI: "The intervention you want to test...",
+    c1freePlaceholderC: "What's the comparator...",
+    c1freePlaceholderO: "The outcome you want to measure...",
 
     // ═══ COURSE 2: Literature Search & PRISMA ═══
     // Nav / Meta

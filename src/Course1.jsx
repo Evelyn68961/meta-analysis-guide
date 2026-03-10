@@ -523,6 +523,298 @@ Don't use Markdown formatting.`;
   );
 }
 
+// ═══ AI PICO FREESTYLE ═══
+function AIPicoFreestyle({ t, lang }) {
+  const [topic, setTopic] = useState("");
+  const [topicFeedback, setTopicFeedback] = useState(null);
+  const [topicLoading, setTopicLoading] = useState(false);
+  const [inputs, setInputs] = useState({ p: "", i: "", c: "", o: "" });
+  const [feedback, setFeedback] = useState({ p: null, i: null, c: null, o: null });
+  const [loading, setLoading] = useState({ p: false, i: false, c: false, o: false });
+  const [overallFeedback, setOverallFeedback] = useState(null);
+  const [overallLoading, setOverallLoading] = useState(false);
+
+  const picoLabels = {
+    p: { letter: "P", en: "Population", zh: "族群", color: CORAL },
+    i: { letter: "I", en: "Intervention", zh: "介入", color: "#7B68C8" },
+    c: { letter: "C", en: "Comparison", zh: "對照", color: "#D4A843" },
+    o: { letter: "O", en: "Outcome", zh: "結果", color: "#5B9E5F" },
+  };
+
+  const resetAll = () => {
+    setTopic("");
+    setTopicFeedback(null);
+    setInputs({ p: "", i: "", c: "", o: "" });
+    setFeedback({ p: null, i: null, c: null, o: null });
+    setOverallFeedback(null);
+  };
+
+  const checkTopic = async () => {
+    if (!topic.trim()) return;
+    setTopicLoading(true);
+    setTopicFeedback(null);
+
+    const systemPrompt = lang === "zh"
+      ? `你是一位統合分析教學助手。學生想練習為自己的研究主題撰寫 PICO。請用繁體中文回答。
+請評估學生提出的研究主題是否適合做統合分析。回覆要簡短（2-4句），包含：
+1. 一個表情符號開頭：✅ 適合、⚠️ 需調整、或 💡 建議
+2. 這個主題是否夠具體，能形成可搜尋的研究問題
+3. 如果太廣泛或太模糊，給一個具體的聚焦建議
+4. 如果合適，鼓勵學生開始寫 PICO
+不要使用 Markdown 格式。`
+      : `You are a meta-analysis teaching assistant. The student wants to practice writing PICO for their own research topic.
+Evaluate whether the topic is suitable for a meta-analysis. Keep it brief (2-4 sentences):
+1. Start with: ✅ Suitable, ⚠️ Needs adjustment, or 💡 Suggestion
+2. Whether the topic is specific enough to form a searchable research question
+3. If too broad or vague, give a concrete suggestion to narrow it down
+4. If suitable, encourage the student to start writing their PICO
+Don't use Markdown formatting.`;
+
+    try {
+      const response = await fetch("/api/ai-feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          system: systemPrompt,
+          userMessage: topic,
+        }),
+      });
+      const data = await response.json();
+      const text = data.content?.map(item => item.text || "").join("") || (lang === "zh" ? "無法取得回饋，請重試。" : "Could not get feedback. Please try again.");
+      setTopicFeedback(text);
+    } catch (err) {
+      setTopicFeedback(lang === "zh" ? "連線錯誤，請檢查網路後重試。" : "Connection error. Please check your network and try again.");
+    }
+    setTopicLoading(false);
+  };
+
+  const checkField = async (field) => {
+    if (!inputs[field].trim() || !topic.trim()) return;
+    setLoading(prev => ({ ...prev, [field]: true }));
+    setFeedback(prev => ({ ...prev, [field]: null }));
+
+    const label = picoLabels[field];
+
+    const systemPrompt = lang === "zh"
+      ? `你是一位統合分析教學助手。學生正在為自己的研究主題撰寫 PICO。
+研究主題：「${topic}」
+請用繁體中文回答。請評估學生寫的 ${label.letter}（${label.zh}）是否恰當。回覆要簡短（2-3句），包含：
+1. 一個表情符號開頭：✅ 好的、⚠️ 需改進、或 💡 建議
+2. 具體說明哪裡好或哪裡需要改進
+3. 如果需要改進，給一個具體的修改建議
+不要重複學生的答案。不要使用 Markdown 格式。`
+      : `You are a meta-analysis teaching assistant. The student is writing PICO for their own research topic.
+Research topic: "${topic}"
+Evaluate their ${label.letter} (${label.en}). Keep it brief (2-3 sentences):
+1. Start with: ✅ Good, ⚠️ Needs improvement, or 💡 Suggestion
+2. Be specific about what's good or needs work
+3. If improvement needed, give a concrete suggestion
+Don't repeat the student's answer. Don't use Markdown formatting.`;
+
+    try {
+      const response = await fetch("/api/ai-feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          system: systemPrompt,
+          userMessage: `${label.letter} (${lang === "zh" ? label.zh : label.en}): ${inputs[field]}`,
+        }),
+      });
+      const data = await response.json();
+      const text = data.content?.map(item => item.text || "").join("") || (lang === "zh" ? "無法取得回饋，請重試。" : "Could not get feedback. Please try again.");
+      setFeedback(prev => ({ ...prev, [field]: text }));
+    } catch (err) {
+      setFeedback(prev => ({ ...prev, [field]: lang === "zh" ? "連線錯誤，請檢查網路後重試。" : "Connection error. Please check your network and try again." }));
+    }
+    setLoading(prev => ({ ...prev, [field]: false }));
+  };
+
+  const checkOverall = async () => {
+    const filled = Object.values(inputs).every(v => v.trim());
+    if (!filled || !topic.trim()) return;
+    setOverallLoading(true);
+    setOverallFeedback(null);
+
+    const systemPrompt = lang === "zh"
+      ? `你是一位統合分析教學助手。學生為自己的研究主題撰寫了完整的 PICO。
+研究主題：「${topic}」
+請用繁體中文回答。請給出整體評估（3-5句），包含：
+1. 整體評分：🏆 優秀、👍 良好、📝 需修改
+2. PICO 各元素之間的邏輯連貫性
+3. 這個 PICO 是否足夠精確到可以用來搜尋文獻
+4. 一個最重要的改進建議
+不要使用 Markdown 格式。`
+      : `You are a meta-analysis teaching assistant. The student wrote a complete PICO for their own research topic.
+Research topic: "${topic}"
+Give an overall assessment (3-5 sentences):
+1. Rating: 🏆 Excellent, 👍 Good, or 📝 Needs revision
+2. Logical coherence between PICO elements
+3. Whether this PICO is precise enough for a literature search
+4. One key improvement suggestion
+Don't use Markdown formatting.`;
+
+    const picoText = `P: ${inputs.p}\nI: ${inputs.i}\nC: ${inputs.c}\nO: ${inputs.o}`;
+
+    try {
+      const response = await fetch("/api/ai-feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          system: systemPrompt,
+          userMessage: picoText,
+        }),
+      });
+      const data = await response.json();
+      const text = data.content?.map(item => item.text || "").join("") || (lang === "zh" ? "無法取得回饋，請重試。" : "Could not get feedback.");
+      setOverallFeedback(text);
+    } catch (err) {
+      setOverallFeedback(lang === "zh" ? "連線錯誤，請檢查網路後重試。" : "Connection error. Please try again.");
+    }
+    setOverallLoading(false);
+  };
+
+  const allFilled = Object.values(inputs).every(v => v.trim()) && topic.trim();
+
+  return (
+    <div style={{ background: CARD_BG, borderRadius: 20, border: `1px solid ${LIGHT_BORDER}`, padding: "32px 24px", boxShadow: "0 2px 20px rgba(0,0,0,0.04)" }}>
+      {/* Topic input */}
+      <h4 style={{ fontSize: 14, fontWeight: 600, color: DARK, marginBottom: 8 }}>{t("c1freeTopic")}</h4>
+      <p style={{ fontSize: 13, color: MUTED, marginBottom: 12, lineHeight: 1.6 }}>{t("c1freeTopicHint")}</p>
+      <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+        <textarea
+          value={topic}
+          onChange={(e) => { setTopic(e.target.value); setTopicFeedback(null); }}
+          placeholder={t("c1freeTopicPlaceholder")}
+          style={{ flex: 1, padding: "12px 14px", borderRadius: 10, border: `1.5px solid ${LIGHT_BORDER}`, fontSize: 14, lineHeight: 1.6, color: DARK, background: "#FAFAF7", resize: "vertical", minHeight: 56, outline: "none", transition: "border-color 0.2s", boxSizing: "border-box" }}
+        />
+        <button
+          onClick={checkTopic}
+          disabled={!topic.trim() || topicLoading}
+          style={{
+            background: topic.trim() ? `${TEAL}12` : "#F5F5F3",
+            border: `1.5px solid ${topic.trim() ? TEAL + "33" : LIGHT_BORDER}`,
+            color: topic.trim() ? TEAL : "#CCC",
+            borderRadius: 10, padding: "0 14px", fontSize: 12, fontWeight: 600,
+            cursor: topic.trim() ? "pointer" : "default",
+            transition: "all 0.2s", whiteSpace: "nowrap", alignSelf: "flex-start", minHeight: 56,
+          }}
+        >
+          {topicLoading ? (lang === "zh" ? "分析中…" : "Checking…") : t("c1freeTopicCheck")}
+        </button>
+      </div>
+      {/* Topic feedback */}
+      {topicFeedback && (
+        <div style={{
+          marginBottom: 20, padding: "12px 16px", borderRadius: 10,
+          background: topicFeedback.startsWith("✅") ? "#E6F5F0" : topicFeedback.startsWith("⚠️") ? "#FFF8E6" : `${TEAL}06`,
+          border: `1px solid ${topicFeedback.startsWith("✅") ? "#3DA87A22" : topicFeedback.startsWith("⚠️") ? "#D4A84322" : TEAL + "18"}`,
+          fontSize: 13.5, lineHeight: 1.65, color: MUTED,
+          animation: "fadeInUp 0.3s ease-out",
+        }}>
+          {topicFeedback}
+        </div>
+      )}
+
+      {/* Divider before PICO fields */}
+      {topic.trim() && (
+        <>
+          <div style={{ borderTop: `1px solid ${LIGHT_BORDER}`, margin: "20px 0", position: "relative" }}>
+            <span style={{ position: "absolute", top: -10, left: 20, background: CARD_BG, padding: "0 10px", fontSize: 12, fontWeight: 600, color: TEAL }}>{t("c1freeNowPico")}</span>
+          </div>
+
+          {/* PICO fields */}
+          {["p", "i", "c", "o"].map(field => {
+            const label = picoLabels[field];
+            return (
+              <div key={field} style={{ marginBottom: 20 }}>
+                <label style={{ fontSize: 13, fontWeight: 600, color: DARK, marginBottom: 6, display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 22, height: 22, borderRadius: 6, background: `${label.color}15`, fontSize: 11, fontWeight: 700, color: label.color }}>{label.letter}</span>
+                  {t(`c1s4Your${field.toUpperCase()}`)}
+                </label>
+                <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
+                  <textarea
+                    value={inputs[field]}
+                    onChange={(e) => { setInputs(prev => ({ ...prev, [field]: e.target.value })); setFeedback(prev => ({ ...prev, [field]: null })); }}
+                    placeholder={t(`c1freePlaceholder${field.toUpperCase()}`)}
+                    style={{ flex: 1, padding: "10px 14px", borderRadius: 10, border: `1.5px solid ${LIGHT_BORDER}`, fontSize: 14, lineHeight: 1.6, color: DARK, background: "#FAFAF7", resize: "vertical", minHeight: 48, outline: "none", transition: "border-color 0.2s", boxSizing: "border-box" }}
+                  />
+                  <button
+                    onClick={() => checkField(field)}
+                    disabled={!inputs[field].trim() || loading[field]}
+                    style={{
+                      background: inputs[field].trim() ? `${label.color}12` : "#F5F5F3",
+                      border: `1.5px solid ${inputs[field].trim() ? label.color + "33" : LIGHT_BORDER}`,
+                      color: inputs[field].trim() ? label.color : "#CCC",
+                      borderRadius: 10, padding: "0 14px", fontSize: 12, fontWeight: 600,
+                      cursor: inputs[field].trim() ? "pointer" : "default",
+                      transition: "all 0.2s", whiteSpace: "nowrap", alignSelf: "flex-start", minHeight: 48,
+                    }}
+                  >
+                    {loading[field] ? (lang === "zh" ? "分析中…" : "Checking…") : (lang === "zh" ? "AI 檢查" : "AI Check")}
+                  </button>
+                </div>
+                {feedback[field] && (
+                  <div style={{
+                    marginTop: 8, padding: "12px 16px", borderRadius: 10,
+                    background: feedback[field].startsWith("✅") ? "#E6F5F0" : feedback[field].startsWith("⚠️") ? "#FFF8E6" : `${TEAL}06`,
+                    border: `1px solid ${feedback[field].startsWith("✅") ? "#3DA87A22" : feedback[field].startsWith("⚠️") ? "#D4A84322" : TEAL + "18"}`,
+                    fontSize: 13.5, lineHeight: 1.65, color: MUTED,
+                    animation: "fadeInUp 0.3s ease-out",
+                  }}>
+                    {feedback[field]}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          {/* Overall check */}
+          <div style={{ borderTop: `1px solid ${LIGHT_BORDER}`, paddingTop: 20, marginTop: 8 }}>
+            <button
+              onClick={checkOverall}
+              disabled={!allFilled || overallLoading}
+              style={{
+                background: allFilled ? TEAL : "#E8E6E1",
+                border: "none", color: allFilled ? "#FFF" : MUTED,
+                padding: "13px 28px", borderRadius: 10, fontSize: 14, fontWeight: 600,
+                cursor: allFilled ? "pointer" : "default",
+                transition: "all 0.2s", width: "100%",
+                boxShadow: allFilled ? `0 2px 12px ${TEAL}33` : "none",
+              }}
+            >
+              {overallLoading ? (lang === "zh" ? "正在進行整體評估…" : "Running overall assessment…") : (lang === "zh" ? "AI 整體評估我的 PICO" : "AI Overall Assessment")}
+            </button>
+          </div>
+
+          {overallFeedback && (
+            <div style={{
+              marginTop: 16, padding: "18px 20px", borderRadius: 14,
+              background: overallFeedback.includes("🏆") ? `${TEAL}08` : overallFeedback.includes("👍") ? "#F0FAF5" : "#FFFAF0",
+              border: `1.5px solid ${overallFeedback.includes("🏆") ? TEAL + "22" : overallFeedback.includes("👍") ? "#3DA87A22" : "#D4A84322"}`,
+              fontSize: 14, lineHeight: 1.7, color: DARK,
+              animation: "fadeInUp 0.3s ease-out",
+            }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: TEAL, marginBottom: 8 }}>{lang === "zh" ? "整體評估" : "Overall Assessment"}</div>
+              {overallFeedback}
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Reset button */}
+      {(topic.trim() || Object.values(inputs).some(v => v.trim())) && (
+        <div style={{ marginTop: 16, textAlign: "center" }}>
+          <button onClick={resetAll} style={{ background: "transparent", border: `1.5px solid ${LIGHT_BORDER}`, color: MUTED, padding: "8px 20px", borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: "pointer", transition: "all 0.2s" }}
+            onMouseEnter={(e) => { e.target.style.borderColor = CORAL; e.target.style.color = CORAL; }}
+            onMouseLeave={(e) => { e.target.style.borderColor = LIGHT_BORDER; e.target.style.color = MUTED; }}>
+            {lang === "zh" ? "重新開始 ↻" : "Start Over ↻"}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ═══ MAIN COURSE COMPONENT ═══
 export default function Course1PICO({ onNavigate, user, onLogin, onLogout }) {
   const { t, lang, toggleLang } = useI18n();
@@ -532,7 +824,7 @@ export default function Course1PICO({ onNavigate, user, onLogin, onLogout }) {
 
   // Track which section is in view
   useEffect(() => {
-    const sectionIds = ["hero", "s1", "s2", "s3", "s4", "s5", "game", "ai-workshop"];
+    const sectionIds = ["hero", "s1", "s2", "s3", "s4", "s5", "game", "ai-workshop", "ai-freestyle"];
     const observers = [];
     sectionIds.forEach(id => {
       const el = document.getElementById(id);
@@ -555,6 +847,7 @@ export default function Course1PICO({ onNavigate, user, onLogin, onLogout }) {
     { id: "s5", num: 5, label: lang === "zh" ? "互動練習" : "PICO Builder" },
     { id: "game", num: 6, label: lang === "zh" ? "恐龍孵蛋" : "Dino Egg Hatch" },
     { id: "ai-workshop", num: 7, label: lang === "zh" ? "AI 工作坊" : "AI Workshop" },
+    { id: "ai-freestyle", num: 8, label: lang === "zh" ? "自由練習" : "My Own PICO" },
   ];
 
   return (
@@ -759,6 +1052,15 @@ export default function Course1PICO({ onNavigate, user, onLogin, onLogout }) {
           <FadeIn><SectionLabel text={t("c1aiLabel")} /><SectionTitle>{t("c1aiTitle")}</SectionTitle></FadeIn>
           <FadeIn delay={0.1}><Paragraph style={{ marginBottom: 32 }}>{t("c1aiDesc")}</Paragraph></FadeIn>
           <FadeIn delay={0.15}><AIPicoWorkshop t={t} lang={lang} /></FadeIn>
+        </div>
+      </section>
+
+      {/* AI FREESTYLE PICO */}
+      <section id="ai-freestyle" style={{ padding: "80px 24px", background: LIGHT_BG }}>
+        <div style={{ maxWidth: 880, margin: "0 auto" }}>
+          <FadeIn><SectionLabel text={t("c1freeLabel")} /><SectionTitle>{t("c1freeTitle")}</SectionTitle></FadeIn>
+          <FadeIn delay={0.1}><Paragraph style={{ marginBottom: 32 }}>{t("c1freeDesc")}</Paragraph></FadeIn>
+          <FadeIn delay={0.15}><AIPicoFreestyle t={t} lang={lang} /></FadeIn>
         </div>
       </section>
 
