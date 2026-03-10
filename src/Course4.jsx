@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useI18n } from "./i18n";
 import SiteNav from "./SiteNav";
-// Game component TBD — uncomment when created:
-// import DinoGameC4 from "./DinoGameC4";
+import DinoKeyQuest from "./DinoKeyQuest";
 
 // ═══ DESIGN TOKENS ═══
 const TEAL = "#0E7C86";
@@ -745,22 +744,12 @@ export default function Course4({ onNavigate, user, onLogin, onLogout }) {
         </div>
       </section>
 
-      {/* GAME PLACEHOLDER */}
+      {/* DINO KEY QUEST GAME */}
       <section id="game" style={{ padding: "80px 24px", background: "#F1F0EC" }}>
-        <div style={{ maxWidth: 640, margin: "0 auto", textAlign: "center" }}>
+        <div style={{ maxWidth: 700, margin: "0 auto" }}>
           <FadeIn><SectionLabel text={t("c4gameLabel")} /></FadeIn>
           <FadeIn delay={0.1}>
-            <div style={{ background: CARD_BG, borderRadius: 20, border: `1px solid ${LIGHT_BORDER}`, padding: "48px 24px", boxShadow: "0 2px 20px rgba(0,0,0,0.04)" }}>
-              <div style={{ fontSize: 48, marginBottom: 16 }}>🎮</div>
-              <h3 style={{ fontSize: 20, fontWeight: 700, color: DARK, marginBottom: 8 }}>
-                {lang === "zh" ? "恐龍小遊戲即將推出" : "Dino Game Coming Soon"}
-              </h3>
-              <p style={{ fontSize: 14, color: MUTED, lineHeight: 1.6 }}>
-                {lang === "zh"
-                  ? "70 題知識庫已經準備好了！遊戲組件開發中。"
-                  : "70-question bank is ready! Game component in development."}
-              </p>
-            </div>
+            <DinoKeyQuest lang={lang} />
           </FadeIn>
         </div>
       </section>
