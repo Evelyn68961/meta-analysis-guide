@@ -49,7 +49,7 @@ export function DragonEgg({ color = "#3498DB", size = 80, state = "idle", delay 
 }
 
 // ═══ DRAGON EGG HATCHING GAME ═══
-export default function DinoEggHatch({ t, lang }) {
+export default function DinoEggHatch({ t, lang, onNext }) {
   const [phase, setPhase] = useState("welcome"); // welcome | pick | playing | results
   const [chosenEgg, setChosenEgg] = useState(null);
   const [questions, setQuestions] = useState([]);
@@ -192,7 +192,7 @@ export default function DinoEggHatch({ t, lang }) {
             {lang === "zh" ? "選另一顆蛋 🥚" : "Pick another egg 🥚"}
           </button>
           {hatched && (
-            <button style={{ background: "transparent", border: `1.5px solid ${TEAL}`, color: TEAL, padding: "11px 26px", borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>{t("c1gameContinue")}</button>
+            <button onClick={onNext} style={{ background: "transparent", border: `1.5px solid ${TEAL}`, color: TEAL, padding: "11px 26px", borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>{t("c1gameContinue")}</button>
           )}
         </div>
       </div>
