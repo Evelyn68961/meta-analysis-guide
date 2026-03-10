@@ -30,13 +30,13 @@ An interactive bilingual (ZH/EN) educational website teaching meta-analysis from
 
 ```
 src/
-├── App.jsx              ← Router + Course Hub page (hash routing: #hub, #course0–#course5, #about, #profile, #dino, #midterm, #final)
+├── App.jsx              ← Router + Course Hub page (hash routing: #hub, #course0–#course5, #about, #profile, #dino, #dino=N, #midterm, #final)
 │                           Hub layout: Precourse (C0) → Foundations (C1-C3) + Midterm card → Advanced (C4-C5) + Final card
 │                           CourseCard component (course cards) + CheckpointCard component (Midterm/Final clickable cards)
 │                           Supabase auth state, Google login/logout, user props passed to all courses + pages
 ├── SiteNav.jsx          ← Unified site-wide navbar (course dropdown, about, profile, login, lang toggle)
 ├── AboutPage.jsx        ← About page with project info, audience, structure, sources
-├── ProfilePage.jsx      ← User progress dashboard (stats, dino collection, best scores)
+├── ProfilePage.jsx      ← User progress dashboard (stats, clickable dino collection → links to DinoIntro codex, best scores)
 ├── supabaseClient.js    ← Supabase client initialization (imports URL + anon key from .env)
 │
 ├── Course0.jsx          ← Precourse: What is Meta-Analysis? (teaching sections; game extracted to DinoEggHunt)
@@ -51,7 +51,7 @@ src/
 ├── DinoFoodRescue.jsx   ← Course 2 game: ice-breaking food rescue
 ├── DinoHomeSave.jsx     ← Course 3 game: save dino's home from freezing
 ├── CuteDino.jsx         ← Shared dinosaur SVG component (7 unique species, used across courses)
-├── DinoIntro.jsx        ← Dino preview/debug page (accessible at #dino)
+├── DinoIntro.jsx        ← Dino Codex page (RPG-style character intro; accessible at #dino or #dino=N; linked from ProfilePage dino cards)
 │
 ├── questionHelpers.js   ← Shared helper functions: pickQuestions(), pickBalanced()
 ├── course0Questions.js  ← Course 0 question bank (35 Qs: 5 per category × 7 categories)
@@ -66,7 +66,11 @@ src/
 
 Root files:
 ├── .env                 ← REACT_APP_SUPABASE_URL + REACT_APP_SUPABASE_ANON_KEY (NOT in Git)
-└── .gitignore           ← Already includes .env
+├── .env.local           ← Local dev overrides pulled from Vercel (NOT in Git)
+├── .gitignore           ← Already includes .env, .env.local
+│
+api/
+└── ai-feedback.js       ← Vercel serverless function: proxies AI workshop requests to Anthropic API (hides API key server-side)
 ```
 
 ---
@@ -111,7 +115,7 @@ Root files:
 - Progress shown as: 5 sun circles ○○○○○ | 3 ice circles ○○○
 
 ### Known Issues:
-- **AI Workshop doesn't work** — Anthropic API requires authentication. Needs a backend proxy (e.g., Vercel/Netlify serverless function) to hide API key. Same issue in Course 2's AI section.
+- ~~**AI Workshop doesn't work**~~ — ✅ FIXED. AI Workshop now works via Vercel serverless proxy (`api/ai-feedback.js`). API key stored in Vercel environment variables. Same fix applied to Course 2.
 - Emoji rendering: some newer Unicode emojis (🫀🦠🧠) don't render on all systems. Use older, safer alternatives.
 
 ---
@@ -125,7 +129,7 @@ Root files:
 4. **PRISMA Flow Diagram** — Interactive visualization
 5. **Screening Tips** — 4 practical tips
 6. **Dino Food Rescue Game** — Pick 1 of 7 dinos → 7 shuffled questions → crack ice cubes with pickaxe to free food
-7. **AI Search Strategy Workshop** — Same API issue as Course 1
+7. **AI Search Strategy Workshop** — ✅ Working via Vercel serverless proxy
 
 ### Game Mechanics (Dino Food Rescue):
 - Standalone component in `DinoFoodRescue.jsx`, imported by `Course2.jsx`
@@ -149,7 +153,7 @@ Root files:
 - Bilingual UI strings handled internally (no new i18n keys needed)
 
 ### TODO:
-- Fix AI workshop (backend proxy issue)
+- ~~Fix AI workshop (backend proxy issue)~~ ✅ DONE
 
 ---
 
@@ -180,6 +184,17 @@ Root files:
 - `CuteDino` — 7 unique dinosaur SVGs (T-Rex, Plesiosaur, Pterodactyl, Triceratops, Stegosaurus, Velociraptor, Pachycephalosaurus)
 - `DragonEgg` — SVG egg with states: idle, crack, frozen (lives in `DinoEggHatch.jsx`, exported as named export)
 - `StylishEgg` — SVG egg with variants: solid, ghost, dashed, cracked-correct, cracked-wrong (lives in `DinoEggHunt.jsx`, exported as named export)
+
+### Dino Codex (DinoIntro):
+- RPG-style character intro page at `#dino` (full roster) or `#dino=N` (opens specific dino, N = 0–6)
+- **Roster strip** at top: all 7 dinos as selectable buttons with breathing animation on active
+- **Detail card** per dino: large CuteDino illustration, character name + species subtitle, element badge, personality tag, skill badge, bilingual lore paragraph, animated stat bars (PWR/WIS/SPD/CHR)
+- **"Back to Profile"** nav button at bottom
+- Linked from ProfilePage: each dino card in the collection grid is clickable → navigates to `#dino=N`
+- ProfilePage also has a "View Codex →" link next to the Dino Collection header
+- Dinos are **not** tied to specific courses — they are collectible characters across all games
+- Colors match original CuteDino palette: `#2ECC71, #3498DB, #F1C40F, #E74C3C, #9B59B6, #E67E22, #95A5A6`
+- Bilingual: character names (翠牙龍/Rex, 蒼瀾龍/Azure, etc.), species names, lore text, stat labels, all UI strings
 
 ### Navigation Pattern (all courses):
 - **Unified site-wide navbar** (`SiteNav.jsx`) — Fixed, frosted glass. Present on every page (Hub, Courses 0–5, About, Profile). Contains:
@@ -285,11 +300,7 @@ Root files:
 - Placeholder shown in Course4.jsx
 
 ### Note:
-- AI workshop section planned but not yet designed — will be added later (same backend proxy requirement as Courses 1–2)
-
----
-
-## Course 5 Details (Heterogeneity & Publication Bias)
+- AI workshop section planned but not yet designed — backend proxy is now ready (`api/ai-feedback.js`), so future AI sections just need frontend implementation (Heterogeneity & Publication Bias)
 
 ### Accent Color: `#C0392B` (deep red)
 
@@ -323,7 +334,7 @@ Root files:
 - Placeholder shown in Course5.jsx
 
 ### Note:
-- AI workshop section planned but not yet designed — will be added later (same backend proxy requirement as Courses 1–2)
+- AI workshop section planned but not yet designed — backend proxy is now ready (`api/ai-feedback.js`), so future AI sections just need frontend implementation
 - Course 5 footer has no "Next Course" button — it shows "🎓 Course Complete!" as this is the final course
 
 ---
@@ -435,14 +446,16 @@ Root files:
 - Template literal translation keys MUST include prefix: `` t(`c1scenario${s}`) `` not `` t(`scenario${s}`) ``
 - Function translation values: use `t("key", arg)` not `t("key")(arg)`
 - Test emoji rendering across systems — prefer pre-2020 Unicode
-- AI features need backend proxy for API key — currently broken in browser
+- ~~AI features need backend proxy for API key — currently broken in browser~~ ✅ FIXED via `api/ai-feedback.js`
 
-### Backend TODO (for AI features):
-- Need a serverless function (Vercel/Netlify) that:
-  1. Receives PICO text from frontend
-  2. Calls Anthropic API with hidden API key
-  3. Returns AI feedback to frontend
-- Affects: Course 1 AI Workshop, Course 2 AI Workshop, and future AI sections in Courses 3, 4, 5 (not yet planned)
+### Backend: AI Workshop Proxy ✅ COMPLETE
+- **Vercel serverless function:** `api/ai-feedback.js` proxies requests to Anthropic API
+- **How it works:** Frontend sends `{ system, userMessage }` to `/api/ai-feedback` → serverless function calls Anthropic with hidden API key → returns AI response
+- **API key:** Stored in Vercel Environment Variables (`ANTHROPIC_API_KEY`), never exposed in frontend code
+- **Local dev:** Use `vercel dev` (not `npm start`) to test serverless functions locally; `.env.local` pulled from Vercel
+- **Cost:** ~$0.003–0.01 per AI check (prepaid credits at console.anthropic.com)
+- **Courses using it:** Course 1 AI PICO Workshop, Course 2 AI Search Strategy Workshop
+- **Future courses:** Can reuse the same `/api/ai-feedback` endpoint — just send different system prompts from frontend
 
 ### Backend Status (Supabase Integration):
 - See `BACKEND_UPGRADE_PLAN.md` for full details
@@ -452,5 +465,5 @@ Root files:
 - **Frontend wiring:** `supabaseClient.js` created, `App.jsx` updated with auth state, user props passed to all courses
 - **Unified navbar:** `SiteNav.jsx` — site-wide nav with login/profile UI, replaces per-course inline navs
 - **About page:** `AboutPage.jsx` — standalone page at `#about`
-- **Profile dashboard:** `ProfilePage.jsx` — progress dashboard at `#profile` (reads from `progress` table; UI built, awaiting Phase 3 data)
+- **Profile dashboard:** `ProfilePage.jsx` — progress dashboard at `#profile` (reads from `progress` table; clickable dino cards link to DinoIntro codex; UI built, awaiting Phase 3 data)
 - **Next:** Wire progress saving into game components (Phase 3), then data will populate in Profile page
