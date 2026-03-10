@@ -1,15 +1,8 @@
 // api/ai-feedback.js
 // Vercel serverless function — proxies AI requests to Anthropic API
-// so the API key stays hidden server-side.
-//
-// Setup:
-//   1. Place this file at <project-root>/api/ai-feedback.js
-//   2. Add ANTHROPIC_API_KEY to Vercel → Settings → Environment Variables
-//   3. For local dev, add ANTHROPIC_API_KEY to .env.local (gitignored)
-//   4. Run with `vercel dev` (not `npm run dev`) to test locally
 
 export default async function handler(req, res) {
-  // CORS headers (allows your Vercel-hosted frontend to call this)
+  // CORS headers
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -24,10 +17,23 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { system, userMessage } = req.body;
+  // Parse body — Vercel may or may not auto-parse depending on config
+  let body = req.body;
+  if (typeof body === "string") {
+    try {
+      body = JSON.parse(body);
+    } catch (e) {
+      return res.status(400).json({ error: "Invalid JSON body" });
+    }
+  }
+
+  const { system, userMessage } = body || {};
 
   if (!system || !userMessage) {
-    return res.status(400).json({ error: "Missing required fields: system, userMessage" });
+    return res.status(400).json({ 
+      error: "Missing required fields: system, userMessage",
+      received: Object.keys(body || {}),
+    });
   }
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
