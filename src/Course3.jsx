@@ -206,6 +206,353 @@ function OutcomeTracksDemo({ lang }) {
   );
 }
 
+// ═══ EXTRACTION DRILL (added to S3) ═══
+function ExtractionDrill({ lang }) {
+  const studies = [
+    {
+      id: "dich",
+      typeZh: "二分類結局", typeEn: "Dichotomous Outcome",
+      scenarioZh: "一項 RCT 比較 Dapagliflozin vs 安慰劑在心衰竭患者的療效。結果報告：主要結局（心血管死亡或因心衰住院）發生在治療組 386/2373 人 (16.3%) 和安慰劑組 502/2371 人 (21.2%)，HR 0.74 (95% CI 0.65–0.85, p<0.001)。追蹤 18.2 個月。",
+      scenarioEn: "An RCT compared Dapagliflozin vs placebo in HF patients. Results: Primary outcome (CV death or HF hospitalization) occurred in 386/2373 (16.3%) treatment vs 502/2371 (21.2%) placebo, HR 0.74 (95% CI 0.65–0.85, p<0.001). Median follow-up 18.2 months.",
+      options: [
+        { zh: "HR 0.74, p<0.001", en: "HR 0.74, p<0.001", correct: false, expZh: "HR 和 p 值不夠——缺少原始事件數和樣本量。", expEn: "HR and p-value aren't enough — missing raw event counts and sample sizes." },
+        { zh: "治療 386/2373, 對照 502/2371", en: "Treatment 386/2373, Control 502/2371", correct: true, expZh: "正確！每組的事件數/總人數是計算 OR、RR 所需的原始數據。", expEn: "Correct! Events/total per group is the raw data needed to calculate OR, RR." },
+        { zh: "16.3% vs 21.2%", en: "16.3% vs 21.2%", correct: false, expZh: "百分比丟失了樣本量資訊。2373 人中 16.3% 和 100 人中 16.3% 的精確度不同。", expEn: "Percentages lose sample size info. 16.3% of 2373 and 16.3% of 100 have different precision." },
+        { zh: "p<0.001，有顯著差異", en: "p<0.001, significant difference", correct: false, expZh: "只有 p 值無法進行統合分析——需要原始數據來計算效應量。", expEn: "A p-value alone can't be meta-analyzed — need raw data to compute effect sizes." },
+      ],
+    },
+    {
+      id: "cont",
+      typeZh: "連續性結局", typeEn: "Continuous Outcome",
+      scenarioZh: "一項 RCT 比較 Metformin vs 安慰劑對 HbA1c 的影響。24 週後，Metformin 組 (n=225) 的 HbA1c 變化為 −1.2% (SD 0.8)，安慰劑組 (n=225) 為 −0.3% (SD 0.7)。組間差異 −0.9% (95% CI −1.05 to −0.75, p<0.001)。",
+      scenarioEn: "An RCT compared Metformin vs placebo on HbA1c. At 24 weeks, Metformin group (n=225): HbA1c change −1.2% (SD 0.8); placebo (n=225): −0.3% (SD 0.7). Between-group difference −0.9% (95% CI −1.05 to −0.75, p<0.001).",
+      options: [
+        { zh: "組間差異 −0.9%, p<0.001", en: "Between-group difference −0.9%, p<0.001", correct: false, expZh: "組間差異可用但不理想——統合分析軟體需要每組的 mean、SD、n 來計算加權。", expEn: "Between-group difference can work but isn't ideal — software needs per-group mean, SD, n for proper weighting." },
+        { zh: "Metformin: mean −1.2, SD 0.8, n=225; Placebo: mean −0.3, SD 0.7, n=225", en: "Metformin: mean −1.2, SD 0.8, n=225; Placebo: mean −0.3, SD 0.7, n=225", correct: true, expZh: "正確！每組的均值、標準差、樣本量是連續性結局統合分析的標準輸入。", expEn: "Correct! Per-group mean, SD, and n is the standard input for continuous outcome meta-analysis." },
+        { zh: "HbA1c 下降了 1.2% vs 0.3%", en: "HbA1c dropped 1.2% vs 0.3%", correct: false, expZh: "缺少標準差和樣本量——沒有 SD 就無法計算精確度和權重。", expEn: "Missing SD and sample sizes — without SD, precision and weights can't be calculated." },
+        { zh: "95% CI −1.05 to −0.75", en: "95% CI −1.05 to −0.75", correct: false, expZh: "CI 只描述組間差異的精確度，但缺少每組的獨立數據。", expEn: "CI describes precision of the between-group difference but lacks independent per-group data." },
+      ],
+    },
+  ];
+
+  const [answers, setAnswers] = useState({});
+  const [showResults, setShowResults] = useState(false);
+
+  const handleAnswer = (studyId, optIdx) => {
+    if (showResults) return;
+    setAnswers(prev => ({ ...prev, [studyId]: optIdx }));
+  };
+
+  const allAnswered = Object.keys(answers).length === studies.length;
+  const score = studies.filter(s => s.options[answers[s.id]]?.correct).length;
+
+  return (
+    <div style={{ background: CARD_BG, borderRadius: 20, border: `1px solid ${LIGHT_BORDER}`, padding: "28px 22px", boxShadow: "0 2px 20px rgba(0,0,0,0.04)", marginTop: 24 }}>
+      <h3 style={{ fontSize: 18, fontWeight: 600, color: DARK, marginBottom: 6, textAlign: "center" }}>
+        {lang === "zh" ? "萃取練習：你會選哪些數字？" : "Extraction Drill: Which Numbers Would You Extract?"}
+      </h3>
+      <p style={{ fontSize: 14, color: MUTED, textAlign: "center", marginBottom: 20 }}>
+        {lang === "zh" ? "閱讀研究結果，選出最適合統合分析的數據" : "Read the study results and pick the best data for meta-analysis"}
+      </p>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+        {studies.map(study => {
+          const picked = answers[study.id];
+          const pickedOpt = picked !== undefined ? study.options[picked] : null;
+          const isCorrect = pickedOpt?.correct;
+          return (
+            <div key={study.id} style={{ background: "#FAFAF7", borderRadius: 14, padding: "18px", border: `1px solid ${LIGHT_BORDER}` }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: GOLD, marginBottom: 8 }}>
+                {lang === "zh" ? study.typeZh : study.typeEn}
+              </div>
+              <p style={{ fontSize: 13, lineHeight: 1.65, color: DARK, marginBottom: 14 }}>
+                {lang === "zh" ? study.scenarioZh : study.scenarioEn}
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {study.options.map((opt, oi) => {
+                  const isThis = picked === oi;
+                  const revealed = showResults && isThis;
+                  return (
+                    <button key={oi} onClick={() => handleAnswer(study.id, oi)}
+                      style={{
+                        textAlign: "left", padding: "10px 14px", borderRadius: 10, fontSize: 13, fontWeight: 500,
+                        background: revealed ? (opt.correct ? "#E6F5F0" : "#FDEEEB") : isThis ? `${GOLD}12` : "white",
+                        border: `1.5px solid ${revealed ? (opt.correct ? GREEN + "66" : RED + "66") : isThis ? GOLD : LIGHT_BORDER}`,
+                        color: DARK, cursor: showResults ? "default" : "pointer", transition: "all 0.2s",
+                      }}>
+                      {revealed ? (opt.correct ? "✓ " : "✗ ") : ""}{lang === "zh" ? opt.zh : opt.en}
+                    </button>
+                  );
+                })}
+              </div>
+              {showResults && pickedOpt && (
+                <p style={{ fontSize: 13, lineHeight: 1.6, color: isCorrect ? "#2A7A5A" : "#B83A20", marginTop: 10, animation: "fadeInTrack 0.3s ease-out" }}>
+                  {lang === "zh" ? pickedOpt.expZh : pickedOpt.expEn}
+                </p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <div style={{ textAlign: "center", marginTop: 20 }}>
+        {!showResults ? (
+          <button onClick={() => allAnswered && setShowResults(true)}
+            style={{ ...btnPrimary, background: allAnswered ? GOLD : "#E8E6E1", color: allAnswered ? "#FFF" : MUTED, cursor: allAnswered ? "pointer" : "default" }}>
+            {lang === "zh" ? "查看結果" : "Check Answers"}
+          </button>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: 15, fontWeight: 600, color: score === 2 ? GREEN : GOLD }}>
+              {score}/{studies.length} {lang === "zh" ? "正確" : "correct"} {score === 2 ? "🎉" : "📚"}
+            </span>
+            <button onClick={() => { setAnswers({}); setShowResults(false); }}
+              style={{ background: "transparent", border: `1.5px solid ${LIGHT_BORDER}`, color: MUTED, padding: "8px 20px", borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
+              {lang === "zh" ? "重試" : "Try Again"}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ═══ RATE THIS STUDY — RoB Exercise (added to S5) ═══
+function RateThisStudy({ lang }) {
+  const domains = [
+    { key: "random", zh: "隨機化過程", en: "Randomization", icon: "🎲",
+      infoZh: "隨機序列由電腦生成，但分配隱藏方式未描述。", infoEn: "Random sequence generated by computer, but allocation concealment not described.",
+      correct: 1, expZh: "電腦隨機化良好，但分配隱藏不清楚引起疑慮。", expEn: "Computer randomization is good, but unclear allocation concealment raises concerns." },
+    { key: "deviate", zh: "偏離預設干預", en: "Deviations from Intervention", icon: "↔",
+      infoZh: "雙盲設計，患者和研究者都不知道分組。脫落率兩組相似（5% vs 6%）。", infoEn: "Double-blind design. Patients and investigators blinded. Dropout similar (5% vs 6%).",
+      correct: 0, expZh: "雙盲且脫落率平衡——低偏倚風險。", expEn: "Double-blind with balanced dropout — low risk of bias." },
+    { key: "missing", zh: "遺失結局數據", en: "Missing Outcome Data", icon: "❓",
+      infoZh: "完成率 89%。使用完成者分析（completer analysis），未進行 ITT 分析。", infoEn: "89% completion rate. Used completer analysis, no ITT analysis performed.",
+      correct: 2, expZh: "11% 遺失且未用 ITT 分析——高風險。脫落的人可能結局不同。", expEn: "11% missing without ITT — high risk. Dropouts may have had different outcomes." },
+    { key: "measure", zh: "結局測量", en: "Outcome Measurement", icon: "📏",
+      infoZh: "主要結局為實驗室檢驗值（HbA1c），由中央實驗室統一分析。", infoEn: "Primary outcome was lab value (HbA1c), analyzed by a central laboratory.",
+      correct: 0, expZh: "客觀指標由中央實驗室測量——低偏倚風險。", expEn: "Objective measure from central lab — low risk of bias." },
+    { key: "select", zh: "選擇性報告", en: "Selective Reporting", icon: "📝",
+      infoZh: "試驗已預先註冊，但預先指定的次要結局之一（低血糖事件）在論文中未報告。", infoEn: "Trial was pre-registered, but one pre-specified secondary outcome (hypoglycemic events) was not reported in the paper.",
+      correct: 1, expZh: "預先註冊的結局未報告——引起選擇性報告的疑慮。", expEn: "Pre-registered outcome not reported — raises selective reporting concerns." },
+  ];
+
+  const levels = [
+    { value: 0, zh: "低風險", en: "Low", color: GREEN, bg: "#E6F5F0" },
+    { value: 1, zh: "有疑慮", en: "Some Concerns", color: GOLD, bg: "#FFF8EE" },
+    { value: 2, zh: "高風險", en: "High", color: RED, bg: "#FDEEEB" },
+  ];
+
+  const [ratings, setRatings] = useState({});
+  const [showResults, setShowResults] = useState(false);
+
+  const handleRate = (domainKey, value) => {
+    if (showResults) return;
+    setRatings(prev => ({ ...prev, [domainKey]: value }));
+  };
+
+  const allRated = Object.keys(ratings).length === domains.length;
+  const score = domains.filter(d => ratings[d.key] === d.correct).length;
+
+  return (
+    <div style={{ background: CARD_BG, borderRadius: 20, border: `1px solid ${LIGHT_BORDER}`, padding: "28px 22px", boxShadow: "0 2px 20px rgba(0,0,0,0.04)", marginTop: 24 }}>
+      <h3 style={{ fontSize: 18, fontWeight: 600, color: DARK, marginBottom: 6, textAlign: "center" }}>
+        {lang === "zh" ? "評估這篇研究的偏倚風險" : "Rate This Study's Risk of Bias"}
+      </h3>
+      <p style={{ fontSize: 14, color: MUTED, textAlign: "center", marginBottom: 8 }}>
+        {lang === "zh" ? "根據研究描述，為每個 RoB 2 領域指定風險等級" : "Based on the study description, assign a risk level to each RoB 2 domain"}
+      </p>
+      <div style={{ background: `${GOLD}08`, borderRadius: 10, padding: "10px 14px", marginBottom: 20, textAlign: "center" }}>
+        <span style={{ fontSize: 13, color: GOLD, fontWeight: 500 }}>
+          {lang === "zh" ? "研究：Metformin vs 安慰劑對 T2DM 患者 HbA1c 的影響（RCT）" : "Study: Metformin vs Placebo on HbA1c in T2DM Patients (RCT)"}
+        </span>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        {domains.map(d => {
+          const picked = ratings[d.key];
+          const isCorrect = picked === d.correct;
+          const revealed = showResults && picked !== undefined;
+          return (
+            <div key={d.key} style={{
+              background: revealed ? (isCorrect ? "#E6F5F0" : "#FDEEEB") : "#FAFAF7",
+              border: `1.5px solid ${revealed ? (isCorrect ? GREEN + "44" : RED + "44") : LIGHT_BORDER}`,
+              borderRadius: 14, padding: "16px", transition: "all 0.3s",
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                <span style={{ fontSize: 18 }}>{d.icon}</span>
+                <span style={{ fontSize: 14, fontWeight: 600, color: DARK }}>{lang === "zh" ? d.zh : d.en}</span>
+              </div>
+              <p style={{ fontSize: 13, lineHeight: 1.6, color: MUTED, marginBottom: 12 }}>
+                {lang === "zh" ? d.infoZh : d.infoEn}
+              </p>
+              <div style={{ display: "flex", gap: 8 }}>
+                {levels.map(lv => {
+                  const isThis = picked === lv.value;
+                  return (
+                    <button key={lv.value} onClick={() => handleRate(d.key, lv.value)}
+                      style={{
+                        flex: 1, padding: "7px 10px", borderRadius: 8, fontSize: 12, fontWeight: 600,
+                        background: isThis ? lv.bg : "white",
+                        border: `1.5px solid ${isThis ? lv.color : LIGHT_BORDER}`,
+                        color: isThis ? lv.color : MUTED,
+                        cursor: showResults ? "default" : "pointer", transition: "all 0.2s",
+                      }}>
+                      {revealed && isThis ? (isCorrect ? "✓ " : "✗ ") : ""}{lang === "zh" ? lv.zh : lv.en}
+                    </button>
+                  );
+                })}
+              </div>
+              {revealed && (
+                <p style={{ fontSize: 12, lineHeight: 1.5, color: isCorrect ? "#2A7A5A" : "#B83A20", marginTop: 8, animation: "fadeInTrack 0.3s ease-out" }}>
+                  {lang === "zh" ? d.expZh : d.expEn}
+                </p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <div style={{ textAlign: "center", marginTop: 20 }}>
+        {!showResults ? (
+          <button onClick={() => allRated && setShowResults(true)}
+            style={{ ...btnPrimary, background: allRated ? GOLD : "#E8E6E1", color: allRated ? "#FFF" : MUTED, cursor: allRated ? "pointer" : "default" }}>
+            {lang === "zh" ? "查看結果" : "Check Answers"}
+          </button>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: 15, fontWeight: 600, color: score >= 4 ? GREEN : score >= 3 ? GOLD : CORAL }}>
+              {score}/{domains.length} {lang === "zh" ? "正確" : "correct"} {score === 5 ? "🎉" : score >= 3 ? "👍" : "📚"}
+            </span>
+            <button onClick={() => { setRatings({}); setShowResults(false); }}
+              style={{ background: "transparent", border: `1.5px solid ${LIGHT_BORDER}`, color: MUTED, padding: "8px 20px", borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
+              {lang === "zh" ? "重試" : "Try Again"}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ═══ AI EXTRACTION REVIEWER ═══
+function AIExtractionReviewer({ t, lang }) {
+  const [inputs, setInputs] = useState({ events_tx: "", total_tx: "", events_ctrl: "", total_ctrl: "", notes: "" });
+  const [feedback, setFeedback] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const scenario = {
+    zh: "研究：DAPA-HF 試驗（McMurray et al., 2019）\n\n一項多中心雙盲 RCT，納入 4744 名 NYHA II-IV 級、LVEF ≤40% 的心衰竭患者。隨機分配到 Dapagliflozin 10mg 每日一次或安慰劑。主要結局為心血管死亡、因心衰竭住院或因心衰竭急診就醫的複合結局。中位追蹤 18.2 個月。\n\n結果：主要複合結局發生在 Dapagliflozin 組 386/2373 人 (16.3%)，安慰劑組 502/2371 人 (21.2%)。HR 0.74 (95% CI 0.65–0.85)。心血管死亡：Dapagliflozin 227/2373 (9.6%) vs 安慰劑 273/2371 (11.5%)。因心衰竭住院：Dapagliflozin 237/2373 (10.0%) vs 安慰劑 326/2371 (13.7%)。",
+    en: "Study: DAPA-HF Trial (McMurray et al., 2019)\n\nMulticenter double-blind RCT enrolling 4744 patients with NYHA II-IV, LVEF ≤40% HF. Randomized to Dapagliflozin 10mg daily or placebo. Primary outcome: composite of CV death, HF hospitalization, or urgent HF visit. Median follow-up 18.2 months.\n\nResults: Primary composite occurred in 386/2373 (16.3%) Dapagliflozin vs 502/2371 (21.2%) placebo. HR 0.74 (95% CI 0.65–0.85). CV death: Dapagliflozin 227/2373 (9.6%) vs placebo 273/2371 (11.5%). HF hospitalization: Dapagliflozin 237/2373 (10.0%) vs placebo 326/2371 (13.7%).",
+  };
+
+  const fields = [
+    { key: "events_tx", zh: "治療組事件數", en: "Treatment events", placeholder: "e.g. 386" },
+    { key: "total_tx", zh: "治療組總人數", en: "Treatment total", placeholder: "e.g. 2373" },
+    { key: "events_ctrl", zh: "對照組事件數", en: "Control events", placeholder: "e.g. 502" },
+    { key: "total_ctrl", zh: "對照組總人數", en: "Control total", placeholder: "e.g. 2371" },
+    { key: "notes", zh: "其他備註（選填）", en: "Notes (optional)", placeholder: lang === "zh" ? "例如：研究設計、追蹤時間…" : "e.g. study design, follow-up..." },
+  ];
+
+  const hasData = inputs.events_tx.trim() && inputs.total_tx.trim() && inputs.events_ctrl.trim() && inputs.total_ctrl.trim();
+
+  const checkExtraction = async () => {
+    if (!hasData) return;
+    setLoading(true);
+    setFeedback(null);
+
+    const userInput = fields.map(f => `${f.en}: ${inputs[f.key] || "N/A"}`).join("\n");
+    const systemPrompt = lang === "zh"
+      ? `你是一位系統性回顧數據萃取教學助手。學生被要求從以下研究中萃取二分類結局數據：
+
+${scenario.zh}
+
+學生萃取的數據如下。請用繁體中文審查：
+1. 判斷每個欄位是否正確
+2. 指出常見錯誤（如混淆 ITT vs per-protocol、萃取百分比而非原始數字、選錯結局指標）
+3. 如果備註中有重要的遺漏，指出來
+4. 給一個整體評分（優秀/良好/需改善）和建議
+
+保持簡潔。不要用 Markdown 格式。`
+      : `You are a systematic review data extraction teaching assistant. The student was asked to extract dichotomous outcome data from this study:
+
+${scenario.en}
+
+The student's extraction is below. Review it:
+1. Check if each field is correct
+2. Flag common mistakes (confusing ITT vs per-protocol, extracting percentages instead of raw counts, wrong outcome)
+3. If notes are missing important info, point it out
+4. Give an overall rating (Excellent/Good/Needs Improvement) with suggestions
+
+Be concise. Don't use Markdown formatting.`;
+
+    try {
+      const response = await fetch("/api/ai-feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ system: systemPrompt, userMessage: userInput }),
+      });
+      const data = await response.json();
+      const text = data.content?.map(item => item.text || "").join("") || t("c3aiNoResult");
+      setFeedback(text);
+    } catch (err) {
+      setFeedback(t("c3aiError"));
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div style={{ background: CARD_BG, borderRadius: 20, border: `1px solid ${LIGHT_BORDER}`, padding: "32px 24px", boxShadow: "0 2px 20px rgba(0,0,0,0.04)" }}>
+      <h4 style={{ fontSize: 15, fontWeight: 600, color: DARK, marginBottom: 12 }}>
+        {lang === "zh" ? "從以下研究中萃取主要結局數據：" : "Extract primary outcome data from this study:"}
+      </h4>
+
+      {/* Study scenario */}
+      <div style={{ background: "#FAFAF7", borderRadius: 12, padding: "16px 18px", marginBottom: 20, border: `1px solid ${LIGHT_BORDER}`, fontSize: 13, lineHeight: 1.7, color: DARK, whiteSpace: "pre-wrap", maxHeight: 200, overflowY: "auto" }}>
+        {lang === "zh" ? scenario.zh : scenario.en}
+      </div>
+
+      {/* Extraction fields */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 10, marginBottom: 16 }}>
+        {fields.map(f => (
+          <div key={f.key}>
+            <label style={{ fontSize: 12, fontWeight: 600, color: MUTED, marginBottom: 4, display: "block" }}>
+              {lang === "zh" ? f.zh : f.en}
+            </label>
+            <input
+              value={inputs[f.key]}
+              onChange={(e) => { setInputs(prev => ({ ...prev, [f.key]: e.target.value })); setFeedback(null); }}
+              placeholder={f.placeholder}
+              style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: `1.5px solid ${LIGHT_BORDER}`, fontSize: 14, color: DARK, background: "#FAFAF7", outline: "none", transition: "border-color 0.2s", boxSizing: "border-box" }}
+            />
+          </div>
+        ))}
+      </div>
+
+      <button onClick={checkExtraction} disabled={!hasData || loading}
+        style={{
+          background: hasData ? GOLD : "#E8E6E1", border: "none", color: hasData ? "#FFF" : MUTED,
+          padding: "13px 28px", borderRadius: 10, fontSize: 14, fontWeight: 600,
+          cursor: hasData ? "pointer" : "default", transition: "all 0.2s", width: "100%",
+          boxShadow: hasData ? `0 2px 12px ${GOLD}33` : "none",
+        }}>
+        {loading
+          ? (lang === "zh" ? "正在審查…" : "Reviewing…")
+          : (lang === "zh" ? "AI 審查我的萃取" : "AI Review My Extraction")}
+      </button>
+
+      {feedback && (
+        <div style={{ marginTop: 16, padding: "18px 20px", borderRadius: 14, background: `${GOLD}06`, border: `1.5px solid ${GOLD}22`, fontSize: 14, lineHeight: 1.7, color: DARK, whiteSpace: "pre-wrap", animation: "fadeInTrack 0.3s ease-out" }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: GOLD, marginBottom: 8 }}>
+            {lang === "zh" ? "AI 審查結果" : "AI Review Results"}
+          </div>
+          {feedback}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ═══ ROB TOOL CARDS (Section 5) ═══
 function RoBToolCards({ lang }) {
   const [activeCard, setActiveCard] = useState(null); // "rob2" | "nos" | null
@@ -426,7 +773,7 @@ export default function Course3({ onNavigate, user, onLogin, onLogout }) {
 
   // Track which section is in view
   useEffect(() => {
-    const sectionIds = ["hero", "s1", "s2", "s3", "s4", "s5", "s6", "game"];
+    const sectionIds = ["hero", "s1", "s2", "s3", "s4", "s5", "s6", "s7", "game", "ai-workshop"];
     const observers = [];
     sectionIds.forEach(id => {
       const el = document.getElementById(id);
@@ -448,7 +795,9 @@ export default function Course3({ onNavigate, user, onLogin, onLogout }) {
     { id: "s4", num: 4, label: lang === "zh" ? "偏倚風險" : "Risk of Bias" },
     { id: "s5", num: 5, label: lang === "zh" ? "評估工具" : "RoB Tools" },
     { id: "s6", num: 6, label: lang === "zh" ? "整合應用" : "Putting It Together" },
-    { id: "game", num: 7, label: lang === "zh" ? "恐龍守護家園" : "Dino Home Save" },
+    { id: "s7", num: 7, label: lang === "zh" ? "雙人萃取" : "Dual Extraction" },
+    { id: "game", num: 8, label: lang === "zh" ? "恐龍守護家園" : "Dino Home Save" },
+    { id: "ai-workshop", num: 9, label: lang === "zh" ? "AI 工作坊" : "AI Workshop" },
   ];
 
   return (
@@ -574,7 +923,8 @@ export default function Course3({ onNavigate, user, onLogin, onLogout }) {
           <FadeIn><SectionLabel text={t("c3s3Label")} /><SectionTitle>{t("c3s3Title")}</SectionTitle></FadeIn>
           <FadeIn delay={0.1}><Paragraph style={{ marginBottom: 28 }}>{t("c3s3Intro")}</Paragraph></FadeIn>
           <FadeIn delay={0.15}><OutcomeTracksDemo lang={lang} /></FadeIn>
-          <FadeIn delay={0.2}><div style={{ textAlign: "center", marginTop: 28 }}><button onClick={() => scrollTo("s4")} style={btnPrimary}>{t("c3s3Next")}</button></div></FadeIn>
+          <FadeIn delay={0.2}><ExtractionDrill lang={lang} /></FadeIn>
+          <FadeIn delay={0.25}><div style={{ textAlign: "center", marginTop: 28 }}><button onClick={() => scrollTo("s4")} style={btnPrimary}>{t("c3s3Next")}</button></div></FadeIn>
         </div>
       </section>
 
@@ -598,7 +948,8 @@ export default function Course3({ onNavigate, user, onLogin, onLogout }) {
           <FadeIn><SectionLabel text={t("c3s5Label")} /><SectionTitle>{t("c3s5Title")}</SectionTitle></FadeIn>
           <FadeIn delay={0.1}><Paragraph style={{ marginBottom: 28 }}>{t("c3s5Intro")}</Paragraph></FadeIn>
           <FadeIn delay={0.15}><RoBToolCards lang={lang} /></FadeIn>
-          <FadeIn delay={0.2}><div style={{ textAlign: "center", marginTop: 28 }}><button onClick={() => scrollTo("s6")} style={btnPrimary}>{t("c3s5Next")}</button></div></FadeIn>
+          <FadeIn delay={0.2}><RateThisStudy lang={lang} /></FadeIn>
+          <FadeIn delay={0.25}><div style={{ textAlign: "center", marginTop: 28 }}><button onClick={() => scrollTo("s6")} style={btnPrimary}>{t("c3s5Next")}</button></div></FadeIn>
         </div>
       </section>
 
@@ -615,17 +966,72 @@ export default function Course3({ onNavigate, user, onLogin, onLogout }) {
           </FadeIn>
           <FadeIn delay={0.25}>
             <div style={{ textAlign: "center" }}>
-              <button onClick={() => scrollTo("game")} style={{ ...btnPrimary, background: CORAL, boxShadow: `0 4px 20px ${CORAL}33` }}>{t("c3s6Next")}</button>
+              <button onClick={() => scrollTo("s7")} style={{ ...btnPrimary, background: CORAL, boxShadow: `0 4px 20px ${CORAL}33` }}>{t("c3s6Next")}</button>
             </div>
           </FadeIn>
         </div>
       </section>
 
+      {/* S7: NEW — Dual Extraction & Disagreement Resolution */}
+      <section id="s7" style={{ padding: "80px 24px", background: "#F1F0EC" }}>
+        <div style={{ maxWidth: 880, margin: "0 auto" }}>
+          <FadeIn><SectionLabel text={lang === "zh" ? "雙人萃取" : "Dual Extraction"} /><SectionTitle>{lang === "zh" ? "雙人獨立萃取與分歧處理" : "Dual Independent Extraction & Disagreement Resolution"}</SectionTitle></FadeIn>
+          <FadeIn delay={0.1}><Paragraph style={{ marginBottom: 28 }}>
+            {lang === "zh"
+              ? "一個人萃取數據難免犯錯。系統性回顧要求至少兩人獨立萃取——各自完成後再比對，用 Cohen's kappa 衡量一致性。不一致的地方由第三人裁決或討論解決。"
+              : "One person extracting data will inevitably make mistakes. Systematic reviews require at least two independent extractors — each completes their work separately, then results are compared using Cohen's kappa for agreement. Disagreements are resolved by a third reviewer or discussion."}
+          </Paragraph></FadeIn>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 14, marginBottom: 28 }}>
+            {[
+              { numZh: "1", titleZh: "獨立萃取", titleEn: "Extract Independently", descZh: "兩名審查者各自萃取數據，過程中不互相討論。使用相同的標準化表格。", descEn: "Two reviewers extract data separately without discussing. Use the same standardized form." },
+              { numZh: "2", titleZh: "比對結果", titleEn: "Compare Results", descZh: "比較兩份萃取結果。計算 Cohen's kappa 評估一致性（>0.8 = 優秀，0.6-0.8 = 良好）。", descEn: "Compare both extractions. Calculate Cohen's kappa for agreement (>0.8 = excellent, 0.6-0.8 = good)." },
+              { numZh: "3", titleZh: "處理分歧", titleEn: "Resolve Disagreements", descZh: "不一致的地方回到原文核實。無法達成共識時由第三位審查者裁決。記錄所有分歧和解決方式。", descEn: "Disagreements are verified against the original text. If unresolved, a third reviewer decides. Document all disagreements and resolutions." },
+              { numZh: "4", titleZh: "試行校準", titleEn: "Pilot & Calibrate", descZh: "正式萃取前，先用 2-3 篇文獻進行試行，讓團隊統一萃取標準和判斷。", descEn: "Before formal extraction, pilot with 2-3 studies to calibrate the team's extraction standards and judgments." },
+            ].map((step, i) => (
+              <FadeIn key={i} delay={i * 0.05 + 0.15}>
+                <div style={{ background: CARD_BG, border: `1px solid ${LIGHT_BORDER}`, borderRadius: 14, padding: "22px 20px", height: "100%" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+                    <div style={{ width: 28, height: 28, borderRadius: 8, background: `${GOLD}15`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: GOLD, flexShrink: 0 }}>{step.numZh}</div>
+                    <h4 style={{ fontSize: 15, fontWeight: 600, color: DARK }}>{lang === "zh" ? step.titleZh : step.titleEn}</h4>
+                  </div>
+                  <p style={{ fontSize: 13.5, lineHeight: 1.65, color: MUTED }}>{lang === "zh" ? step.descZh : step.descEn}</p>
+                </div>
+              </FadeIn>
+            ))}
+          </div>
+
+          <FadeIn delay={0.35}>
+            <div style={{ background: `${GOLD}08`, border: `1px solid ${GOLD}1A`, borderRadius: 14, padding: "16px 20px", marginBottom: 28 }}>
+              <p style={{ fontSize: 14, lineHeight: 1.7, color: GOLD }}>
+                💡 {lang === "zh"
+                  ? "常見工具：Covidence 和 Rayyan 支援雙人萃取的盲篩模式和衝突標記。Excel 也可以，但缺少自動比對功能。"
+                  : "Common tools: Covidence and Rayyan support blinded dual extraction with conflict flagging. Excel works too, but lacks automatic comparison features."}
+              </p>
+            </div>
+          </FadeIn>
+          <FadeIn delay={0.4}><div style={{ textAlign: "center" }}><button onClick={() => scrollTo("game")} style={{ ...btnPrimary, background: CORAL, boxShadow: `0 4px 20px ${CORAL}33` }}>{lang === "zh" ? "挑戰小遊戲 →" : "Challenge Yourself →"}</button></div></FadeIn>
+        </div>
+      </section>
+
       {/* GAME */}
-      <section id="game" style={{ padding: "80px 24px", background: "#F1F0EC" }}>
+      <section id="game" style={{ padding: "80px 24px", background: LIGHT_BG }}>
         <div style={{ maxWidth: 640, margin: "0 auto" }}>
           <FadeIn><SectionLabel text={t("c3gameLabel")} /></FadeIn>
           <FadeIn delay={0.1}><DinoHomeSave t={t} lang={lang} /></FadeIn>
+        </div>
+      </section>
+
+      {/* AI WORKSHOP — Extraction Reviewer */}
+      <section id="ai-workshop" style={{ padding: "80px 24px", background: "#F1F0EC" }}>
+        <div style={{ maxWidth: 880, margin: "0 auto" }}>
+          <FadeIn><SectionLabel text={lang === "zh" ? "AI 工作坊" : "AI Workshop"} /><SectionTitle>{lang === "zh" ? "用 AI 審查你的數據萃取" : "Let AI Review Your Data Extraction"}</SectionTitle></FadeIn>
+          <FadeIn delay={0.1}><Paragraph style={{ marginBottom: 32 }}>
+            {lang === "zh"
+              ? "從真實研究中練習萃取數據。填入你認為正確的數字，AI 會檢查你是否抓對了數據，並指出常見錯誤。"
+              : "Practice extracting data from a real study. Fill in the numbers you think are correct, and AI will check if you grabbed the right data and flag common mistakes."}
+          </Paragraph></FadeIn>
+          <FadeIn delay={0.15}><AIExtractionReviewer t={t} lang={lang} /></FadeIn>
         </div>
       </section>
 
