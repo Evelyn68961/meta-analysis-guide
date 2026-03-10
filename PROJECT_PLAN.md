@@ -40,7 +40,7 @@ src/
 ├── supabaseClient.js    ← Supabase client initialization (imports URL + anon key from .env)
 │
 ├── Course0.jsx          ← Precourse: What is Meta-Analysis? (teaching sections; game extracted to DinoEggHunt)
-├── Course1.jsx          ← Course 1: PICO (teaching sections + AI workshop; game extracted to DinoEggHatch)
+├── Course1.jsx          ← Course 1: PICO (teaching sections + AI workshop + AI freestyle PICO; game extracted to DinoEggHatch)
 ├── Course2.jsx          ← Course 2: Literature Search & PRISMA (teaching sections + AI workshop; game extracted to DinoFoodRescue)
 ├── Course3.jsx          ← Course 3: Data Extraction & RoB (6 teaching sections; game extracted to DinoHomeSave)
 ├── Course4.jsx          ← Course 4: Effect Sizes & Forest Plots (6 teaching sections + 4 interactive demos; game TBD)
@@ -92,7 +92,8 @@ api/
 4. **Common Mistakes** — 5 PICO traps (bad/good comparison cards)
 5. **Interactive PICO Builder** — Multiple-choice: pick best P, I, C, O for 3 scenarios (Cardiology/Infectious Disease/Psychiatry)
 6. **Dino Egg Hatch Game** — Pick 1 of 7 eggs → 7 questions drawn from 70-question bank (balanced across 7 categories) → 5 correct = hatch dinosaur with sun particles, 3 wrong = freeze with snowflake particles
-7. **AI PICO Workshop** — Pick scenario, write free-text PICO, AI gives inline feedback per field + overall assessment
+7. **AI PICO Workshop** — Pick from 3 preset scenarios, write free-text PICO, AI gives inline feedback per field + overall assessment
+8. **AI Freestyle PICO** — User writes their own research topic, optional AI topic check, then writes PICO for their topic with per-field AI feedback + overall assessment. Separate section in sidebar catalog.
 
 ### Game Mechanics (Dino Egg Hatch):
 - Standalone component in `DinoEggHatch.jsx`, imported by `Course1.jsx` (same pattern as Course 2's DinoFoodRescue)
@@ -454,7 +455,7 @@ api/
 - **API key:** Stored in Vercel Environment Variables (`ANTHROPIC_API_KEY`), never exposed in frontend code
 - **Local dev:** Use `vercel dev` (not `npm start`) to test serverless functions locally; `.env.local` pulled from Vercel
 - **Cost:** ~$0.003–0.01 per AI check (prepaid credits at console.anthropic.com)
-- **Courses using it:** Course 1 AI PICO Workshop, Course 2 AI Search Strategy Workshop
+- **Courses using it:** Course 1 AI PICO Workshop + Freestyle PICO, Course 2 AI Search Strategy Workshop
 - **Future courses:** Can reuse the same `/api/ai-feedback` endpoint — just send different system prompts from frontend
 
 ### Backend Status (Supabase Integration):
