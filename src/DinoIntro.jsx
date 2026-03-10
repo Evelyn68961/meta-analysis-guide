@@ -28,7 +28,6 @@ const DINOS = [
     loreEn: "The undisputed king of the dino squad. Rex has a massive head full of knowledge about research methodology — and tiny arms that remind us even experts have limitations. Rex specialises in critically appraising study quality with raw intellectual power.",
     loreZh: "恐龍小隊中無可爭議的王者。翠牙龍的大腦袋裝滿了研究方法學的知識——而小短手提醒我們，即使是專家也有侷限。翠牙龍擅長以強大的思辨能力批判性地評估研究品質。",
     stats: { power: 95, wisdom: 70, speed: 60, charm: 50 },
-    course: 0,
   },
   {
     nameEn: "Azure", nameZh: "蒼瀾龍",
@@ -40,7 +39,6 @@ const DINOS = [
     loreEn: "Azure dives deep beneath the surface of medical literature, navigating vast oceans of databases with grace. No hidden study escapes Azure's long, sweeping searches. Patient and methodical, Azure ensures your systematic review misses nothing.",
     loreZh: "蒼瀾龍能深潛至醫學文獻的海底，優雅地穿梭於浩瀚的資料庫之間。沒有任何隱藏的研究能逃過蒼瀾龍的廣泛搜索。耐心而有系統，蒼瀾龍確保你的系統性綜論不遺漏任何重要研究。",
     stats: { power: 40, wisdom: 95, speed: 50, charm: 75 },
-    course: 2,
   },
   {
     nameEn: "Zephyr", nameZh: "金翼龍",
@@ -52,7 +50,6 @@ const DINOS = [
     loreEn: "Zephyr soars above the data landscape, spotting patterns invisible from the ground. With a bird's-eye view of forest plots and funnel plots, Zephyr transforms raw numbers into clear visual stories that even non-statisticians can understand.",
     loreZh: "金翼龍翱翔於數據全景之上，能發現地面上看不到的隱藏模式。憑藉對森林圖和漏斗圖的鳥瞰視角，金翼龍將原始數據轉化為清晰的視覺故事，讓非統計學者也能輕鬆理解。",
     stats: { power: 35, wisdom: 80, speed: 95, charm: 85 },
-    course: 4,
   },
   {
     nameEn: "Blaze", nameZh: "焰角龍",
@@ -64,7 +61,6 @@ const DINOS = [
     loreEn: "With a shield-like frill and three sturdy horns, Blaze stands guard against bias and methodological flaws. Nothing gets past Blaze's defences — every study is scrutinised from allocation concealment to blinding. Blaze protects the integrity of your evidence.",
     loreZh: "頭上的盾狀頸盾與三根堅固的角讓焰角龍堅守防線，抵禦偏差與方法學上的缺陷。沒有什麼能突破焰角龍的防禦——從分配隱藏到盲法，每項研究都被嚴格審查。焰角龍守護著你的證據完整性。",
     stats: { power: 80, wisdom: 85, speed: 30, charm: 55 },
-    course: 3,
   },
   {
     nameEn: "Thistle", nameZh: "紫棘龍",
@@ -76,7 +72,6 @@ const DINOS = [
     loreEn: "Thistle's colourful back plates aren't just for show — each one represents a different subgroup in the analysis. Gentle but precise, Thistle excels at I² statistics and subgroup analyses, revealing why studies sometimes disagree with one another.",
     loreZh: "紫棘龍背上的彩色骨板不只是裝飾——每一片都代表分析中的不同亞組。溫柔但精確，紫棘龍擅長 I² 統計量與亞組分析，揭示為何研究之間有時會產生不一致的結果。",
     stats: { power: 45, wisdom: 90, speed: 40, charm: 90 },
-    course: 5,
   },
   {
     nameEn: "Velo", nameZh: "珀爪龍",
@@ -88,7 +83,6 @@ const DINOS = [
     loreEn: "Small but devastatingly clever, Velo can dissect any clinical question into its PICO components in seconds. Working in packs (of studies), Velo hunts down the precise Population, Intervention, Comparison, and Outcome with surgical accuracy.",
     loreZh: "體型雖小卻聰明絕頂，珀爪龍能在數秒內將任何臨床問題拆解為 PICO 要素。以團隊（研究群）作戰，珀爪龍以外科手術般的精準度，搜尋出確切的族群、介入、比較和結果。",
     stats: { power: 70, wisdom: 75, speed: 95, charm: 60 },
-    course: 1,
   },
   {
     nameEn: "Dome", nameZh: "鐵穹龍",
@@ -100,26 +94,9 @@ const DINOS = [
     loreEn: "Dome's thick skull isn't just protection — it represents an unbreakable focus on extracting the right data from every study. Dome headbutts through supplementary materials, appendices, and buried tables until every number is accounted for.",
     loreZh: "鐵穹龍厚實的頭骨不只是防護——它象徵著從每項研究中萃取正確數據時堅不可摧的專注力。鐵穹龍會以鐵頭功穿越補充材料、附錄和深埋的表格，直到每個數字都被確認無誤。",
     stats: { power: 85, wisdom: 80, speed: 35, charm: 40 },
-    course: 3,
   },
 ];
 
-const COURSE_LABELS_EN = [
-  "C0 · What is Meta-Analysis",
-  "C1 · PICO Framework",
-  "C2 · Literature Search",
-  "C3 · Data Extraction & RoB",
-  "C4 · Forest Plots",
-  "C5 · Heterogeneity",
-];
-const COURSE_LABELS_ZH = [
-  "C0 · 統合分析簡介",
-  "C1 · PICO 架構",
-  "C2 · 文獻檢索",
-  "C3 · 資料萃取與偏差風險",
-  "C4 · 森林圖",
-  "C5 · 異質性分析",
-];
 
 /* ── Stat bar component ── */
 function StatBar({ label, value, color }) {
@@ -167,7 +144,6 @@ export default function DinoIntro({ onNavigate, user, onLogin, onLogout, initial
   };
 
   const dino = DINOS[selected];
-  const courseLabels = lang === "zh" ? COURSE_LABELS_ZH : COURSE_LABELS_EN;
   const isZh = lang === "zh";
 
   return (
@@ -300,19 +276,13 @@ export default function DinoIntro({ onNavigate, user, onLogin, onLogout, initial
 
           {/* Body content */}
           <div style={{ padding: "24px 28px 28px" }}>
-            {/* Skill & Course badges */}
+            {/* Skill badge */}
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
               <div style={{
                 background: `${dino.color}0A`, border: `1px solid ${dino.color}22`,
                 borderRadius: 8, padding: "6px 12px", fontSize: 12, fontWeight: 600, color: DARK,
               }}>
                 🎯 {isZh ? `技能：${dino.skill.zh}` : `Skill: ${dino.skill.en}`}
-              </div>
-              <div style={{
-                background: `${TEAL}0A`, border: `1px solid ${TEAL}22`,
-                borderRadius: 8, padding: "6px 12px", fontSize: 12, fontWeight: 600, color: TEAL,
-              }}>
-                📖 {courseLabels[dino.course]}
               </div>
             </div>
 
@@ -339,24 +309,6 @@ export default function DinoIntro({ onNavigate, user, onLogin, onLogout, initial
             <StatBar label={isZh ? "速度" : "SPD"} value={dino.stats.speed} color={dino.color} />
             <StatBar label={isZh ? "魅力" : "CHR"} value={dino.stats.charm} color={dino.color} />
 
-            {/* Go to course CTA */}
-            {onNavigate && (
-              <button onClick={() => onNavigate(`course${dino.course}`)} style={{
-                marginTop: 20, width: "100%",
-                background: `linear-gradient(135deg, ${dino.color}, ${dino.color}CC)`,
-                border: "none", color: "#FFF", padding: "12px 20px",
-                borderRadius: 12, fontSize: 14, fontWeight: 600, cursor: "pointer",
-                fontFamily: FONT, transition: "transform 0.15s, box-shadow 0.15s",
-                boxShadow: `0 4px 16px ${dino.color}33`,
-              }}
-                onMouseDown={e => e.currentTarget.style.transform = "scale(0.97)"}
-                onMouseUp={e => e.currentTarget.style.transform = "scale(1)"}
-              >
-                {isZh
-                  ? `前往 ${courseLabels[dino.course]} →`
-                  : `Go to ${courseLabels[dino.course]} →`}
-              </button>
-            )}
           </div>
         </div>
 
