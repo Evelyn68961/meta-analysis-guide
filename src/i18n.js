@@ -601,8 +601,14 @@ const translations = {
     c3s6Title: "交通燈矩陣與敏感性分析",
     c3s6Intro: "把所有研究的偏倚風險評估放在一張交通燈表格裡，一目了然。然後用敏感性分析測試：排除高風險研究後，結論是否改變？",
     c3s6Tip: "關鍵原則：兩人獨立萃取數據和評估品質，記錄分歧及解決方式。透明度和可重複性是系統性回顧的基石。",
-    c3s6Next: "準備好了嗎？來玩遊戲！🔥",
+    c3s6Next: "繼續學習雙人萃取 →",
     c3gameLabel: "拯救恐龍的家 🏠",
+
+    // AI Workshop — Extraction Reviewer
+    c3aiLabel: "AI 萃取工作坊",
+    c3aiTitle: "用 AI 審查你的數據萃取",
+    c3aiError: "連線錯誤，請檢查網路後重試。",
+    c3aiNoResult: "無法取得回饋",
 
     // ── Course 4: Effect Sizes & Forest Plots ──
     c4Label: "進階課程 4",
@@ -1232,8 +1238,14 @@ const translations = {
     c3s6Title: "Traffic-Light Matrix & Sensitivity Analysis",
     c3s6Intro: "Arrange all studies' risk of bias assessments in a traffic-light table for an at-a-glance view. Then use sensitivity analysis to test: does the conclusion change when you remove high-risk studies?",
     c3s6Tip: "Key principle: Two people independently extract data and assess quality. Document disagreements and resolutions. Transparency and reproducibility are the cornerstones of systematic reviews.",
-    c3s6Next: "Ready? Let's play the game! 🔥",
+    c3s6Next: "Learn about dual extraction →",
     c3gameLabel: "Save Dino's Home 🏠",
+
+    // AI Workshop — Extraction Reviewer
+    c3aiLabel: "AI Extraction Workshop",
+    c3aiTitle: "Let AI Review Your Data Extraction",
+    c3aiError: "Connection error. Please try again.",
+    c3aiNoResult: "Could not get feedback.",
 
     // ── Course 4: Effect Sizes & Forest Plots ──
     c4Label: "Course 4",
