@@ -320,14 +320,12 @@ function AISearchWorkshop({ t, lang }) {
 Be concise. Don't use Markdown formatting. Use plain text with line breaks.`;
 
     try {
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
+      const response = await fetch("/api/ai-feedback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
           system: systemPrompt,
-          messages: [{ role: "user", content: topic }],
+          userMessage: topic,
         }),
       });
       const data = await response.json();

@@ -365,16 +365,15 @@ Evaluate their ${label.letter} (${label.en}). Keep it brief (2-3 sentences):
 Don't repeat the student's answer. Don't use Markdown formatting.`;
 
     try {
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
+      const response = await fetch("/api/ai-feedback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
           system: systemPrompt,
-          messages: [{ role: "user", content: `${label.letter} (${lang === "zh" ? label.zh : label.en}): ${inputs[field]}` }],
+          userMessage: `${label.letter} (${lang === "zh" ? label.zh : label.en}): ${inputs[field]}`,
         }),
       });
+
       const data = await response.json();
       const text = data.content?.map(item => item.text || "").join("") || (lang === "zh" ? "無法取得回饋，請重試。" : "Could not get feedback. Please try again.");
       setFeedback(prev => ({ ...prev, [field]: text }));
@@ -411,14 +410,12 @@ Don't use Markdown formatting.`;
     const picoText = `P: ${inputs.p}\nI: ${inputs.i}\nC: ${inputs.c}\nO: ${inputs.o}`;
 
     try {
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
+      const response = await fetch("/api/ai-feedback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
           system: systemPrompt,
-          messages: [{ role: "user", content: picoText }],
+          userMessage: picoText,
         }),
       });
       const data = await response.json();
