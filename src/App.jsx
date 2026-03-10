@@ -355,8 +355,10 @@ export default function App() {
       return <AboutPage onNavigate={navigate} user={user} onLogin={handleLogin} onLogout={handleLogout} />;
     case "profile":
       return <ProfilePage onNavigate={navigate} user={user} onLogin={handleLogin} onLogout={handleLogout} />;
-    case "dino":
-      return <DinoIntro />;
+    case (currentPage.match(/^dino/) ? currentPage : undefined):
+      const dinoMatch = currentPage.match(/^dino=(\d)$/);
+      const initialDino = dinoMatch ? Number(dinoMatch[1]) : null;
+      return <DinoIntro onNavigate={navigate} user={user} onLogin={handleLogin} onLogout={handleLogout} initialDino={initialDino} />;
     default:
       return <CourseHub onNavigate={navigate} user={user} onLogin={handleLogin} onLogout={handleLogout} />;
   }

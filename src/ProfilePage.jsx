@@ -21,13 +21,14 @@ const GAME_TYPES = [
 ];
 
 const DINO_NAMES_EN = ["Rex", "Azure", "Zephyr", "Blaze", "Thistle", "Velo", "Dome"];
-const DINO_NAMES_ZH = ["暴龍", "蒼龍", "翼龍", "三角龍", "劍龍", "迅猛龍", "厚頭龍"];
-const DINO_COLORS = ["#E8734A", "#4AADE8", "#7BD4A8", "#E8C94A", "#C87BDB", "#5BC0AC", "#D4A843"];
+const DINO_NAMES_ZH = ["翠牙龍", "蒼瀾龍", "金翼龍", "焰角龍", "紫棘龍", "珀爪龍", "鐵穹龍"];
+const DINO_COLORS = ["#2ECC71", "#3498DB", "#F1C40F", "#E74C3C", "#9B59B6", "#E67E22", "#95A5A6"];
 
 export default function ProfilePage({ onNavigate, user, onLogin, onLogout }) {
   const { t, lang } = useI18n();
   const [progress, setProgress] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [hoveredDino, setHoveredDino] = useState(null);
 
   useEffect(() => {
     if (!user) { setLoading(false); return; }
@@ -65,6 +66,7 @@ export default function ProfilePage({ onNavigate, user, onLogin, onLogout }) {
   });
 
   const dinoNames = lang === "zh" ? DINO_NAMES_ZH : DINO_NAMES_EN;
+  const isZh = lang === "zh";
 
   return (
     <div style={{ background: LIGHT_BG, minHeight: "100vh", fontFamily: FONT }}>
@@ -116,7 +118,7 @@ export default function ProfilePage({ onNavigate, user, onLogin, onLogout }) {
 
             {loading ? (
               <div style={{ textAlign: "center", padding: 40, color: MUTED }}>
-                {lang === "zh" ? "載入中..." : "Loading..."}
+                {isZh ? "載入中..." : "Loading..."}
               </div>
             ) : (
               <>
@@ -155,10 +157,19 @@ export default function ProfilePage({ onNavigate, user, onLogin, onLogout }) {
                   </div>
                 </div>
 
-                {/* Dino collection */}
-                <h2 style={{ fontSize: 14, fontWeight: 600, letterSpacing: 1.5, textTransform: "uppercase", color: TEAL, marginBottom: 16 }}>
-                  {t("profileDinoCollection")}
-                </h2>
+                {/* Dino collection — now clickable! */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                  <h2 style={{ fontSize: 14, fontWeight: 600, letterSpacing: 1.5, textTransform: "uppercase", color: TEAL }}>
+                    {t("profileDinoCollection")}
+                  </h2>
+                  <button onClick={() => onNavigate("dino")} style={{
+                    background: "none", border: "none", color: TEAL, fontSize: 12,
+                    fontWeight: 600, cursor: "pointer", fontFamily: FONT,
+                    display: "flex", alignItems: "center", gap: 4,
+                  }}>
+                    {isZh ? "查看圖鑑" : "View Codex"} →
+                  </button>
+                </div>
 
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 12, marginBottom: 32 }}>
                   {DINO_NAMES_EN.map((name, i) => {
@@ -166,13 +177,25 @@ export default function ProfilePage({ onNavigate, user, onLogin, onLogout }) {
                     const isFed = fedSpecies.has(name);
                     const isSaved = savedSpecies.has(name);
                     const hasAny = isHatched || isFed || isSaved;
+                    const isHovered = hoveredDino === i;
 
                     return (
-                      <div key={name} style={{
-                        background: CARD_BG, border: `1.5px solid ${hasAny ? DINO_COLORS[i] + "44" : LIGHT_BORDER}`,
-                        borderRadius: 14, padding: "16px 12px", textAlign: "center",
-                        opacity: hasAny ? 1 : 0.5,
-                      }}>
+                      <div
+                        key={name}
+                        onClick={() => onNavigate(`dino=${i}`)}
+                        onMouseEnter={() => setHoveredDino(i)}
+                        onMouseLeave={() => setHoveredDino(null)}
+                        style={{
+                          background: CARD_BG,
+                          border: `1.5px solid ${isHovered ? DINO_COLORS[i] : (hasAny ? DINO_COLORS[i] + "44" : LIGHT_BORDER)}`,
+                          borderRadius: 14, padding: "16px 12px", textAlign: "center",
+                          opacity: hasAny ? 1 : 0.65,
+                          cursor: "pointer",
+                          transition: "all 0.25s ease",
+                          transform: isHovered ? "translateY(-3px)" : "translateY(0)",
+                          boxShadow: isHovered ? `0 6px 20px ${DINO_COLORS[i]}22` : "0 1px 4px #0001",
+                        }}
+                      >
                         <div style={{
                           width: 48, height: 48, borderRadius: "50%", margin: "0 auto 8px",
                           background: hasAny ? `${DINO_COLORS[i]}15` : "#F1F0EC",
@@ -184,10 +207,18 @@ export default function ProfilePage({ onNavigate, user, onLogin, onLogout }) {
                         <div style={{ fontSize: 13, fontWeight: 600, color: hasAny ? DARK : MUTED, marginBottom: 4 }}>
                           {hasAny ? dinoNames[i] : "???"}
                         </div>
-                        <div style={{ display: "flex", justifyContent: "center", gap: 4 }}>
-                          <span title={lang === "zh" ? "孵化" : "Hatched"} style={{ fontSize: 14, opacity: isHatched ? 1 : 0.2 }}>🐣</span>
-                          <span title={lang === "zh" ? "餵食" : "Fed"} style={{ fontSize: 14, opacity: isFed ? 1 : 0.2 }}>🍖</span>
-                          <span title={lang === "zh" ? "拯救" : "Saved"} style={{ fontSize: 14, opacity: isSaved ? 1 : 0.2 }}>🏠</span>
+                        <div style={{ display: "flex", justifyContent: "center", gap: 4, marginBottom: 4 }}>
+                          <span title={isZh ? "孵化" : "Hatched"} style={{ fontSize: 14, opacity: isHatched ? 1 : 0.2 }}>🐣</span>
+                          <span title={isZh ? "餵食" : "Fed"} style={{ fontSize: 14, opacity: isFed ? 1 : 0.2 }}>🍖</span>
+                          <span title={isZh ? "拯救" : "Saved"} style={{ fontSize: 14, opacity: isSaved ? 1 : 0.2 }}>🏠</span>
+                        </div>
+                        {/* Tap to view hint */}
+                        <div style={{
+                          fontSize: 10, color: isHovered ? DINO_COLORS[i] : MUTED,
+                          fontWeight: 500, transition: "color 0.2s",
+                          opacity: isHovered ? 1 : 0.5,
+                        }}>
+                          {isZh ? "點擊查看 →" : "Tap to view →"}
                         </div>
                       </div>
                     );
