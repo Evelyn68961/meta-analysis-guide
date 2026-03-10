@@ -149,7 +149,7 @@ function Pickaxe({ swinging = false, bouncing = false }) {
   const animClass = swinging ? "pickaxeSwing" : bouncing ? "pickaxeBounce" : "";
   return (
     <div style={{
-      transformOrigin: "20% 20%",
+      transformOrigin: "75% 75%",
       animation: animClass ? `${animClass} 0.5s ease-in-out forwards` : "none",
       display: "inline-block",
     }}>
@@ -201,8 +201,7 @@ export default function DinoFoodRescue({ t, lang }) {
   const [answered, setAnswered] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const [freedCount, setFreedCount] = useState(0);
-  const [firstTryCount, setFirstTryCount] = useState(0);
-  const [isRetry, setIsRetry] = useState(false);
+  const [wrongCount, setWrongCount] = useState(0);
   const [iceState, setIceState] = useState("frozen"); // frozen | cracking | shattered | freed
   const [crackPct, setCrackPct] = useState(0);
   const [axeState, setAxeState] = useState("idle"); // idle | swinging | bouncing
@@ -228,8 +227,7 @@ export default function DinoFoodRescue({ t, lang }) {
     setAnswered(false);
     setIsCorrect(false);
     setFreedCount(0);
-    setFirstTryCount(0);
-    setIsRetry(false);
+    setWrongCount(0);
     setIceState("frozen");
     setCrackPct(0);
     setAxeState("idle");
@@ -246,48 +244,50 @@ export default function DinoFoodRescue({ t, lang }) {
     setIsCorrect(correct);
 
     if (correct) {
+      const newFreed = freedCount + 1;
       // Pickaxe swing → crack → shatter → freed
       setAxeState("swinging");
       setDinoMood("happy");
-      if (!isRetry) setFirstTryCount(c => c + 1);
 
-      // Animate: crack grows, then shatter
+      // Animate: axe swings first, then crack grows, then shatter
       setCrackPct(0);
-      setIceState("cracking");
-      let pct = 0;
-      const crackInterval = setInterval(() => {
-        pct += 15;
-        setCrackPct(pct);
-        if (pct >= 100) {
-          clearInterval(crackInterval);
-          setTimeout(() => {
-            setIceState("shattered");
-            setAxeState("idle");
+      setTimeout(() => {
+        setIceState("cracking");
+        let pct = 0;
+        const crackInterval = setInterval(() => {
+          pct += 15;
+          setCrackPct(pct);
+          if (pct >= 100) {
+            clearInterval(crackInterval);
             setTimeout(() => {
-              setIceState("freed");
-              setDinoMood("eating");
-              setFreedCount(c => c + 1);
-            }, 700);
-          }, 300);
-        }
-      }, 80);
+              setIceState("shattered");
+              setAxeState("idle");
+              setTimeout(() => {
+                setIceState("freed");
+                setDinoMood("eating");
+                setFreedCount(newFreed);
+                // Win condition: 5 correct
+                if (newFreed >= 5) {
+                  setTimeout(() => setPhase("results"), 1200);
+                }
+              }, 700);
+            }, 300);
+          }
+        }, 80);
+      }, 400);
     } else {
+      const newWrong = wrongCount + 1;
       // Pickaxe bounce off
       setAxeState("bouncing");
       setDinoMood("sad");
       setShowExplanation(true);
+      setWrongCount(newWrong);
       setTimeout(() => setAxeState("idle"), 600);
+      // Lose condition: 3 wrong
+      if (newWrong >= 3) {
+        setTimeout(() => setPhase("results"), 1200);
+      }
     }
-  };
-
-  const handleRetry = () => {
-    setSelected(null);
-    setAnswered(false);
-    setIsCorrect(false);
-    setIsRetry(true);
-    setShowExplanation(false);
-    setDinoMood("neutral");
-    setAxeState("idle");
   };
 
   const nextQuestion = () => {
@@ -296,7 +296,6 @@ export default function DinoFoodRescue({ t, lang }) {
       setSelected(null);
       setAnswered(false);
       setIsCorrect(false);
-      setIsRetry(false);
       setIceState("frozen");
       setCrackPct(0);
       setAxeState("idle");
@@ -304,7 +303,6 @@ export default function DinoFoodRescue({ t, lang }) {
       setShowExplanation(false);
     } else {
       setPhase("results");
-      setDinoMood("eating");
     }
   };
 
@@ -317,8 +315,7 @@ export default function DinoFoodRescue({ t, lang }) {
     setAnswered(false);
     setIsCorrect(false);
     setFreedCount(0);
-    setFirstTryCount(0);
-    setIsRetry(false);
+    setWrongCount(0);
     setIceState("frozen");
     setCrackPct(0);
     setAxeState("idle");
@@ -367,43 +364,46 @@ export default function DinoFoodRescue({ t, lang }) {
 
   // ═══ RESULTS ═══
   if (phase === "results") {
-    const total = questions.length;
-    const tier = firstTryCount >= 6 ? "master" : firstTryCount >= 4 ? "good" : "learning";
+    const won = freedCount >= 5;
     return (
       <div style={{ background: CARD_BG, borderRadius: 20, border: `1px solid ${LIGHT_BORDER}`, padding: "48px 28px", textAlign: "center", boxShadow: "0 2px 20px rgba(0,0,0,0.04)" }}>
         <style>{gameAnimations}</style>
-        <div style={{ fontSize: 48, marginBottom: 12, animation: "foodBounce 0.8s ease-out" }}>
-          {tier === "master" ? "🏆" : tier === "good" ? "👍" : "📚"}
-        </div>
-        <h3 style={{ fontSize: 26, fontWeight: 700, color: DARK, marginBottom: 8 }}>
-          {tier === "master"
-            ? (lang === "zh" ? "搜尋大師！" : "Search Master!")
-            : tier === "good"
-            ? (lang === "zh" ? "表現不錯！" : "Nice Work!")
-            : (lang === "zh" ? "繼續學習！" : "Keep Learning!")}
-        </h3>
-        <p style={{ fontSize: 15, color: MUTED, marginBottom: 6, lineHeight: 1.6 }}>
-          {lang === "zh"
-            ? `你一次答對了 ${firstTryCount} / ${total} 題，成功拯救了 ${dinoName} 的所有食物！`
-            : `You got ${firstTryCount} / ${total} right on the first try, and rescued all of ${dinoName}'s food!`}
-        </p>
-        <p style={{ fontSize: 14, color: dinoColor, fontWeight: 600, marginBottom: 24 }}>
-          {food.emoji} {lang === "zh" ? `${dinoName}（${speciesName}）吃飽飽了！` : `${dinoName} the ${speciesName} is full and happy!`}
-        </p>
-        {/* Happy dino with food */}
-        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 12, marginBottom: 32 }}>
-          <div style={{ animation: "dinoHappyBounce 1s ease-in-out infinite" }}>
-            <CuteDino color={dinoColor} size={tier === "master" ? 120 : 100} index={chosenDino} />
-          </div>
-          <div style={{ display: "flex", gap: 4, flexWrap: "wrap", maxWidth: 120 }}>
-            {[...Array(total)].map((_, i) => (
-              <span key={i} style={{ fontSize: 22, animation: `foodPop 0.4s ease-out ${i * 0.1}s both` }}>{food.emoji}</span>
-            ))}
-          </div>
-        </div>
+        {won ? (
+          <>
+            <h3 style={{ fontSize: 28, fontWeight: 700, color: DARK, marginBottom: 8 }}>
+              {lang === "zh" ? "恭喜！食物救援成功！🎉" : "Congrats! Food Rescue Complete! 🎉"}
+            </h3>
+            <p style={{ fontSize: 15, color: MUTED, marginBottom: 8 }}>
+              {lang === "zh"
+                ? `${dinoName}的食物都被拯救了！牠吃得飽飽的！`
+                : `All of ${dinoName}'s food has been rescued! Full and happy!`}
+            </p>
+            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 12, marginBottom: 32 }}>
+              <div style={{ animation: "dinoHappyBounce 1s ease-in-out infinite" }}>
+                <CuteDino color={dinoColor} size={120} index={chosenDino} />
+              </div>
+              <div style={{ display: "flex", gap: 4, flexWrap: "wrap", maxWidth: 120 }}>
+                {[...Array(freedCount)].map((_, i) => (
+                  <span key={i} style={{ fontSize: 22, animation: `foodPop 0.4s ease-out ${i * 0.1}s both` }}>{food.emoji}</span>
+                ))}
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            <h3 style={{ fontSize: 28, fontWeight: 700, color: "#6BA3C4", marginBottom: 8 }}>
+              {lang === "zh" ? "食物沒救到...🥶" : "Food not rescued... 🥶"}
+            </h3>
+            <p style={{ fontSize: 15, color: MUTED, marginBottom: 8 }}>
+              {lang === "zh"
+                ? `${dinoName}還是很餓...再試一次幫牠找到食物吧！`
+                : `${dinoName} is still hungry... Try again to rescue the food!`}
+            </p>
+          </>
+        )}
         <div style={{ display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
-          <button onClick={reset} style={btnPrimary}>
-            {lang === "zh" ? "再玩一次" : "Play Again"}
+          <button onClick={reset} style={{ ...btnPrimary, background: won ? PURPLE : CORAL }}>
+            {lang === "zh" ? "選另一隻恐龍 🦕" : "Pick another dino 🦕"}
           </button>
         </div>
       </div>
@@ -427,15 +427,16 @@ export default function DinoFoodRescue({ t, lang }) {
       }}>
         {/* Dino */}
         <div style={{
+          position: "relative",
           animation: dinoMood === "happy" ? "dinoHappyBounce 0.6s ease-in-out" :
                      dinoMood === "sad" ? "dinoSadShake 0.5s ease-in-out" :
                      dinoMood === "eating" ? "dinoHappyBounce 0.8s ease-in-out infinite" : "none",
         }}>
-          <CuteDino color={dinoColor} size={70} index={chosenDino} />
+          <CuteDino color={dinoColor} size={120} index={chosenDino} />
           {/* Thought bubble with food */}
           {dinoMood === "neutral" && (
             <div style={{
-              position: "relative", top: -78, left: 50,
+              position: "absolute", top: -10, right: -10,
               background: "white", border: `1.5px solid ${LIGHT_BORDER}`,
               borderRadius: "50%", width: 30, height: 30,
               display: "flex", alignItems: "center", justifyContent: "center",
@@ -447,16 +448,16 @@ export default function DinoFoodRescue({ t, lang }) {
           )}
         </div>
 
-        {/* Pickaxe */}
-        <div style={{ position: "relative", top: -10 }}>
-          <Pickaxe swinging={axeState === "swinging"} bouncing={axeState === "bouncing"} />
-        </div>
-
-        {/* Ice Cube */}
-        <div style={{
-          animation: axeState === "bouncing" ? "iceShake 0.3s ease-in-out" : "none",
-        }}>
-          <IceCube size={80} state={iceState} food={food.emoji} crackPct={crackPct} />
+        {/* Pickaxe + Ice Cube grouped together */}
+        <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+          <div style={{
+            animation: axeState === "bouncing" ? "iceShake 0.3s ease-in-out" : "none",
+          }}>
+            <IceCube size={80} state={iceState} food={food.emoji} crackPct={crackPct} />
+          </div>
+          <div style={{ position: "relative", left: -12, top: -18, zIndex: 2 }}>
+            <Pickaxe swinging={axeState === "swinging"} bouncing={axeState === "bouncing"} />
+          </div>
         </div>
       </div>
 
@@ -464,12 +465,11 @@ export default function DinoFoodRescue({ t, lang }) {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
         <span style={{ fontSize: 13, color: MUTED, fontWeight: 500 }}>
           {lang === "zh" ? `第 ${current + 1} / ${questions.length} 題` : `Q ${current + 1} / ${questions.length}`}
-          {isRetry && <span style={{ color: CORAL, marginLeft: 8, fontSize: 12 }}>
-            {lang === "zh" ? "🔄 再試一次" : "🔄 Retry"}
-          </span>}
         </span>
-        <span style={{ fontSize: 13, color: "#3DA87A", fontWeight: 600 }}>
-          {food.emoji} ×{freedCount}
+        <span style={{ fontSize: 13, fontWeight: 600 }}>
+          <span style={{ color: "#3DA87A" }}>{food.emoji} {freedCount}/5</span>
+          {" "}
+          <span style={{ color: CORAL }}>❌ {wrongCount}/3</span>
         </span>
       </div>
 
@@ -521,15 +521,17 @@ export default function DinoFoodRescue({ t, lang }) {
           <strong style={{ color: "#B83A20" }}>
             {lang === "zh" ? "❌ 鶴嘴鋤彈開了！" : "❌ The pickaxe bounced off!"}
           </strong>{" "}{q.exp}
-          <div style={{ marginTop: 12 }}>
-            <button onClick={handleRetry} style={{
+          <div style={{ textAlign: "right", marginTop: 10 }}>
+            <button onClick={nextQuestion} style={{
               ...btnPrimary,
               background: CORAL,
               padding: "9px 22px",
               fontSize: 13,
               boxShadow: `0 2px 12px ${CORAL}33`,
             }}>
-              {lang === "zh" ? "🔄 再揮一次" : "🔄 Swing Again"}
+              {current < questions.length - 1
+                ? (lang === "zh" ? "下一題 →" : "Next →")
+                : (lang === "zh" ? "看結果" : "See Results")}
             </button>
           </div>
         </div>
@@ -544,7 +546,7 @@ export default function DinoFoodRescue({ t, lang }) {
           animation: "fadeInUp 0.3s ease-out",
         }}>
           <strong style={{ color: "#2A7A5A" }}>
-            {lang === "zh" ? `✅ 冰塊碎了！${food.emoji} 被拯救了！` : `✅ Ice shattered! ${food.emoji} rescued!`}
+            {lang === "zh" ? `✅ 冰塊碎了！${dinoName}有${food.emoji}吃了！` : `✅ Ice shattered! ${dinoName} got ${food.emoji} to eat!`}
           </strong>{" "}{q.exp}
           <div style={{ textAlign: "right", marginTop: 10 }}>
             <button onClick={nextQuestion} style={btnPrimary}>
@@ -563,17 +565,17 @@ export default function DinoFoodRescue({ t, lang }) {
 const gameAnimations = `
 @keyframes pickaxeSwing {
   0% { transform: rotate(0deg); }
-  30% { transform: rotate(-60deg); }
-  50% { transform: rotate(-60deg); }
-  70% { transform: rotate(10deg); }
+  30% { transform: rotate(60deg); }
+  50% { transform: rotate(60deg); }
+  70% { transform: rotate(-10deg); }
   100% { transform: rotate(0deg); }
 }
 @keyframes pickaxeBounce {
   0% { transform: rotate(0deg); }
-  25% { transform: rotate(-45deg); }
-  40% { transform: rotate(-45deg); }
-  55% { transform: rotate(15deg) translateX(8px); }
-  70% { transform: rotate(8deg) translateX(4px); }
+  25% { transform: rotate(45deg); }
+  40% { transform: rotate(45deg); }
+  55% { transform: rotate(-15deg) translateX(-8px); }
+  70% { transform: rotate(-8deg) translateX(-4px); }
   100% { transform: rotate(0deg) translateX(0); }
 }
 @keyframes iceShardFly {

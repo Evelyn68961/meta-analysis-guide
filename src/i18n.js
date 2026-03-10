@@ -385,7 +385,7 @@ const translations = {
     c1gameFrozenDesc: "別灰心！回去複習 PICO 的內容，再來挑戰一次吧！",
     c1gameScore: (s) => `☀️ ${s} / 7 陽光`,
     c1gameRetry: "再挑戰一次 🔄",
-    c1gameContinue: "前往 Course 2 →",
+    c1gameContinue: "前往 AI 工作坊 →",
 
     c1dinoNames: ["翠牙龍", "蒼瀾龍", "金翼龍", "焰角龍", "紫棘龍", "珀爪龍", "鐵穹龍"],
 
@@ -524,9 +524,44 @@ const translations = {
     c2aiLabel: "AI 搜尋策略工作坊",
     c2aiTitle: "讓 AI 幫你建立搜尋策略",
     c2aiDesc: "輸入你的研究主題，AI 會幫你拆解搜尋概念、建議關鍵字和 MeSH 詞，並生成可以直接在 PubMed 使用的搜尋語法。",
-    c2aiInstructions: "輸入你的研究主題或 PICO 問題：",
+    c2aiInstructions: "貼上你的 PubMed 搜尋語法：",
     c2aiPlaceholder: "例如：SGLT2 抑制劑對心衰竭患者的死亡率影響",
     c2aiGenerate: "AI 生成搜尋策略",
+
+    // S3b: MeSH & Controlled Vocabulary
+    c2s3bLabel: "受控詞彙",
+    c2s3bTitle: "MeSH、展開搜尋與截斷",
+    c2s3bIntro: "光用自由文字搜尋是不夠的。資料庫使用受控詞彙（如 PubMed 的 MeSH）來標準化索引，確保同一概念的文獻能被找到。搜尋策略應同時使用 MeSH 詞和自由文字，以達到最佳涵蓋範圍。",
+    c2s3Next2: "認識 MeSH 詞彙 →",
+
+    // S6: Grey Literature
+    c2s6Label: "灰色文獻",
+    c2s6Title: "超越資料庫：灰色文獻搜尋",
+    c2s6Intro: "只搜尋正式發表的文獻是不夠的。有統計上顯著結果的研究更容易被期刊接受（發表偏倚），所以搜尋未發表的灰色文獻可以減少偏倚，讓你的回顧更完整、更可靠。",
+    c2s6Tip: "Cochrane Handbook 建議搜尋至少一個臨床試驗註冊平台（如 ClinicalTrials.gov 或 WHO ICTRP），並手動追蹤已納入文獻的參考文獻。",
+    c2s6Next: "搜尋策略陷阱 →",
+
+    // S7: Search Strategy Pitfalls
+    c2s7Label: "注意事項",
+    c2s7Title: "搜尋策略的常見陷阱",
+    c2s7Intro: "即使使用了正確的布林邏輯和適當的資料庫，搜尋策略仍然可能存在問題。以下是最常見的陷阱和最佳實踐。",
+
+    // Screening drill button
+    c2s5Next2: "了解灰色文獻 →",
+
+    // AI Workshop — Boolean Query Checker
+    c2aiSectionTitle: "用 AI 審查你的搜尋語法",
+    c2aiSectionDesc: "利用 AI 輔助練習搜尋策略。這些工具不能取代你的專業判斷，但可以幫助你更快地建立、審查和撰寫搜尋策略。",
+    c2aiBDesc: "貼上你的 PubMed 搜尋語法，AI 會審查布林邏輯、遺漏的同義詞，並建議改善方案。",
+    c2aiBPlaceholder: "例如：(heart failure) AND (SGLT2 inhibitor OR dapagliflozin) AND (mortality)",
+    c2aiBBtn: "AI 審查我的搜尋語法",
+    c2aiBLoading: "正在審查…",
+    c2aiBResult: "AI 審查結果",
+    c2aiError: "連線錯誤，請檢查網路後重試。",
+    c2aiNoResult: "無法取得回饋",
+    c2checkAnswers: "查看結果",
+    c2tryAgain: "重試",
+    c2correct: "正確",
 
     // ═══ COURSE 3: Data Extraction & Risk of Bias ═══
     c3Label: "進階課程 3",
@@ -981,7 +1016,7 @@ const translations = {
     c1gameHatched: "The Eggs Hatched! 🎉", c1gameHatchedDesc: "Your baby dinosaurs are born! Each one represents your mastery of PICO.",
     c1gameFrozen: "The Eggs Froze… ❄️", c1gameFrozenDesc: "Don't worry! Review the PICO content and try again!",
     c1gameScore: (s) => `☀️ ${s} / 7 sunshine`,
-    c1gameRetry: "Try Again 🔄", c1gameContinue: "Continue to Course 2 →",
+    c1gameRetry: "Try Again 🔄", c1gameContinue: "Continue to AI Workshop →",
 
     c1dinoNames: ["Rex", "Azure", "Zephyr", "Blaze", "Thistle", "Velo", "Dome"],
 
@@ -1120,9 +1155,44 @@ const translations = {
     c2aiLabel: "AI Search Workshop",
     c2aiTitle: "Let AI Help Build Your Search Strategy",
     c2aiDesc: "Enter your research topic and AI will help you break down search concepts, suggest keywords and MeSH terms, and generate a ready-to-use PubMed search syntax.",
-    c2aiInstructions: "Enter your research topic or PICO question:",
+    c2aiInstructions: "Paste your PubMed search syntax:",
     c2aiPlaceholder: "e.g., Effect of SGLT2 inhibitors on mortality in heart failure patients",
     c2aiGenerate: "Generate Search Strategy",
+
+    // S3b: MeSH & Controlled Vocabulary
+    c2s3bLabel: "Controlled Vocabulary",
+    c2s3bTitle: "MeSH, Explosion & Truncation",
+    c2s3bIntro: "Free-text searching alone isn't enough. Databases use controlled vocabularies (like PubMed's MeSH) to standardize indexing, ensuring articles on the same concept can be found. Your strategy should combine MeSH terms and free text for best coverage.",
+    c2s3Next2: "Learn MeSH Terms →",
+
+    // S6: Grey Literature
+    c2s6Label: "Grey Literature",
+    c2s6Title: "Beyond Databases: Grey Literature",
+    c2s6Intro: "Searching only published literature isn't enough. Studies with significant results are more likely to be published (publication bias), so searching grey literature reduces bias and makes your review more complete and trustworthy.",
+    c2s6Tip: "The Cochrane Handbook recommends searching at least one trial register (e.g., ClinicalTrials.gov or WHO ICTRP) and hand-searching reference lists of included studies.",
+    c2s6Next: "Strategy Pitfalls →",
+
+    // S7: Search Strategy Pitfalls
+    c2s7Label: "Pitfalls",
+    c2s7Title: "Common Search Strategy Pitfalls",
+    c2s7Intro: "Even with correct Boolean logic and the right databases, search strategies can still have issues. Here are the most common pitfalls and best practices.",
+
+    // Screening drill button
+    c2s5Next2: "Learn Grey Literature →",
+
+    // AI Workshop — Boolean Query Checker
+    c2aiSectionTitle: "Let AI Review Your Search Syntax",
+    c2aiSectionDesc: "Use AI to practice and refine your search strategies. These tools don't replace your professional judgment, but can help you build, review, and write strategies faster.",
+    c2aiBDesc: "Paste your PubMed search syntax. AI will check Boolean logic, missing synonyms, and suggest improvements.",
+    c2aiBPlaceholder: "e.g., (heart failure) AND (SGLT2 inhibitor OR dapagliflozin) AND (mortality)",
+    c2aiBBtn: "AI Review My Query",
+    c2aiBLoading: "Reviewing…",
+    c2aiBResult: "AI Review Results",
+    c2aiError: "Connection error. Please try again.",
+    c2aiNoResult: "Could not get feedback.",
+    c2checkAnswers: "Check Answers",
+    c2tryAgain: "Try Again",
+    c2correct: "correct",
 
     // ═══ COURSE 3: Data Extraction & Risk of Bias ═══
     c3Label: "Course 3",
