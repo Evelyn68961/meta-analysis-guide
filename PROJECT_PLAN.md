@@ -3,6 +3,18 @@
 ## Overview
 An interactive bilingual (ZH/EN) educational website teaching meta-analysis from beginner to advanced. Built with React, using a shared i18n system and hash-based routing between courses. Each course ends with a unique mini-game (2-3 min) to reinforce learning.
 
+### Game Narrative Arc: "The Great Dino Migration"
+Across all 6 courses, the dino games tell a connected story:
+- **Course 0:** Discover dino eggs hidden in the research world (Egg Hunt)
+- **Course 1:** Hatch the eggs into baby dinos (Egg Hatch)
+- **Course 2:** Feed the dinos by rescuing food from ice (Food Rescue)
+- **Course 3:** Save the dinos' homes from a blizzard (Home Save)
+- **Courses 4–5 (The Migration):** The environment gets too harsh — dinos must find new homes.
+  - **Course 4:** Find the KEY to the new home (Key Quest — crystal cave)
+  - **Course 5:** Find the right DOOR to the new home (Door Escape — mysterious corridor)
+
+Courses 4–5 games introduce **progressive difficulty** (3 foundation MCQ → gate → 6 advanced mixed-type questions) and **diverse question types** (true/false, multi-select, ordering, spot-the-error) beyond the standard MCQ used in Courses 0–3.
+
 ## Teaching Schedule
 - **Precourse:** Course 0 (Introduction to Meta-Analysis)
 - **Foundations:** Courses 1–3 (PICO, Search, Data Extraction) → **Midterm** (checkpoint assessment)
@@ -17,11 +29,11 @@ An interactive bilingual (ZH/EN) educational website teaching meta-analysis from
 |---------|--------|-------|------|--------|
 | **Precourse** | 0 | What is Meta-Analysis? | Dino Egg Hunt (7 eggs, 7 categories, 35-question bank, cheat sheet rewards) | ✅ Live on `main` |
 | **Foundations** | 1 | PICO/PICOS Research Question | Dino Egg Hatch (pick 1 of 7 eggs, 7 Qs from 70-question bank, 5 correct = hatch, 3 wrong = freeze, sun/frost particles) | ✅ Built on `dev` |
-| | 2 | Literature Search & PRISMA | Dino Food Rescue (pick 1 of 7 dinos, 7 Qs from 70-question bank, crack ice with pickaxe, second chance on wrong, species-matched food) | ✅ Built on `dev` |
-| | 3 | Data Extraction & Risk of Bias | Dino Home Save (pick 1 of 7 dinos, 7 Qs from 70-question bank, 10s timer, correct = fire grows, wrong/timeout = fire dims, 5 correct = win, 3 wrong = lose) | ✅ Built on `dev` |
+| | 2 | Literature Search & PRISMA | Dino Food Rescue (pick 1 of 7 dinos, 7 Qs from 70-question bank, crack ice with pickaxe, second chance on wrong, species-matched food) | ✅ Built on `dev` (upgraded: +3 teaching sections, +4 interactive exercises, AI Boolean checker) |
+| | 3 | Data Extraction & Risk of Bias | Dino Home Save (pick 1 of 7 dinos, 7 Qs from 70-question bank, 10s timer, correct = fire grows, wrong/timeout = fire dims, 5 correct = win, 3 wrong = lose) | ✅ Built on `dev` (upgraded: +2 teaching sections, +3 interactive exercises, AI extraction reviewer) |
 | | **—** | **Midterm** | **Clickable checkpoint card in hub; assessment page TBD** | ❌ Not started |
-| **Advanced** | 4 | Effect Sizes & Forest Plots | TBD (70-question bank ready) | ✅ Teaching built on `dev` (game TBD) |
-| | 5 | Heterogeneity & Publication Bias | TBD (70-question bank ready) | ✅ Teaching built on `dev` (game TBD) |
+| **Advanced** | 4 | Effect Sizes & Forest Plots | Dino Key Quest (pick 1 of 7 dinos, 9 Qs from 105-question bank: 3 foundation MCQ + 6 advanced mixed-type, progressive unlock, crystal cave theme) | ✅ Built on `dev` (game needs fixes) |
+| | 5 | Heterogeneity & Publication Bias | Dino Door Escape (pick 1 of 7 dinos, 9 Qs from 105-question bank: 3 foundation MCQ + 6 advanced mixed-type, progressive unlock, corridor/door theme) | ✅ Built on `dev` (game needs fixes) |
 | | **—** | **Final Exam** | **Clickable checkpoint card in hub; 3-stage assessment TBD** | ❌ Not started |
 
 ---
@@ -41,25 +53,27 @@ src/
 │
 ├── Course0.jsx          ← Precourse: What is Meta-Analysis? (teaching sections; game extracted to DinoEggHunt)
 ├── Course1.jsx          ← Course 1: PICO (teaching sections + AI workshop + AI freestyle PICO; game extracted to DinoEggHatch)
-├── Course2.jsx          ← Course 2: Literature Search & PRISMA (teaching sections + AI workshop; game extracted to DinoFoodRescue)
-├── Course3.jsx          ← Course 3: Data Extraction & RoB (6 teaching sections; game extracted to DinoHomeSave)
-├── Course4.jsx          ← Course 4: Effect Sizes & Forest Plots (6 teaching sections + 4 interactive demos; game TBD)
-├── Course5.jsx          ← Course 5: Heterogeneity & Publication Bias (6 teaching sections + 4 interactive demos; game TBD)
+├── Course2.jsx          ← Course 2: Literature Search & PRISMA (10 teaching sections + 4 interactive exercises + AI Boolean checker; game extracted to DinoFoodRescue)
+├── Course3.jsx          ← Course 3: Data Extraction & RoB (9 sections: 6 teaching + dual extraction + game + AI extraction reviewer; 7 interactive components)
+├── Course4.jsx          ← Course 4: Effect Sizes & Forest Plots (6 teaching sections + 4 interactive demos; game: DinoKeyQuest)
+├── Course5.jsx          ← Course 5: Heterogeneity & Publication Bias (6 teaching sections + 4 interactive demos; game: DinoDoorEscape)
 │
 ├── DinoEggHunt.jsx      ← Course 0 game: egg hunt quiz (7 eggs, 7 categories, cheat sheet rewards; exports StylishEgg SVG)
 ├── DinoEggHatch.jsx     ← Course 1 game: dragon egg hatching (exports DragonEgg SVG)
 ├── DinoFoodRescue.jsx   ← Course 2 game: ice-breaking food rescue
 ├── DinoHomeSave.jsx     ← Course 3 game: save dino's home from freezing
+├── DinoKeyQuest.jsx     ← Course 4 game: crystal cave key fragment collection (progressive: 3 foundation MCQ + 6 advanced mixed-type)
+├── DinoDoorEscape.jsx   ← Course 5 game: corridor door escape (progressive: 3 foundation MCQ + 6 advanced mixed-type)
 ├── CuteDino.jsx         ← Shared dinosaur SVG component (7 unique species, used across courses)
 ├── DinoIntro.jsx        ← Dino Codex page (RPG-style character intro; accessible at #dino or #dino=N; linked from ProfilePage dino cards)
 │
-├── questionHelpers.js   ← Shared helper functions: pickQuestions(), pickBalanced()
+├── questionHelpers.js   ← Shared helper functions: pickQuestions(), pickBalanced(), pickByType(), pickAdvancedMix()
 ├── course0Questions.js  ← Course 0 question bank (35 Qs: 5 per category × 7 categories)
 ├── course1Questions.js  ← Course 1 question bank (70 Qs: 10 per category × 7 categories)
 ├── course2Questions.js  ← Course 2 question bank (70 Qs: 10 per category × 7 categories)
 ├── course3Questions.js  ← Course 3 question bank (70 Qs: 10 per category × 7 categories)
-├── course4Questions.js  ← Course 4 question bank (70 Qs: 10 per category × 7 categories)
-├── course5Questions.js  ← Course 5 question bank (70 Qs: 10 per category × 7 categories)
+├── course4Questions.js  ← Course 4 question bank (105 Qs: 70 MCQ + 35 advanced — 14 true/false, 7 multi-select, 7 ordering, 7 spot-error)
+├── course5Questions.js  ← Course 5 question bank (105 Qs: 70 MCQ + 35 advanced — 14 true/false, 7 multi-select, 7 ordering, 7 spot-error)
 │
 ├── i18n.js              ← All translations (Course 0–5 + Hub + Nav + About + Profile); UI strings only — game questions in separate files
 └── index.js             ← Entry point (wraps App in I18nProvider)
@@ -117,20 +131,44 @@ api/
 
 ### Known Issues:
 - ~~**AI Workshop doesn't work**~~ — ✅ FIXED. AI Workshop now works via Vercel serverless proxy (`api/ai-feedback.js`). API key stored in Vercel environment variables. Same fix applied to Course 2.
+- ~~**Game "Continue" button broken**~~ — ✅ FIXED. Button had no `onClick` handler and wrong label ("Course 2" instead of "AI Workshop"). Added `onNext` prop to `DinoEggHatch`, wired to scroll to `#ai-workshop` section. Label update pending in `i18n.js` (`c1gameContinue` key).
 - Emoji rendering: some newer Unicode emojis (🫀🦠🧠) don't render on all systems. Use older, safer alternatives.
 
 ---
 
 ## Course 2 Details (Literature Search & PRISMA)
 
-### Sections:
-1. **Why Systematic Search?** — Random vs systematic comparison
-2. **Database Overview** — PubMed, Embase, Cochrane, WoS, CINAHL, Grey literature
-3. **Boolean Operators** — AND/OR/NOT with interactive Venn diagrams
-4. **PRISMA Flow Diagram** — Interactive visualization
-5. **Screening Tips** — 4 practical tips
-6. **Dino Food Rescue Game** — Pick 1 of 7 dinos → 7 shuffled questions → crack ice cubes with pickaxe to free food
-7. **AI Search Strategy Workshop** — ✅ Working via Vercel serverless proxy
+### Sections (in order):
+1. **Why Systematic Search?** — Random vs systematic comparison cards + **"Spot the Search" interactive quiz** (4 scenarios, classify as systematic vs casual, instant feedback)
+2. **Database Overview** — PubMed, Embase, Cochrane, WoS, CINAHL, Grey literature (6 hover-cards)
+3. **Boolean Operators** — AND/OR/NOT with interactive Venn diagrams + **interactive Boolean combo builder** (3 switchable clinical scenarios: HF/SGLT2i, Asthma/ICS, CKD/GLP-1 RA — replaces old hardcoded combo example)
+4. **MeSH & Controlled Vocabulary** ← NEW — Expandable MeSH tree explorer (Heart Failure hierarchy) + 4 clickable concept cards (MeSH vs free text, explosion, subheadings, truncation)
+5. **PRISMA Flow Diagram** — Interactive animated visualization with step-through + exclusion branches
+6. **Screening Tips & Drill** — 4 practical tip cards + **screening practice drill** (4 mock abstracts, learner decides include/exclude against a given PICO, instant feedback with explanations)
+7. **Grey Literature** ← NEW — Teaching section on publication bias + **"Grey Lit Scavenger Hunt"** (8-source checkbox quiz: ClinicalTrials.gov, conference abstracts, dissertations, WHO reports, preprints, reference lists vs Wikipedia, PubMed indexed)
+8. **Search Strategy Pitfalls** ← NEW — 4 bad/good trap cards (language restrictions, outcome terms in search, MeSH-only vs combined, skipping citation tracking)
+9. **Dino Food Rescue Game** — Pick 1 of 7 dinos → 7 shuffled questions → crack ice cubes with pickaxe to free food
+10. **AI Boolean Query Checker** — Learner pastes their PubMed search syntax, AI critiques Boolean logic, missing synonyms, scope issues, and suggests improvements. Uses `/api/ai-feedback` Vercel serverless proxy.
+
+### Interactive Components (new in upgrade):
+- **SpotTheSearch** — 4-scenario quiz in S1: classify systematic vs casual, with per-scenario explanations
+- **BooleanComboBuilder** — 3 clinical scenario tabs in S3: auto-generates color-coded Boolean syntax with PICO concept labels
+- **MeSHTreeExplorer** — Expandable tree in S4 (new section): Heart Failure → HFrEF/HFpEF/Cardiomyopathies + 4 clickable concept cards
+- **ScreeningDrill** — 4 mock abstracts in S6: include/exclude decisions against a PICO, with detailed feedback
+- **GreyLitHunt** — 8-source checkbox quiz in S7 (new section): identify grey literature sources
+- **AIBooleanChecker** — AI-powered search syntax reviewer in S10
+
+### Sidebar catalog: 10 items
+1. Why Systematic Search (with Spot the Search quiz)
+2. Database Overview
+3. Boolean Operators (with interactive combo builder)
+4. MeSH & Controlled Vocabulary ← NEW
+5. PRISMA Flow Diagram
+6. Screening Tips & Drill (with screening practice)
+7. Grey Literature ← NEW
+8. Search Strategy Pitfalls ← NEW
+9. Dino Food Rescue
+10. AI Workshop (Boolean Query Checker)
 
 ### Game Mechanics (Dino Food Rescue):
 - Standalone component in `DinoFoodRescue.jsx`, imported by `Course2.jsx`
@@ -144,17 +182,24 @@ api/
   - Cat 5: Grey literature & search completeness
   - Cat 6: Search strategy pitfalls & best practices
 - 7 questions drawn per playthrough via `pickBalanced()` — different each time
-- Correct → pickaxe swing animation → ice crack lines grow → ice shatters into particles → food pops out → dino bounces happily
-- Wrong → pickaxe bounces off → ice shakes → explanation shown → "Swing Again" retry button (second chance)
-- Score tracks first-try correct count; all food is always eventually rescued
-- Progress bar: 7 ice cube icons, each replaced by ✅ when freed
+- **Win/Lose mechanic (matches DinoEggHatch pattern):** 5 correct = win (dino eats happily), 3 wrong = lose (dino starves). No retries on wrong answers. Game ends early when either threshold is hit.
+- Correct → pickaxe swing animation (400ms delay) → ice crack lines grow → ice shatters into particles → food pops out → dino bounces happily
+- Wrong → pickaxe bounces off → ice shakes → explanation shown → "Next" button (no retry)
+- Progress display: `🐟 3/5` correct + `❌ 1/3` wrong (similar to egg hatch sun/ice counters)
+- Pickaxe positioned to right of ice cube, swing pivots from handle grip (tip hits ice)
 - Dino reactions: happy bounce (correct), sad shake (wrong), eating animation (food freed)
+- Thought bubble shows desired food floating above dino (absolute positioned, top-right)
 - Species-matched food: Rex→🍖, Azure→🐟, Zephyr→🦐, Blaze→🌿, Thistle→🌱, Velo→🥚, Dome→🍄
-- Results screen: tiered message (master ≥6, good ≥4, learning <4), dino with all freed food displayed
+- Results screen: win = celebration with bouncing dino + food emojis, lose = encouraging retry message
 - Bilingual UI strings handled internally (no new i18n keys needed)
 
-### TODO:
-- ~~Fix AI workshop (backend proxy issue)~~ ✅ DONE
+### Known Issues:
+- ~~**Venn diagram text too small**~~ — ✅ FIXED. SVG text bumped from 9–10px to 12–13px, diagram size increased from 120 to 180.
+- ~~**Monospace font in Boolean examples**~~ — ✅ FIXED. Replaced `monospace` with `'Noto Sans TC', 'Outfit', sans-serif` in example boxes and search strategy block.
+- ~~**Pickaxe positioned wrong / swing direction wrong**~~ — ✅ FIXED. Pickaxe moved to right of ice, transformOrigin changed to `75% 75%`, swing animations reversed.
+- ~~**Food thought bubble on dino's head**~~ — ✅ FIXED. Changed to absolute positioning (top-right of dino wrapper).
+- ~~**No delay between axe swing and ice crack**~~ — ✅ FIXED. Added 400ms delay.
+- ~~**Retry mechanic removed**~~ — ✅ Replaced with DinoEggHatch-style 5-correct/3-wrong win/lose system.
 
 ---
 
@@ -228,11 +273,24 @@ api/
 ### Sections (in order):
 1. **Why Data Extraction Matters** — Opening hook: "reading the nutrition label, not just the food packaging." Bad example (grabbing only p-values from abstracts) vs good example (structured extraction of events, sample sizes, means, SDs). Emphasizes garbage-in-garbage-out.
 2. **The Extraction Table** — Interactive demo of a standardized data extraction form. 8 clickable columns: Author/Year, Study Design, Population (n), Intervention details, Comparator, Outcome definition, Results (raw numbers), Notes. Click each to see what goes in it with example data. Cooking analogy: "measuring each ingredient precisely before adding it to the pot."
-3. **What Numbers to Extract** — Two clickable tracks side by side: (a) Dichotomous outcomes → events + totals per group (e.g., 15/100 vs 22/100), and (b) Continuous outcomes → mean, SD, n per group. Also covers: what to do when studies report medians/IQR (Wan/Luo conversion formulas), and handling zero events (continuity corrections).
+3. **What Numbers to Extract** — Two clickable tracks side by side: (a) Dichotomous outcomes → events + totals per group, and (b) Continuous outcomes → mean, SD, n per group. Also covers Wan/Luo conversion. + **Extraction Drill** ← NEW: 2 mock studies (1 dichotomous DAPA-HF, 1 continuous Metformin), learner picks correct numbers from 4 options each, with explanations.
 4. **Risk of Bias: Why Quality Matters** — Analogy: "checking freshness of ingredients before cooking." Concept that not all included studies are trustworthy. Cooking analogy: one spoiled ingredient ruins the whole pot → sensitivity analysis.
-5. **RoB Tools** — Two interactive cards: (a) Cochrane RoB 2 for RCTs — the 5 domains (randomization, deviations from intended intervention, missing outcome data, outcome measurement, selective reporting) shown as traffic-light levels (low/some concerns/high risk). (b) Newcastle-Ottawa Scale for observational studies — the 3 categories (selection, comparability, outcome) with star ratings. Click each card to expand details.
-6. **Putting It Together** — Interactive traffic-light matrix for 5 example studies, with a "sensitivity analysis" toggle button that excludes the high-risk study and shows the pooled estimate change. Reinforces: two independent extractors, resolve disagreements, document everything.
-7. **Dino Home Save Game** — Pick 1 of 7 dinos → 7 questions → 10s timer → keep the fireplace burning
+5. **RoB Tools** — Two interactive cards: Cochrane RoB 2 (5 domains, traffic-light levels) + NOS (3 categories, star system). + **"Rate This Study" exercise** ← NEW: Mock Metformin RCT, learner assigns Low/Some Concerns/High to each of 5 RoB 2 domains with per-domain feedback.
+6. **Putting It Together** — Interactive traffic-light matrix for 5 example studies, with a "sensitivity analysis" toggle button that excludes the high-risk study and shows the pooled estimate change.
+7. **Dual Extraction & Disagreement Resolution** ← NEW — 4-step workflow cards (independent extraction → compare with Cohen's kappa → resolve disagreements → pilot calibrate) + tool tip about Covidence/Rayyan.
+8. **Dino Home Save Game** — Pick 1 of 7 dinos → 7 questions → 10s timer → keep the fireplace burning
+9. **AI Extraction Reviewer** ← NEW — DAPA-HF study scenario: learner fills in extraction fields (events/totals per group), AI checks if they grabbed the right numbers and flags common mistakes (ITT vs per-protocol, percentages vs raw counts). Uses `/api/ai-feedback` Vercel serverless proxy.
+
+### Sidebar catalog: 9 items
+1. Why It Matters
+2. Extraction Table
+3. What Numbers (with Extraction Drill)
+4. Risk of Bias
+5. RoB Tools (with Rate This Study)
+6. Putting It Together
+7. Dual Extraction ← NEW
+8. Dino Home Save
+9. AI Workshop ← NEW
 
 ### Game Mechanics (Dino Home Save):
 - Standalone component in `DinoHomeSave.jsx`, imported by `Course3.jsx`
@@ -262,8 +320,11 @@ api/
 ### Interactive Components:
 - **ExtractionTableDemo** — 8 clickable column cards, detail panel shows description + example data
 - **OutcomeTracksDemo** — Dichotomous vs Continuous toggle cards with extraction format details
+- **ExtractionDrill** ← NEW — 2 mock study scenarios (dichotomous + continuous), pick correct extraction data from 4 options
 - **RoBToolCards** — Two expandable cards: RoB 2 (5 domains, traffic-light levels) and NOS (3 categories, star system)
+- **RateThisStudy** ← NEW — Mock RCT, assign Low/Some Concerns/High to 5 RoB 2 domains with per-domain feedback
 - **TrafficLightDemo** — 5-study matrix with colored dots, sensitivity analysis toggle button that excludes high-risk study and updates pooled effect live
+- **AIExtractionReviewer** ← NEW — DAPA-HF study scenario, learner fills extraction form, AI reviews accuracy
 
 ---
 
@@ -286,8 +347,9 @@ api/
 - **ForestPlotAnatomy** — Hover-based forest plot with 6 named parts, tooltip panel
 - **ForestPlotExercise** — 3 progressive practice questions with answer feedback
 
-### Question Bank (70 Qs = 10 × 7 categories):
+### Question Bank (105 Qs = 70 MCQ + 35 advanced):
 - `course4Questions.js` with `course4Categories` export
+- **MCQ (70 Qs: 10 × 7 categories):**
   - Cat 0: What effect sizes are and why they matter
   - Cat 1: Odds Ratio and Risk Ratio (calculation, interpretation)
   - Cat 2: Mean Difference and SMD (when to use, interpretation)
@@ -295,10 +357,33 @@ api/
   - Cat 4: Fixed-effect vs. random-effects models
   - Cat 5: Forest plot anatomy and reading
   - Cat 6: Common mistakes (e.g., confusing OR with RR, misreading CIs)
+- **Advanced (35 Qs: 5 per category × 7 categories):**
+  - Per category: 2 true/false, 1 multi-select, 1 ordering, 1 spot-error
+  - All questions have `type` field: `"mcq"`, `"true_false"`, `"multi_select"`, `"ordering"`, `"spot_error"`
 
-### Game: TBD
-- 70-question bank is ready; game component not yet created
-- Placeholder shown in Course4.jsx
+### Game: Dino Key Quest ✅ BUILT (needs fixes)
+- Standalone component in `DinoKeyQuest.jsx`, imported by `Course4.jsx`
+- **Narrative:** The dinos need to find the KEY to their new home — explore a crystal cave and collect key fragments
+- **Progressive difficulty (unique to Courses 4–5):**
+  - **Phase 1 (Foundation):** 3 standard MCQ from the 70-MCQ pool. Must pass ≥2/3 to unlock Phase 2. Gate animation on success.
+  - **Phase 2 (Advanced):** 6 mixed-type questions from the 35-advanced pool (2 true/false, 2 multi-select, 1 ordering, 1 spot-error). Shuffled each playthrough.
+- **Visual theme:** Crystal cave (dark blue/purple gradient), glowing crystal sparkles, warm glow grows in advanced phase
+- **Progress tracker:** 9 key fragments (3 gold circles for foundation handle + 6 blue hexagons for advanced blade). Filled with glow animation on correct.
+- **Correct →** fragment lights up with pulse animation
+- **Wrong →** shake animation, fragment stays dark
+- **Result tiers:** Master (≥8/9), Explorer (≥6), Apprentice (≥4), Novice (<4), Locked (failed foundation)
+- **Question type renderers:** Each type has its own UI component:
+  - MCQ: standard 4-option buttons with A/B/C/D labels
+  - True/False: two large buttons (✓/✗)
+  - Multi-select: checkboxes with "Confirm" button, shows correct count hint
+  - Ordering: numbered items with ▲▼ arrow buttons, "Confirm Order" button
+  - Spot-the-error: numbered statements, click the wrong one (or "All correct" for trick questions)
+- **Type badges:** Colored labels above each question showing type (選擇題/是非題/複選題/排序題/找錯題)
+- Accent color: BLUE `#2E86C1` (matching Course 4)
+- Bilingual UI strings handled internally
+
+### Known Issues (Course 4 Game):
+- Game needs visual polish and bug fixes (paused for now)
 
 ### Note:
 - AI workshop section planned but not yet designed — backend proxy is now ready (`api/ai-feedback.js`), so future AI sections just need frontend implementation (Heterogeneity & Publication Bias)
@@ -320,8 +405,9 @@ api/
 - **FunnelPlotDemo** — SVG funnel plot, toggle symmetric vs biased, highlighted missing-study zone
 - **PrismaHighlights** — 6 clickable checklist items with expand-on-click descriptions
 
-### Question Bank (70 Qs = 10 × 7 categories):
+### Question Bank (105 Qs = 70 MCQ + 35 advanced):
 - `course5Questions.js` with `course5Categories` export
+- **MCQ (70 Qs: 10 × 7 categories):**
   - Cat 0: What heterogeneity is and why it matters
   - Cat 1: I², Q statistic, and prediction intervals
   - Cat 2: Sources of heterogeneity (clinical, methodological, statistical)
@@ -329,10 +415,26 @@ api/
   - Cat 4: Publication bias concept and funnel plots
   - Cat 5: Egger's test, trim-and-fill, and other detection methods
   - Cat 6: PRISMA reporting and overall interpretation pitfalls
+- **Advanced (35 Qs: 5 per category × 7 categories):**
+  - Per category: 2 true/false, 1 multi-select, 1 ordering, 1 spot-error
+  - All questions have `type` field: `"mcq"`, `"true_false"`, `"multi_select"`, `"ordering"`, `"spot_error"`
 
-### Game: TBD
-- 70-question bank is ready; game component not yet created
-- Placeholder shown in Course5.jsx
+### Game: Dino Door Escape ✅ BUILT (needs fixes)
+- Standalone component in `DinoDoorEscape.jsx`, imported by `Course5.jsx`
+- **Narrative:** The dinos have the key — now find the RIGHT DOOR to their new home in a mysterious corridor
+- **Progressive difficulty (same structure as Course 4):**
+  - **Phase 1 (Foundation):** 3 standard MCQ. Must pass ≥2/3 to unlock Phase 2.
+  - **Phase 2 (Advanced):** 6 mixed-type questions (2 true/false, 2 multi-select, 1 ordering, 1 spot-error).
+- **Visual theme:** Dark corridor (purple gradient), torch-like flickering lights, crimson glow in advanced phase
+- **Progress tracker:** 9 door icons. Correct → door opens (golden glow). Wrong → door locks (red X).
+- **Door SVG:** Unique wood colors per door, three states: closed (neutral), open (golden glow + animate), locked (dark + red X overlay)
+- **Result tiers:** Door Master (≥8/9), Navigator (≥6), Seeker (≥4), Lost (<4), Locked (failed foundation)
+- **Question type renderers:** Same types as Course 4 but with crimson accent color
+- Accent color: CRIMSON `#C0392B` (matching Course 5)
+- Bilingual UI strings handled internally
+
+### Known Issues (Course 5 Game):
+- Game needs visual polish and bug fixes (paused for now)
 
 ### Note:
 - AI workshop section planned but not yet designed — backend proxy is now ready (`api/ai-feedback.js`), so future AI sections just need frontend implementation
@@ -424,7 +526,7 @@ api/
 1. Create `CourseN.jsx` with teaching sections + AI workshop
 2. Add sticky sidebar catalog with `catalogItems` array, `activeSection` state, and IntersectionObserver (copy pattern from any existing course)
 3. Create game as standalone component (e.g., `DinoGameN.jsx`) — import by CourseN
-4. Create `courseNQuestions.js` with 70 bilingual questions (10 per category × 7 categories); import `pickBalanced` from `questionHelpers.js`
+4. Create `courseNQuestions.js` — for foundation courses: 70 bilingual MCQ (10 per category × 7 categories); for advanced courses: 70 MCQ + 35 advanced (5 per category: 2 true/false, 1 multi-select, 1 ordering, 1 spot-error); import helpers from `questionHelpers.js`
 5. Add translations to `i18n.js` with `cN` prefix (UI strings only — game questions stay in courseNQuestions.js)
 6. Add route in `App.jsx` switch statement
 7. Add course card in `App.jsx` — to `precourse`, `section1Courses`, or `section2Courses` as appropriate
@@ -433,15 +535,22 @@ api/
 
 ### Question Bank Architecture (split per course):
 - Each course has its own question file: `course0Questions.js`, `course1Questions.js`, etc.
-- Shared helpers in `questionHelpers.js`: `pickQuestions()`, `pickBalanced()`
-- Each question: `{ id, category, zh: { q, opts, exp }, en: { q, opts, exp }, correct }`
-- `id` format: `"cN-XXX"` (e.g., `"c0-WW01"`, `"c1-042"`, `"c2-015"`)
+- Shared helpers in `questionHelpers.js`: `pickQuestions()`, `pickBalanced()`, `pickByType()`, `pickAdvancedMix()`
+- **Standard MCQ questions:** `{ id, category, type: "mcq", zh: { q, opts, exp }, en: { q, opts, exp }, correct }`
+- **Advanced question types (Courses 4–5):**
+  - `type: "true_false"` — statement + `correct: true/false`
+  - `type: "multi_select"` — `opts` array + `correctAll: [indices]` (pick ALL correct)
+  - `type: "ordering"` — `items` array + `correctOrder: [indices]` (arrange in order)
+  - `type: "spot_error"` — `statements` array + `correct: index` of the error (-1 = no error / trick question)
+- `id` format: `"cN-XXX"` (e.g., `"c0-WW01"`, `"c1-042"`, `"c4-085"`)
 - `category` (0–6) maps to 7 thematic groups per course
 - Helper functions in `questionHelpers.js`:
   - `pickQuestions(pool, n)` — pure random pick
   - `pickBalanced(pool, n, numCategories)` — even coverage across categories, then shuffle
+  - `pickByType(pool, type, n)` — pick N questions of a specific type with balanced categories
+  - `pickAdvancedMix(pool, n)` — pick N non-MCQ questions with type variety (2 true/false, 2 multi-select, 1 ordering, 1 spot-error for n=6)
 - Game components localize at runtime: `q[lang].q`, `q[lang].opts`, `q.correct`, `q[lang].exp`
-- Currently: 385 questions total (35 Course 0 + 70 Course 1 + 70 Course 2 + 70 Course 3 + 70 Course 4 + 70 Course 5)
+- Currently: 525 questions total (35 Course 0 + 70 Course 1 + 70 Course 2 + 70 Course 3 + 105 Course 4 + 105 Course 5 + 70 reserve per advanced course)
 
 ### Common Pitfalls:
 - Template literal translation keys MUST include prefix: `` t(`c1scenario${s}`) `` not `` t(`scenario${s}`) ``
@@ -455,7 +564,7 @@ api/
 - **API key:** Stored in Vercel Environment Variables (`ANTHROPIC_API_KEY`), never exposed in frontend code
 - **Local dev:** Use `vercel dev` (not `npm start`) to test serverless functions locally; `.env.local` pulled from Vercel
 - **Cost:** ~$0.003–0.01 per AI check (prepaid credits at console.anthropic.com)
-- **Courses using it:** Course 1 AI PICO Workshop + Freestyle PICO, Course 2 AI Search Strategy Workshop
+- **Courses using it:** Course 1 AI PICO Workshop + Freestyle PICO, Course 2 AI Boolean Query Checker, Course 3 AI Extraction Reviewer
 - **Future courses:** Can reuse the same `/api/ai-feedback` endpoint — just send different system prompts from frontend
 
 ### Backend Status (Supabase Integration):
