@@ -45,7 +45,7 @@ function SectionTitle({ children }) {
 }
 
 function Paragraph({ children, style = {} }) {
-  return <p style={{ fontSize: 16, lineHeight: 1.75, color: MUTED, maxWidth: 640, ...style }}>{children}</p>;
+  return <p style={{ fontSize: 16, lineHeight: 1.75, color: MUTED, maxWidth: 880, ...style }}>{children}</p>;
 }
 
 const btnPrimary = { background: BLUE, border: "none", color: "#FFF", padding: "12px 28px", borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: "pointer", transition: "all 0.2s" };
@@ -63,55 +63,55 @@ function EffectSizeCards({ lang }) {
     {
       key: "or", icon: "🎯",
       en: "Odds Ratio (OR)", zh: "勝算比 (OR)",
-      tagEn: "Binary outcomes", tagZh: "二分類結局",
-      descEn: "Compares the odds of an event between groups. Used in case-control studies and RCTs with binary outcomes.",
-      descZh: "比較兩組事件發生的「勝算」。適用於病例對照研究及二分類結局的 RCT。",
-      formulaEn: "OR = (events_A ÷ non-events_A) ÷ (events_B ÷ non-events_B)",
-      formulaZh: "OR = (A組事件數 ÷ A組非事件數) ÷ (B組事件數 ÷ B組非事件數)",
-      exEn: "New antibiotic: 15/100 developed infection vs 30/100 in control → OR ≈ 0.42",
-      exZh: "新抗生素：治療組 15/100 感染 vs 對照組 30/100 → OR ≈ 0.42",
+      tagEn: "Binary outcomes", tagZh: "二分類結果",
+      descEn: <>Compares the odds of an event between groups.<br />Used in case-control studies and RCTs with binary outcomes.</>,
+      descZh: <>比較兩組事件發生的「勝算」。<br />適用於病例對照研究及二分類結局的 RCT。</>,
+      formulaEn: <>(events_A ÷ non-events_A)÷ (events_B ÷ non-events_B)</>,
+      formulaZh: <>(A組事件數 ÷ A組非事件數)÷ (B組事件數 ÷ B組非事件數)</>,
+      exEn: <>New antibiotic: <br />{" "}15/100 infection vs 30/100 control → OR ≈ 0.42</>,
+      exZh: <>新抗生素：<br />{" "}治療組 15/100 感染 vs 對照組 30/100 → OR ≈ 0.42</>,
       nullVal: "1",
     },
     {
       key: "rr", icon: "📊",
       en: "Risk Ratio (RR)", zh: "風險比 (RR)",
-      tagEn: "Binary outcomes", tagZh: "二分類結局",
-      descEn: "Compares the risk (probability) of an event between groups. More intuitive than OR for cohort/RCT data.",
-      descZh: "比較兩組事件發生的「風險（機率）」。在世代研究或 RCT 中比 OR 更直觀。",
-      formulaEn: "RR = (events_A ÷ total_A) ÷ (events_B ÷ total_B)",
-      formulaZh: "RR = (A組事件數 ÷ A組總人數) ÷ (B組事件數 ÷ B組總人數)",
-      exEn: "Statin therapy: 5% MI rate vs 8% in placebo → RR = 0.625 (37.5% risk reduction)",
-      exZh: "Statin 治療：MI 發生率 5% vs 安慰劑 8% → RR = 0.625（降低 37.5% 風險）",
+      tagEn: "Binary outcomes", tagZh: "二分類結果",
+      descEn: <>Compares the risk (probability) of an event between groups.<br />More intuitive than OR for cohort/RCT data.</>,
+      descZh: <>比較兩組事件發生的「風險（機率）」。<br />在世代研究或 RCT 中比 OR 更直觀。</>,
+      formulaEn: <>(events_A ÷ total_A)÷ (events_B ÷ total_B)</>,
+      formulaZh: <>(A組事件數 ÷ A組總人數)÷ (B組事件數 ÷ B組總人數)</>,
+      exEn: <>Statin: <br />5% MI vs 8% placebo → RR = 0.625 (37.5% risk reduction)</>,
+      exZh: <>Statin 治療：<br />MI 5% vs 安慰劑 8% → RR = 0.625（降低 37.5% 風險）</>,
       nullVal: "1",
     },
     {
       key: "md", icon: "📏",
       en: "Mean Difference (MD)", zh: "均差 (MD)",
       tagEn: "Continuous, same scale", tagZh: "連續性、相同量表",
-      descEn: "The simple difference in means between groups. Used when all studies measure the outcome on the same scale.",
-      descZh: "兩組均值的直接差異。當所有研究使用相同量表（如 mmHg）時使用。",
+      descEn: <>The simple difference in means between groups.<br />Used when all studies measure the outcome on the same scale.</>,
+      descZh: <>兩組均值的直接差異。<br />當所有研究使用相同量表（如 mmHg）時使用。</>,
       formulaEn: "MD = mean_A − mean_B",
       formulaZh: "MD = A組均值 − B組均值",
-      exEn: "BP-lowering drug: treatment −12 mmHg, control −7 mmHg → MD = −5 mmHg",
-      exZh: "降壓藥：治療組降 12 mmHg，對照組降 7 mmHg → MD = −5 mmHg",
+      exEn: <>BP drug: <br />treatment −12 mmHg, control −7 mmHg <br />→ MD = −5 mmHg</>,
+      exZh: <>降壓藥：<br />治療組降 12 mmHg，對照組降 7 mmHg <br />→ MD = −5 mmHg</>,
       nullVal: "0",
     },
     {
       key: "smd", icon: "📐",
       en: "SMD (Cohen's d)", zh: "標準化均差 (SMD)",
       tagEn: "Continuous, different scales", tagZh: "連續性、不同量表",
-      descEn: "Standardizes the mean difference in SD units. Needed when studies use different scales for the same concept.",
-      descZh: "將均差標準化為 SD 倍數。當不同研究用不同量表測量同一概念時使用。",
+      descEn: <>Standardizes the mean difference in SD units.<br />Needed when studies use different scales for the same concept.</>,
+      descZh: <>將均差標準化為 SD 倍數。<br />當不同研究用不同量表測量同一概念時使用。</>,
       formulaEn: "SMD = (mean_A − mean_B) ÷ pooled SD",
       formulaZh: "SMD = (A組均值 − B組均值) ÷ 共同標準差",
-      exEn: "Pain studies: VAS (0-100) and NRS (0-10) → SMD makes them comparable",
-      exZh: "疼痛研究：VAS (0-100) 和 NRS (0-10) → SMD 讓它們可以比較",
+      exEn: <>Pain: <br />VAS (0-100) and NRS (0-10) → SMD makes them comparable</>,
+      exZh: <>疼痛：<br />VAS (0-100) 和 NRS (0-10) → SMD 讓它們可以比較</>,
       nullVal: "0",
     },
   ];
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
       {cards.map((c) => {
         const isActive = active === c.key;
         return (
@@ -119,26 +119,26 @@ function EffectSizeCards({ lang }) {
             style={{
               background: isActive ? `${BLUE}08` : CARD_BG,
               border: `2px solid ${isActive ? BLUE : LIGHT_BORDER}`,
-              borderRadius: 16, padding: "20px 18px", cursor: "pointer",
+              borderRadius: 16, padding: "24px 22px", cursor: "pointer",
               transition: "all 0.3s", boxShadow: isActive ? `0 4px 20px ${BLUE}15` : "0 2px 12px rgba(0,0,0,0.03)",
             }}>
-            <div style={{ fontSize: 28, marginBottom: 8 }}>{c.icon}</div>
-            <h4 style={{ fontSize: 15, fontWeight: 700, color: isActive ? BLUE : DARK, marginBottom: 4 }}>{c[lang]}</h4>
-            <div style={{ display: "inline-block", fontSize: 10, fontWeight: 600, padding: "2px 8px", borderRadius: 6, background: `${BLUE}0D`, color: BLUE, marginBottom: 10 }}>
+            <div style={{ fontSize: 32, marginBottom: 10 }}>{c.icon}</div>
+            <h4 style={{ fontSize: 18, fontWeight: 700, color: isActive ? BLUE : DARK, marginBottom: 6, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>{c[lang]}</h4>
+            <div style={{ display: "inline-block", fontSize: 12, fontWeight: 600, padding: "3px 10px", borderRadius: 6, background: `${BLUE}0D`, color: BLUE, marginBottom: 12, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>
               {lang === "zh" ? c.tagZh : c.tagEn}
             </div>
             {isActive && (
               <div style={{ animation: "fadeInCard 0.3s ease-out" }}>
-                <p style={{ fontSize: 13, color: MUTED, lineHeight: 1.6, marginBottom: 10 }}>
+                <p style={{ fontSize: 15, color: MUTED, lineHeight: 1.7, marginBottom: 12, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>
                   {lang === "zh" ? c.descZh : c.descEn}
                 </p>
-                <div style={{ background: `${BLUE}08`, borderRadius: 8, padding: "8px 12px", fontFamily: "monospace", fontSize: 12, color: DARK, marginBottom: 8, lineHeight: 1.6 }}>
+                <div style={{ background: `${BLUE}08`, borderRadius: 8, padding: "10px 14px", fontFamily: "'Noto Sans TC', monospace", fontSize: 14, color: DARK, marginBottom: 10, lineHeight: 1.6 }}>
                   {lang === "zh" ? c.formulaZh : c.formulaEn}
                 </div>
-                <div style={{ fontSize: 12, color: GREEN, lineHeight: 1.5 }}>
+                <div style={{ fontSize: 14, color: GREEN, lineHeight: 1.6, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>
                   💊 {lang === "zh" ? c.exZh : c.exEn}
                 </div>
-                <div style={{ fontSize: 11, color: MUTED, marginTop: 8 }}>
+                <div style={{ fontSize: 13, color: MUTED, marginTop: 10, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>
                   {lang === "zh" ? `無效線：${c.nullVal}` : `Line of no effect: ${c.nullVal}`}
                 </div>
               </div>
@@ -341,117 +341,80 @@ function FixedRandomToggle({ lang }) {
 
 // ═══ INTERACTIVE: FOREST PLOT ANATOMY (Section 5) ═══
 function ForestPlotAnatomy({ lang }) {
-  const [hoveredPart, setHoveredPart] = useState(null);
-
+  const [activeTooltip, setActiveTooltip] = useState(null);
   const studies = [
-    { label: "Smith 2018", es: 0.65, lo: 0.42, hi: 0.92, w: 28 },
-    { label: "Lee 2019",   es: 0.78, lo: 0.55, hi: 1.10, w: 22 },
-    { label: "Garcia 2020", es: 0.50, lo: 0.33, hi: 0.76, w: 30 },
-    { label: "Ahmed 2021",  es: 0.90, lo: 0.48, hi: 1.68, w: 8 },
-    { label: "Brown 2022",  es: 0.58, lo: 0.35, hi: 0.97, w: 12 },
+    { name: "Smith 2018", effect: 0.65, ci: [0.42, 0.92], weight: 28 },
+    { name: "Lee 2019",   effect: 0.78, ci: [0.55, 1.10], weight: 22 },
+    { name: "Garcia 2020", effect: 0.50, ci: [0.33, 0.76], weight: 30 },
+    { name: "Ahmed 2021",  effect: 0.90, ci: [0.48, 1.68], weight: 8 },
+    { name: "Brown 2022",  effect: 0.58, ci: [0.35, 0.97], weight: 12 },
   ];
-  const pooled = { es: 0.63, lo: 0.50, hi: 0.80 };
-
-  const parts = {
-    labels: { en: "Study Labels — Each row shows the study's first author and year.", zh: "研究標籤 — 每一列顯示該研究的第一作者和年份。" },
-    squares: { en: "Point Estimates — The center of each square is the study's effect size.", zh: "點估計 — 每個正方形的中心代表該研究的效應量。" },
-    lines: { en: "Confidence Intervals — The horizontal line shows the 95% CI. Shorter = more precise.", zh: "信賴區間 — 水平線顯示 95% CI。越短代表越精確。" },
-    sizes: { en: "Weight (Square Size) — Larger squares = more weight in the pooled estimate.", zh: "權重（正方形大小）— 越大的正方形 = 在合併估計中權重越高。" },
-    nullline: { en: "Line of No Effect — OR=1 (or MD=0). If CI crosses this, not significant.", zh: "無效線 — OR=1（或 MD=0）。如果 CI 跨越此線，結果不顯著。" },
-    diamond: { en: "Pooled Estimate — The diamond's center = pooled effect; width = pooled CI.", zh: "合併估計 — 菱形中心 = 合併效應量；寬度 = 合併 CI。" },
+  const pooled = { effect: 0.63, ci: [0.50, 0.80] };
+  const xMin = 0.2, xMax = 2.0;
+  const toX = (val) => ((Math.log(val) - Math.log(xMin)) / (Math.log(xMax) - Math.log(xMin))) * 100;
+  const explanations = {
+    square: { titleKey: "forestSquareTitle", textKey: "forestSquareText",
+      title: { en: "Point Estimates (Squares)", zh: "點估計（正方形）" },
+      text: { en: "The center of each square is the study's effect size (OR). Larger squares = more weight in the pooled estimate.", zh: "每個正方形的中心代表該研究的效應量 (OR)。正方形越大代表在合併估計中權重越高。" } },
+    line: { titleKey: "forestLineTitle", textKey: "forestLineText",
+      title: { en: "Confidence Intervals (Lines)", zh: "信賴區間（橫線）" },
+      text: { en: "The horizontal line shows the 95% CI. Shorter = more precise. If it crosses OR=1, the result is not statistically significant.", zh: "水平線顯示 95% CI。越短代表越精確。若跨越 OR=1，表示結果不具統計顯著性。" } },
+    center: { titleKey: "forestCenterTitle", textKey: "forestCenterText",
+      title: { en: "Line of No Effect (OR=1)", zh: "無效線（OR=1）" },
+      text: { en: "OR = 1 means no difference between groups. If a study's CI crosses this line, its result is not statistically significant.", zh: "OR = 1 表示兩組無差異。如果研究的 CI 跨越此線，結果不具統計顯著性。" } },
+    diamond: { titleKey: "forestDiamondTitle", textKey: "forestDiamondText",
+      title: { en: "Pooled Estimate (Diamond)", zh: "合併估計（菱形）" },
+      text: { en: "The diamond's center = pooled effect size; its width = pooled 95% CI. If the diamond doesn't cross OR=1, the overall result is significant.", zh: "菱形中心 = 合併效應量；寬度 = 合併 95% CI。若菱形未跨越 OR=1，整體結果具統計顯著性。" } },
   };
 
-  const scaleX = (val) => ((Math.log(val) + 1) / 2) * 100; // log scale for OR
-  const nullX = scaleX(1);
-
   return (
-    <div style={{ background: CARD_BG, borderRadius: 20, border: `1px solid ${LIGHT_BORDER}`, padding: "28px 20px", boxShadow: "0 2px 20px rgba(0,0,0,0.04)" }}>
-      <h3 style={{ fontSize: 18, fontWeight: 600, color: DARK, marginBottom: 6, textAlign: "center" }}>
-        {lang === "zh" ? "🌲 森林圖解剖" : "🌲 Forest Plot Anatomy"}
-      </h3>
-      <p style={{ fontSize: 13, color: MUTED, textAlign: "center", marginBottom: 20 }}>
-        {lang === "zh" ? "將滑鼠停在各部分上查看說明" : "Hover over each element for explanations"}
-      </p>
-
-      <div style={{ position: "relative", paddingTop: 16, paddingBottom: 8 }}>
-        {/* Null line */}
-        <div
-          onMouseEnter={() => setHoveredPart("nullline")} onMouseLeave={() => setHoveredPart(null)}
-          style={{ position: "absolute", left: `calc(140px + ${nullX}% * (100% - 200px) / 100)`, top: 0, bottom: 0, width: 2, background: hoveredPart === "nullline" ? RED : `${MUTED}33`, cursor: "pointer", zIndex: 2, transition: "all 0.2s" }}
-        />
-        <div style={{ position: "absolute", left: `calc(140px + ${nullX}% * (100% - 200px) / 100)`, top: -4, transform: "translateX(-50%)", fontSize: 10, color: MUTED, fontWeight: 600 }}>OR=1</div>
-
-        {studies.map((s, i) => {
-          const sqSize = Math.max(10, Math.sqrt(s.w) * 3);
-          const esX = scaleX(s.es);
-          const loX = scaleX(s.lo);
-          const hiX = scaleX(s.hi);
-          return (
-            <div key={i} style={{ display: "flex", alignItems: "center", marginBottom: 8, height: 30 }}>
-              {/* Label */}
-              <div
-                onMouseEnter={() => setHoveredPart("labels")} onMouseLeave={() => setHoveredPart(null)}
-                style={{ width: 100, fontSize: 12, fontWeight: 500, color: hoveredPart === "labels" ? BLUE : DARK, textAlign: "right", paddingRight: 10, cursor: "pointer", transition: "color 0.2s" }}>
-                {s.label}
-              </div>
-              {/* Plot area */}
-              <div style={{ flex: 1, position: "relative", height: 30, marginLeft: 40, marginRight: 60 }}>
-                {/* CI line */}
-                <div
-                  onMouseEnter={() => setHoveredPart("lines")} onMouseLeave={() => setHoveredPart(null)}
-                  style={{ position: "absolute", left: `${loX}%`, width: `${hiX - loX}%`, top: "50%", height: hoveredPart === "lines" ? 3 : 2, background: hoveredPart === "lines" ? BLUE : "#7EAED1", borderRadius: 1, transform: "translateY(-50%)", cursor: "pointer", transition: "all 0.2s" }}
-                />
-                {/* Square */}
-                <div
-                  onMouseEnter={() => setHoveredPart(i === 0 || i === 2 ? "sizes" : "squares")} onMouseLeave={() => setHoveredPart(null)}
-                  style={{
-                    position: "absolute", left: `${esX}%`, top: "50%", transform: "translate(-50%, -50%)",
-                    width: sqSize, height: sqSize,
-                    background: (hoveredPart === "squares" || hoveredPart === "sizes") ? BLUE : "#4A90C4",
-                    borderRadius: 2, cursor: "pointer", transition: "all 0.2s",
-                  }}
-                />
-              </div>
-              {/* Weight % */}
-              <div style={{ width: 50, fontSize: 11, color: MUTED, textAlign: "right" }}>{s.w}%</div>
+    <div style={{ background: CARD_BG, borderRadius: 20, border: `1px solid ${LIGHT_BORDER}`, padding: "32px 24px", boxShadow: "0 2px 20px rgba(0,0,0,0.04)" }}>
+      <div style={{ textAlign: "center", marginBottom: 8 }}>
+        <h3 style={{ fontFamily: "'Noto Sans TC', 'Source Serif 4', serif", fontSize: 20, fontWeight: 600, color: DARK, marginBottom: 6 }}>
+          {lang === "zh" ? "🌲 森林圖解剖" : "🌲 Forest Plot Anatomy"}
+        </h3>
+        <p style={{ fontSize: 14, color: MUTED, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>
+          {lang === "zh" ? "點擊圖中各元素查看說明" : "Click each element for explanations"}
+        </p>
+      </div>
+      <div style={{ minHeight: 72, padding: "12px 16px", marginBottom: 16, background: activeTooltip ? `${BLUE}08` : "transparent", borderRadius: 12, transition: "all 0.3s", border: activeTooltip ? `1px solid ${BLUE}22` : "1px solid transparent" }}>
+        {activeTooltip ? (
+          <>
+            <div style={{ fontSize: 14, fontWeight: 600, color: BLUE, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif", marginBottom: 4 }}>{explanations[activeTooltip].title[lang]}</div>
+            <div style={{ fontSize: 13.5, lineHeight: 1.6, color: MUTED, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>{explanations[activeTooltip].text[lang]}</div>
+          </>
+        ) : (
+          <div style={{ fontSize: 13, color: "#B0AFAA", fontFamily: "'Noto Sans TC', 'Outfit', sans-serif", textAlign: "center", paddingTop: 8 }}>
+            {lang === "zh" ? "👆 點擊圖中的各元素查看說明" : "👆 Click on elements in the plot to learn more"}
+          </div>
+        )}
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", marginLeft: 120, marginRight: 8, marginBottom: 6, fontSize: 10, color: "#B0AFAA", fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>
+        <span>{lang === "zh" ? "← 有利治療" : "← Favors treatment"}</span><span>{lang === "zh" ? "有利對照 →" : "Favors control →"}</span>
+      </div>
+      <div style={{ position: "relative" }}>
+        {studies.map((s, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", height: 40, padding: "0 4px" }}>
+            <div style={{ width: 116, fontSize: 13, color: MUTED, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>{s.name}</div>
+            <div style={{ flex: 1, position: "relative", height: "100%" }}>
+              <div onClick={() => setActiveTooltip(activeTooltip === "center" ? null : "center")} style={{ position: "absolute", left: `${toX(1)}%`, top: 0, bottom: 0, width: 0, borderLeft: activeTooltip === "center" ? `2px solid ${CORAL}` : "1px dashed #CCC", cursor: "pointer", zIndex: 5, padding: "0 5px", borderLeftClip: "content-box", transition: "all 0.3s" }} />
+              <div onClick={() => setActiveTooltip(activeTooltip === "line" ? null : "line")} style={{ position: "absolute", left: `${toX(s.ci[0])}%`, width: `${toX(s.ci[1]) - toX(s.ci[0])}%`, top: "50%", height: activeTooltip === "line" ? 3 : 2, background: activeTooltip === "line" ? CORAL : BLUE, transform: "translateY(-50%)", cursor: "pointer", transition: "all 0.3s", borderRadius: 1 }} />
+              <div onClick={() => setActiveTooltip(activeTooltip === "square" ? null : "square")} style={{ position: "absolute", left: `${toX(s.effect)}%`, top: "50%", width: Math.max(10, s.weight * 0.6), height: Math.max(10, s.weight * 0.6), background: activeTooltip === "square" ? CORAL : BLUE, borderRadius: 3, transform: "translate(-50%, -50%)", cursor: "pointer", transition: "all 0.3s", boxShadow: activeTooltip === "square" ? `0 0 0 3px ${CORAL}33` : "none" }} />
             </div>
-          );
-        })}
-
-        {/* Pooled diamond */}
-        <div
-          onMouseEnter={() => setHoveredPart("diamond")} onMouseLeave={() => setHoveredPart(null)}
-          style={{ display: "flex", alignItems: "center", marginTop: 6, paddingTop: 10, borderTop: `1.5px solid ${LIGHT_BORDER}`, height: 36, cursor: "pointer" }}>
-          <div style={{ width: 100, fontSize: 12, fontWeight: 700, color: BLUE, textAlign: "right", paddingRight: 10 }}>
-            {lang === "zh" ? "合併" : "Pooled"}
           </div>
-          <div style={{ flex: 1, position: "relative", height: 28, marginLeft: 40, marginRight: 60 }}>
-            <svg style={{ position: "absolute", left: `${scaleX(pooled.lo)}%`, width: `${scaleX(pooled.hi) - scaleX(pooled.lo)}%`, top: 0, height: 28, overflow: "visible" }} viewBox="0 0 100 28" preserveAspectRatio="none">
-              <polygon points="0,14 50,2 100,14 50,26" fill={hoveredPart === "diamond" ? BLUE : "#4A90C4"} style={{ transition: "fill 0.2s" }} />
+        ))}
+        <div style={{ display: "flex", alignItems: "center", height: 44, marginTop: 4, borderTop: `1px solid ${LIGHT_BORDER}`, paddingTop: 8 }}>
+          <div style={{ width: 116, fontSize: 13, fontWeight: 700, color: BLUE, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>{lang === "zh" ? "合併" : "Pooled"}</div>
+          <div style={{ flex: 1, position: "relative", height: "100%" }}>
+            <div style={{ position: "absolute", left: `${toX(1)}%`, top: 0, bottom: 0, width: 0, borderLeft: "1px dashed #CCC" }} />
+            <svg onClick={() => setActiveTooltip(activeTooltip === "diamond" ? null : "diamond")} style={{ position: "absolute", left: `${toX(pooled.ci[0])}%`, top: "50%", width: `${toX(pooled.ci[1]) - toX(pooled.ci[0])}%`, height: 22, transform: "translateY(-50%)", overflow: "visible", cursor: "pointer" }} viewBox="0 0 100 22" preserveAspectRatio="none">
+              <polygon points="0,11 50,1 100,11 50,21" fill={activeTooltip === "diamond" ? CORAL : BLUE} style={{ transition: "fill 0.3s" }} />
             </svg>
-          </div>
-          <div style={{ width: 50, fontSize: 12, fontWeight: 700, color: BLUE, textAlign: "right" }}>
-            {pooled.es.toFixed(2)}
           </div>
         </div>
       </div>
-
-      {/* Hover tooltip */}
-      <div style={{
-        background: hoveredPart ? `${BLUE}08` : "transparent",
-        border: hoveredPart ? `1px solid ${BLUE}22` : "1px solid transparent",
-        borderRadius: 10, padding: hoveredPart ? "12px 16px" : "8px 16px",
-        minHeight: 48, marginTop: 16, transition: "all 0.3s",
-      }}>
-        {hoveredPart ? (
-          <p style={{ fontSize: 13, color: BLUE, lineHeight: 1.6, margin: 0 }}>
-            {parts[hoveredPart][lang]}
-          </p>
-        ) : (
-          <p style={{ fontSize: 13, color: "#B0AFAA", textAlign: "center", margin: 0 }}>
-            {lang === "zh" ? "👆 將滑鼠停在圖的各元素上" : "👆 Hover over elements above"}
-          </p>
-        )}
+      <div style={{ position: "relative", marginLeft: 120, marginRight: 8, marginTop: 10, height: 16 }}>
+        {[0.3, 0.5, 0.7, 1.0, 1.3, 1.6].map((v) => <span key={v} style={{ position: "absolute", left: `${toX(v)}%`, transform: "translateX(-50%)", fontSize: 10, color: "#C0BFB9", fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>{v === 1.0 ? "1" : v.toFixed(1)}</span>)}
       </div>
     </div>
   );
@@ -578,13 +541,109 @@ function ForestPlotExercise({ lang }) {
 }
 
 
+// ═══ INTERACTIVE: COMMON PITFALLS (Section 7) ═══
+function CommonPitfalls({ lang }) {
+  const [active, setActive] = useState(null);
+
+  const pitfalls = [
+    {
+      icon: "⚠️",
+      en: "Significant ≠ Meaningful",
+      zh: "顯著 ≠ 有意義",
+      descEn: "A statistically significant result (p < 0.05) does NOT automatically mean the effect is clinically important. With a large enough sample, even a tiny, trivial effect can reach significance. Always ask: is the effect SIZE large enough to matter in practice?",
+      descZh: "統計顯著 (p < 0.05) 不代表臨床上有意義。樣本夠大時，即使微小到無關緊要的效果也能達到顯著。永遠要問：效應量的「大小」在臨床實務中真的重要嗎？",
+      exEn: "MD = 1 mmHg blood pressure reduction can be p < 0.05 with n = 10,000 — but no doctor would change treatment for 1 mmHg.",
+      exZh: "降壓 MD = 1 mmHg 在 n = 10,000 時可達 p < 0.05——但沒有醫生會因為 1 mmHg 改變處方。",
+    },
+    {
+      icon: "🔄",
+      en: "OR ≠ RR",
+      zh: "OR ≠ RR",
+      descEn: "Odds Ratios and Risk Ratios are NOT interchangeable. OR = 0.5 does NOT mean '50% risk reduction.' OR overestimates the effect compared to RR when the event rate is high (> 10%). Never interpret an OR value as if it were an RR.",
+      descZh: "勝算比和風險比不能互換使用。OR = 0.5 不代表「風險降低 50%」。當事件發生率高（> 10%）時，OR 會高估效果。絕不能把 OR 的數值當成 RR 來解讀。",
+      exEn: "If event rate is 40%: RR = 0.75 but OR = 0.56 — same data, very different numbers!",
+      exZh: "若事件發生率 40%：RR = 0.75 但 OR = 0.56——相同數據，數字差很多！",
+    },
+    {
+      icon: "📏",
+      en: "Don't Ignore CI Width",
+      zh: "別忽略 CI 的寬度",
+      descEn: "A point estimate without its confidence interval is only half the story. A wide CI means the estimate is imprecise — the true effect could be much larger or smaller. Two studies can have the same point estimate but very different precision.",
+      descZh: "只看點估計不看信賴區間等於只看了一半。CI 很寬代表估計不精確——真實效果可能大很多或小很多。兩個研究可以有相同的點估計，但精確度截然不同。",
+      exEn: "OR = 0.60 (95% CI: 0.55–0.65) is very convincing. OR = 0.60 (95% CI: 0.10–3.50) tells you almost nothing.",
+      exZh: "OR = 0.60 (95% CI: 0.55–0.65) 非常有說服力。OR = 0.60 (95% CI: 0.10–3.50) 幾乎什麼都說明不了。",
+    },
+    {
+      icon: "📊",
+      en: "SD ≠ SE",
+      zh: "SD ≠ SE",
+      descEn: "Standard Deviation (SD) measures how spread out the data are. Standard Error (SE) measures how precise the mean estimate is. SE = SD ÷ √n. Mixing them up leads to wrong effect sizes and wrong confidence intervals.",
+      descZh: "標準差 (SD) 衡量資料的離散程度。標準誤 (SE) 衡量平均值估計的精確度。SE = SD ÷ √n。混淆兩者會導致錯誤的效應量和信賴區間。",
+      exEn: "Using SE instead of SD in SMD calculation will massively overestimate the effect size.",
+      exZh: "在計算 SMD 時用 SE 代替 SD，會嚴重高估效應量。",
+    },
+    {
+      icon: "🚫",
+      en: "Non-Significant ≠ No Effect",
+      zh: "不顯著 ≠ 沒有效果",
+      descEn: "A non-significant p-value does NOT prove that a treatment doesn't work. It only means we failed to detect an effect — possibly because the study was too small. 'Absence of evidence is not evidence of absence.'",
+      descZh: "p 值不顯著不代表治療無效。只代表我們未能偵測到效果——可能是因為研究太小。「沒有證據不等於沒有效果。」",
+      exEn: "OR = 1.02 (p = 0.55) → correct: 'unable to demonstrate effectiveness.' Wrong: 'the drug is ineffective.'",
+      exZh: "OR = 1.02 (p = 0.55) → 正確：「未能證明有效」。錯誤：「這個藥物無效」。",
+    },
+    {
+      icon: "🧩",
+      en: "Don't Mix Effect Size Types",
+      zh: "別混合不同類型的效應量",
+      descEn: "You cannot directly pool OR and RR (or MD and SMD) in the same meta-analysis. They are on different scales. All studies must be converted to the same effect size metric before pooling.",
+      descZh: "不能在同一個統合分析中直接合併 OR 和 RR（或 MD 和 SMD）。它們的尺度不同。所有研究必須先統一轉換為同一種效應量才能合併。",
+      exEn: "If 3 studies report OR and 2 report RR, convert all to OR (or all to RR) before running the meta-analysis.",
+      exZh: "若 3 篇報告 OR、2 篇報告 RR，必須全部轉換為 OR（或全部轉為 RR）後再進行統合分析。",
+    },
+  ];
+
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
+      {pitfalls.map((p, i) => {
+        const isActive = active === i;
+        return (
+          <div key={i} onClick={() => setActive(isActive ? null : i)}
+            style={{
+              background: isActive ? `${RED}08` : CARD_BG,
+              border: `2px solid ${isActive ? RED : LIGHT_BORDER}`,
+              borderRadius: 16, padding: "24px 22px", cursor: "pointer",
+              transition: "all 0.3s", boxShadow: isActive ? `0 4px 20px ${RED}15` : "0 2px 12px rgba(0,0,0,0.03)",
+            }}>
+            <div style={{ fontSize: 32, marginBottom: 10 }}>{p.icon}</div>
+            <h4 style={{ fontSize: 18, fontWeight: 700, color: isActive ? RED : DARK, marginBottom: 8, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>
+              {lang === "zh" ? p.zh : p.en}
+            </h4>
+            {isActive && (
+              <div style={{ animation: "fadeInCard 0.3s ease-out" }}>
+                <p style={{ fontSize: 15, color: MUTED, lineHeight: 1.7, marginBottom: 12, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>
+                  {lang === "zh" ? p.descZh : p.descEn}
+                </p>
+                <div style={{ background: `${RED}08`, borderRadius: 8, padding: "10px 14px", fontSize: 14, color: DARK, lineHeight: 1.6, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>
+                  💊 {lang === "zh" ? p.exZh : p.exEn}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })}
+      <style>{`@keyframes fadeInCard { 0% { opacity:0; transform:translateY(6px); } 100% { opacity:1; transform:translateY(0); } }`}</style>
+    </div>
+  );
+}
+
+
 // ═══ MAIN COURSE 4 COMPONENT ═══
 export default function Course4({ onNavigate, user, onLogin, onLogout }) {
   const { t, lang, toggleLang } = useI18n();
   const [activeSection, setActiveSection] = useState("hero");
 
   useEffect(() => {
-    const sectionIds = ["hero", "s1", "s2", "s3", "s4", "s5", "s6", "game"];
+    const sectionIds = ["hero", "s1", "s2", "s3", "s4", "s5", "s6", "s7", "game"];
     const observers = [];
     sectionIds.forEach(id => {
       const el = document.getElementById(id);
@@ -606,7 +665,8 @@ export default function Course4({ onNavigate, user, onLogin, onLogout }) {
     { id: "s4", num: 4, label: lang === "zh" ? "固定 vs 隨機效應" : "Fixed vs Random" },
     { id: "s5", num: 5, label: lang === "zh" ? "森林圖解剖" : "Forest Plot Anatomy" },
     { id: "s6", num: 6, label: lang === "zh" ? "判讀森林圖" : "Reading Forest Plots" },
-    { id: "game", num: 7, label: lang === "zh" ? "恐龍小遊戲" : "Dino Game" },
+    { id: "s7", num: 7, label: lang === "zh" ? "常見陷阱" : "Common Pitfalls" },
+    { id: "game", num: 8, label: lang === "zh" ? "恐龍小遊戲" : "Dino Game" },
   ];
 
   return (
@@ -738,7 +798,29 @@ export default function Course4({ onNavigate, user, onLogin, onLogout }) {
           <FadeIn delay={0.15}><ForestPlotExercise lang={lang} /></FadeIn>
           <FadeIn delay={0.2}>
             <div style={{ textAlign: "center", marginTop: 28 }}>
-              <button onClick={() => scrollTo("game")} style={{ ...btnPrimary, background: CORAL, boxShadow: `0 4px 20px ${CORAL}33` }}>{t("c4s6Next")}</button>
+              <button onClick={() => scrollTo("s7")} style={{ ...btnPrimary }}>{lang === "zh" ? "下一節：常見陷阱 →" : "Next: Common Pitfalls →"}</button>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      {/* S7: Common Pitfalls */}
+      <section id="s7" style={{ padding: "80px 24px", background: "#F1F0EC" }}>
+        <div style={{ maxWidth: 880, margin: "0 auto" }}>
+          <FadeIn><SectionLabel text={lang === "zh" ? "常見陷阱" : "Common Pitfalls"} />
+            <SectionTitle>{lang === "zh" ? "六個最常犯的統計錯誤" : "Six Mistakes Everyone Makes"}</SectionTitle>
+          </FadeIn>
+          <FadeIn delay={0.1}><Paragraph style={{ marginBottom: 28 }}>
+            {lang === "zh"
+              ? "學會了效應量和森林圖，還有一些陷阱要小心。以下是臨床研究中最常見的解讀錯誤——點擊每張卡片了解問題所在和正確做法。"
+              : "Now that you can read effect sizes and forest plots, watch out for these traps. Here are the most common interpretation mistakes in clinical research — click each card to learn what goes wrong and how to get it right."}
+          </Paragraph></FadeIn>
+          <FadeIn delay={0.15}><CommonPitfalls lang={lang} /></FadeIn>
+          <FadeIn delay={0.2}>
+            <div style={{ textAlign: "center", marginTop: 28 }}>
+              <button onClick={() => scrollTo("game")} style={{ ...btnPrimary, background: CORAL, boxShadow: `0 4px 20px ${CORAL}33` }}>
+                {lang === "zh" ? "準備好了嗎？來玩遊戲！🎮" : "Ready? Let's play the game! 🎮"}
+              </button>
             </div>
           </FadeIn>
         </div>
@@ -746,7 +828,7 @@ export default function Course4({ onNavigate, user, onLogin, onLogout }) {
 
       {/* DINO KEY QUEST GAME */}
       <section id="game" style={{ padding: "80px 24px", background: "#F1F0EC" }}>
-        <div style={{ maxWidth: 700, margin: "0 auto" }}>
+        <div style={{ maxWidth: 880, margin: "0 auto" }}>
           <FadeIn><SectionLabel text={t("c4gameLabel")} /></FadeIn>
           <FadeIn delay={0.1}>
             <DinoKeyQuest lang={lang} />

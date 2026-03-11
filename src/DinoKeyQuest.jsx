@@ -63,7 +63,7 @@ function CaveBackground({ phase, children }) {
   return (
     <div style={{
       background: `linear-gradient(180deg,${CAVE_BG} 0%,${CAVE_FLOOR} 60%,#1E2245 100%)`,
-      borderRadius: 16, padding: "24px 20px", position: "relative", overflow: "hidden", minHeight: 400,
+      borderRadius: 16, padding: "32px clamp(20px,4vw,48px)", position: "relative", overflow: "hidden", minHeight: 480,
     }}>
       {[...Array(12)].map((_, i) => (
         <div key={i} style={{
@@ -118,7 +118,7 @@ function MCQRenderer({ q, lang, onAnswer, answered, sel }) {
         return (
           <button key={i} disabled={answered} onClick={() => onAnswer(i, i === q.correct)} style={{
             background:bg, border, color:"#E0E0E0", borderRadius:10, padding:"12px 16px",
-            fontSize:14, fontFamily:FONT, cursor:answered?"default":"pointer",
+            fontSize:15, fontFamily:FONT, cursor:answered?"default":"pointer",
             textAlign:"left", transition:"all 0.2s", lineHeight:1.5,
           }}>
             <span style={{ fontWeight:600, marginRight:8, opacity:0.6 }}>{String.fromCharCode(65+i)}</span>{opt}
@@ -144,7 +144,7 @@ function TFRenderer({ q, lang, onAnswer, answered, sel }) {
         return (
           <button key={i} disabled={answered} onClick={() => onAnswer(i, i===correctIdx)} style={{
             background:bg, border, color:"#FFF", borderRadius:12, padding:"16px 36px",
-            fontSize:16, fontWeight:700, fontFamily:FONT, cursor:answered?"default":"pointer",
+            fontSize:17, fontWeight:700, fontFamily:FONT, cursor:answered?"default":"pointer",
             transition:"all 0.2s", minWidth:120,
           }}>{opt}</button>
         );
@@ -165,7 +165,7 @@ function MSRenderer({ q, lang, onAnswer, answered }) {
   };
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-      <p style={{ fontSize:12, color:CRYSTAL_GLOW, margin:0, fontFamily:FONT }}>
+      <p style={{ fontSize:13, color:CRYSTAL_GLOW, margin:0, fontFamily:FONT }}>
         {lang==="zh" ? `💡 選出所有正確答案（共 ${q.correctAll.length} 個）` : `💡 Select ALL correct answers (${q.correctAll.length} total)`}
       </p>
       {data.opts.map((opt,i) => {
@@ -179,7 +179,7 @@ function MSRenderer({ q, lang, onAnswer, answered }) {
         return (
           <button key={i} disabled={answered} onClick={()=>toggle(i)} style={{
             background:bg, border, color:"#E0E0E0", borderRadius:10, padding:"11px 16px",
-            fontSize:14, fontFamily:FONT, cursor:answered?"default":"pointer",
+            fontSize:15, fontFamily:FONT, cursor:answered?"default":"pointer",
             textAlign:"left", transition:"all 0.2s", lineHeight:1.5,
             display:"flex", alignItems:"center", gap:10,
           }}>
@@ -215,7 +215,7 @@ function OrderRenderer({ q, lang, onAnswer, answered }) {
   const submit = () => { onAnswer(order, order.every((v,i)=>v===q.correctOrder[i])); };
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-      <p style={{ fontSize:12, color:CRYSTAL_GLOW, margin:0, fontFamily:FONT }}>
+      <p style={{ fontSize:13, color:CRYSTAL_GLOW, margin:0, fontFamily:FONT }}>
         {lang==="zh"?"🔄 使用箭頭調整順序":"🔄 Use arrows to reorder"}
       </p>
       {order.map((itemIdx,pos) => {
@@ -231,7 +231,7 @@ function OrderRenderer({ q, lang, onAnswer, answered }) {
               background:answered?(q.correctOrder.indexOf(itemIdx)===pos?GREEN:RED):BLUE,
               color:"#FFF", fontSize:12, fontWeight:700, display:"flex", alignItems:"center", justifyContent:"center",
             }}>{pos+1}</span>
-            <span style={{ flex:1, color:"#E0E0E0", fontSize:13, fontFamily:FONT, lineHeight:1.5 }}>{data.items[itemIdx]}</span>
+            <span style={{ flex:1, color:"#E0E0E0", fontSize:15, fontFamily:FONT, lineHeight:1.5 }}>{data.items[itemIdx]}</span>
             {!answered && (
               <div style={{ display:"flex", flexDirection:"column", gap:2 }}>
                 <button onClick={()=>pos>0&&move(pos,pos-1)} disabled={pos===0}
@@ -253,7 +253,7 @@ function SERenderer({ q, lang, onAnswer, answered, sel }) {
   const data = q[lang];
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-      <p style={{ fontSize:12, color:CRYSTAL_GLOW, margin:0, fontFamily:FONT }}>
+      <p style={{ fontSize:13, color:CRYSTAL_GLOW, margin:0, fontFamily:FONT }}>
         {lang==="zh"?"🔍 點擊你認為有錯的敘述":"🔍 Click the statement containing an error"}
       </p>
       {data.statements.map((stmt,i) => {
@@ -266,7 +266,7 @@ function SERenderer({ q, lang, onAnswer, answered, sel }) {
         return (
           <button key={i} disabled={answered} onClick={()=>onAnswer(i, i===q.correct)} style={{
             background:bg, border, color:"#E0E0E0", borderRadius:10, padding:"11px 16px",
-            fontSize:13, fontFamily:FONT, cursor:answered?"default":"pointer",
+            fontSize:15, fontFamily:FONT, cursor:answered?"default":"pointer",
             textAlign:"left", transition:"all 0.2s", lineHeight:1.5,
             display:"flex", alignItems:"flex-start", gap:10,
           }}>
@@ -340,28 +340,28 @@ export default function DinoKeyQuest({ lang: langProp }) {
   if (phase === "select") {
     return (
       <CaveBackground phase="select">
-        <div style={{ textAlign:"center", padding:"20px 0" }}>
-          <h2 style={{ color:CRYSTAL_GLOW, fontSize:"clamp(22px,4vw,30px)", fontFamily:FONT, marginBottom:4 }}>
+        <div style={{ textAlign:"center", padding:"28px 0" }}>
+          <h2 style={{ color:CRYSTAL_GLOW, fontSize:"clamp(24px,4.5vw,32px)", fontFamily:FONT, marginBottom:6 }}>
             {lang==="zh"?"🔑 恐龍鑰匙探索":"🔑 Dino Key Quest"}
           </h2>
-          <p style={{ color:"#8899BB", fontSize:14, fontFamily:FONT, maxWidth:500, margin:"8px auto 24px", lineHeight:1.6 }}>
+          <p style={{ color:"#8899BB", fontSize:16, fontFamily:FONT, maxWidth:580, margin:"8px auto 28px", lineHeight:1.7 }}>
             {lang==="zh"
               ?"恐龍們需要找到通往新家的鑰匙！在水晶洞穴中收集鑰匙碎片。先通過 3 題基礎題解鎖進階關卡，再挑戰 6 題不同類型的進階問題（是非、複選、排序、找錯）。"
               :"The dinos need the KEY to their new home! Collect key fragments in the crystal cave. Pass 3 foundation questions to unlock 6 advanced mixed-type challenges (true/false, multi-select, ordering, spot-the-error)."}
           </p>
-          <p style={{ color:GOLD, fontSize:13, fontFamily:FONT, marginBottom:20 }}>
+          <p style={{ color:GOLD, fontSize:15, fontFamily:FONT, marginBottom:20 }}>
             {lang==="zh"?"選擇你的恐龍夥伴：":"Choose your dino companion:"}
           </p>
-          <div style={{ display:"flex", flexWrap:"wrap", justifyContent:"center", gap:12 }}>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(110px, 1fr))", gap:14, maxWidth:600, margin:"0 auto" }}>
             {DINO_NAMES_EN.map((_,i) => (
               <button key={i} onClick={()=>startGame(i)} style={{
                 background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.12)",
-                borderRadius:14, padding:"14px 10px", cursor:"pointer", width:100,
-                display:"flex", flexDirection:"column", alignItems:"center", gap:6, transition:"all 0.2s",
+                borderRadius:14, padding:"18px 10px", cursor:"pointer",
+                display:"flex", flexDirection:"column", alignItems:"center", gap:8, transition:"all 0.2s",
               }} onMouseEnter={e=>{e.currentTarget.style.background="rgba(46,134,193,0.2)";e.currentTarget.style.borderColor=BLUE;}}
                  onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.06)";e.currentTarget.style.borderColor="rgba(255,255,255,0.12)";}}>
-                <div style={{ transform:"scale(0.6)", transformOrigin:"center" }}><CuteDino species={i} size={80} color={DINO_COLORS[i]}/></div>
-                <span style={{ color:"#CCC", fontSize:11, fontFamily:FONT, fontWeight:600 }}>{lang==="zh"?DINO_NAMES_ZH[i]:DINO_NAMES_EN[i]}</span>
+                <div style={{ transform:"scale(0.7)", transformOrigin:"center" }}><CuteDino index={i} size={80} color={DINO_COLORS[i]}/></div>
+                <span style={{ color:"#CCC", fontSize:13, fontFamily:FONT, fontWeight:600 }}>{lang==="zh"?DINO_NAMES_ZH[i]:DINO_NAMES_EN[i]}</span>
               </button>
             ))}
           </div>
@@ -402,7 +402,7 @@ export default function DinoKeyQuest({ lang: langProp }) {
           <div style={{ display:"flex", justifyContent:"center", gap:6, marginBottom:20 }}>
             {fragments.map((f,i) => <KeyFragment key={i} filled={f} index={i}/>)}
           </div>
-          <div style={{ marginBottom:16 }}><CuteDino species={selectedDino} size={100} color={DINO_COLORS[selectedDino]}/></div>
+          <div style={{ marginBottom:16 }}><CuteDino index={selectedDino} size={100} color={DINO_COLORS[selectedDino]}/></div>
           <h2 style={{ color:info.c, fontSize:24, fontFamily:FONT, marginBottom:8 }}>{info[lang].t}</h2>
           <p style={{ color:"#AAB8CC", fontSize:14, fontFamily:FONT, maxWidth:400, margin:"0 auto 24px", lineHeight:1.6 }}>{info[lang].m}</p>
           <button onClick={()=>{setPhase("select");setSelectedDino(null);}} style={btnPrimary(BLUE)}>
@@ -425,8 +425,8 @@ export default function DinoKeyQuest({ lang: langProp }) {
       {/* Header */}
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
         <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-          <div style={{ transform:"scale(0.4)", transformOrigin:"left center", marginRight:-24 }}><CuteDino species={selectedDino} size={70} color={DINO_COLORS[selectedDino]}/></div>
-          <span style={{ color:"#8899BB", fontSize:12, fontFamily:FONT, fontWeight:600 }}>{phaseLabel}</span>
+          <div style={{ transform:"scale(0.8)", transformOrigin:"left center", marginRight:-16 }}><CuteDino index={selectedDino} size={70} color={DINO_COLORS[selectedDino]}/></div>
+          <span style={{ color:"#8899BB", fontSize:14, fontFamily:FONT, fontWeight:600 }}>{phaseLabel}</span>
         </div>
         <div style={{ display:"flex", alignItems:"center", gap:4 }}>
           {fragments.map((f,i) => <KeyFragment key={i} filled={f} index={i}/>)}
@@ -438,11 +438,11 @@ export default function DinoKeyQuest({ lang: langProp }) {
         <style>{`@keyframes kqShake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}`}</style>
         <div style={{ marginBottom:12, display:"flex", alignItems:"center", gap:8 }}>
           <TypeBadge type={type} lang={lang}/>
-          {isFound && <span style={{ fontSize:10, color:GOLD, background:`${GOLD}22`, padding:"2px 8px", borderRadius:8, fontFamily:FONT }}>
+          {isFound && <span style={{ fontSize:12, color:GOLD, background:`${GOLD}22`, padding:"2px 8px", borderRadius:8, fontFamily:FONT }}>
             {lang==="zh"?"通過 ≥2/3 解鎖進階":"Pass ≥2/3 to unlock"}
           </span>}
         </div>
-        <h3 style={{ color:"#F0F0F0", fontSize:"clamp(15px,3vw,18px)", fontFamily:FONT, fontWeight:600, lineHeight:1.6, marginBottom:16 }}>
+        <h3 style={{ color:"#F0F0F0", fontSize:"clamp(17px,3vw,20px)", fontFamily:FONT, fontWeight:600, lineHeight:1.6, marginBottom:16 }}>
           {q[lang].q}
         </h3>
 
@@ -457,12 +457,12 @@ export default function DinoKeyQuest({ lang: langProp }) {
           <div style={{ marginTop:16, padding:"14px 16px", borderRadius:10, background:correct?`${GREEN}22`:`${RED}22`, border:`1px solid ${correct?GREEN:RED}44` }}>
             <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
               <span style={{ fontSize:18 }}>{correct?"✨":"💫"}</span>
-              <span style={{ color:correct?GREEN:CORAL, fontWeight:700, fontSize:14, fontFamily:FONT }}>
+              <span style={{ color:correct?GREEN:CORAL, fontWeight:700, fontSize:16, fontFamily:FONT }}>
                 {correct?(lang==="zh"?"正確！獲得鑰匙碎片！":"Correct! Key fragment earned!"):(lang==="zh"?"不正確":"Not quite")}
               </span>
             </div>
-            <p style={{ color:"#AAB8CC", fontSize:13, fontFamily:FONT, margin:0, lineHeight:1.6 }}>{q[lang].exp}</p>
-            <button onClick={nextQ} style={{ ...btnPrimary(BLUE), marginTop:12, fontSize:13, padding:"10px 24px" }}>
+            <p style={{ color:"#AAB8CC", fontSize:15, fontFamily:FONT, margin:0, lineHeight:1.6 }}>{q[lang].exp}</p>
+            <button onClick={nextQ} style={{ ...btnPrimary(BLUE), marginTop:12, fontSize:14, padding:"10px 24px" }}>
               {qi>=questions.length-1?(lang==="zh"?"查看結果":"See Results"):qi===2?(lang==="zh"?"進入進階關卡 →":"Enter Advanced →"):(lang==="zh"?"下一題 →":"Next →")}
             </button>
           </div>
