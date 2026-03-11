@@ -448,8 +448,8 @@ export default function DinoKeyQuest({ lang: langProp }) {
 
         {type==="mcq" && <MCQRenderer q={q} lang={lang} onAnswer={handleAnswer} answered={answered} sel={sel}/>}
         {type==="true_false" && <TFRenderer q={q} lang={lang} onAnswer={handleAnswer} answered={answered} sel={sel}/>}
-        {type==="multi_select" && <MSRenderer q={q} lang={lang} onAnswer={handleAnswer} answered={answered}/>}
-        {type==="ordering" && <OrderRenderer q={q} lang={lang} onAnswer={handleAnswer} answered={answered}/>}
+        {type==="multi_select" && <MSRenderer key={qi} q={q} lang={lang} onAnswer={handleAnswer} answered={answered}/>}
+        {type==="ordering" && <OrderRenderer key={qi} q={q} lang={lang} onAnswer={handleAnswer} answered={answered}/>}
         {type==="spot_error" && <SERenderer q={q} lang={lang} onAnswer={handleAnswer} answered={answered} sel={sel}/>}
 
         {/* Feedback */}
