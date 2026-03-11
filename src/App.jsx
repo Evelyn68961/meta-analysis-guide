@@ -11,6 +11,8 @@ import Course3 from "./Course3";
 import Course4 from "./Course4";
 import Course5 from "./Course5";
 import DinoIntro from "./DinoIntro";
+import Midterm from "./Midterm";
+import Final from "./Final";
 
 const TEAL = "#0E7C86";
 const CORAL = "#E8734A";
@@ -153,7 +155,7 @@ function CourseHub({ onNavigate, user, onLogin, onLogout }) {
         {/* Midterm checkpoint card */}
         <div style={{ paddingLeft: 20, borderLeft: `2px solid ${CORAL}22`, marginBottom: 40 }}>
           <CheckpointCard
-            emoji="🏔️"
+            emoji="🔬"
             titleKey="hubMidtermTitle"
             descKey="hubMidtermDesc"
             color="#8B6914"
@@ -178,7 +180,7 @@ function CourseHub({ onNavigate, user, onLogin, onLogout }) {
         {/* Final exam card */}
         <div style={{ paddingLeft: 20, borderLeft: `2px solid ${"#2E86C1"}22`, marginBottom: 0 }}>
           <CheckpointCard
-            emoji="🎓"
+            emoji="📊"
             titleKey="hubFinalTitle"
             descKey="hubFinalDesc"
             color="#C0392B"
@@ -355,6 +357,10 @@ export default function App() {
       return <AboutPage onNavigate={navigate} user={user} onLogin={handleLogin} onLogout={handleLogout} />;
     case "profile":
       return <ProfilePage onNavigate={navigate} user={user} onLogin={handleLogin} onLogout={handleLogout} />;
+    case "midterm":
+      return <Midterm onNavigate={navigate} user={user} onLogin={handleLogin} onLogout={handleLogout} />;
+    case "final":
+      return <Final onNavigate={navigate} user={user} onLogin={handleLogin} onLogout={handleLogout} />;
     case (currentPage.match(/^dino/) ? currentPage : undefined):
       const dinoMatch = currentPage.match(/^dino=(\d)$/);
       const initialDino = dinoMatch ? Number(dinoMatch[1]) : null;
