@@ -45,7 +45,7 @@ function SectionTitle({ children }) {
 }
 
 function Paragraph({ children, style = {} }) {
-  return <p style={{ fontSize: 16, lineHeight: 1.75, color: MUTED, maxWidth: 640, ...style }}>{children}</p>;
+  return <p style={{ fontSize: 16, lineHeight: 1.75, color: MUTED, ...style }}>{children}</p>;
 }
 
 const btnPrimary = { background: GOLD, border: "none", color: "#FFF", padding: "12px 28px", borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: "pointer", transition: "all 0.2s" };
@@ -79,17 +79,17 @@ function ExtractionTableDemo({ lang }) {
       </p>
 
       {/* Column headers */}
-      <div style={{ display: "flex", gap: 4, overflowX: "auto", paddingBottom: 8, marginBottom: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, marginBottom: 12 }}>
         {columns.map((col) => (
           <button key={col.key} onClick={() => setActiveCol(activeCol === col.key ? null : col.key)}
             style={{
               background: activeCol === col.key ? `${GOLD}15` : "#FAFAF7",
               border: `1.5px solid ${activeCol === col.key ? GOLD : LIGHT_BORDER}`,
-              borderRadius: 10, padding: "10px 10px", textAlign: "center",
-              cursor: "pointer", transition: "all 0.2s", minWidth: 80, flex: "0 0 auto",
+              borderRadius: 12, padding: "14px 8px", textAlign: "center",
+              cursor: "pointer", transition: "all 0.2s",
             }}>
-            <div style={{ fontSize: 20, marginBottom: 4 }}>{col.icon}</div>
-            <div style={{ fontSize: 10, fontWeight: 600, color: activeCol === col.key ? GOLD : MUTED, lineHeight: 1.3 }}>
+            <div style={{ fontSize: 24, marginBottom: 6 }}>{col.icon}</div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: activeCol === col.key ? GOLD : MUTED, lineHeight: 1.35 }}>
               {col[lang]}
             </div>
           </button>
@@ -435,124 +435,6 @@ function RateThisStudy({ lang }) {
   );
 }
 
-// ═══ AI EXTRACTION REVIEWER ═══
-function AIExtractionReviewer({ t, lang }) {
-  const [inputs, setInputs] = useState({ events_tx: "", total_tx: "", events_ctrl: "", total_ctrl: "", notes: "" });
-  const [feedback, setFeedback] = useState(null);
-  const [loading, setLoading] = useState(false);
-
-  const scenario = {
-    zh: "研究：DAPA-HF 試驗（McMurray et al., 2019）\n\n一項多中心雙盲 RCT，納入 4744 名 NYHA II-IV 級、LVEF ≤40% 的心衰竭患者。隨機分配到 Dapagliflozin 10mg 每日一次或安慰劑。主要結局為心血管死亡、因心衰竭住院或因心衰竭急診就醫的複合結局。中位追蹤 18.2 個月。\n\n結果：主要複合結局發生在 Dapagliflozin 組 386/2373 人 (16.3%)，安慰劑組 502/2371 人 (21.2%)。HR 0.74 (95% CI 0.65–0.85)。心血管死亡：Dapagliflozin 227/2373 (9.6%) vs 安慰劑 273/2371 (11.5%)。因心衰竭住院：Dapagliflozin 237/2373 (10.0%) vs 安慰劑 326/2371 (13.7%)。",
-    en: "Study: DAPA-HF Trial (McMurray et al., 2019)\n\nMulticenter double-blind RCT enrolling 4744 patients with NYHA II-IV, LVEF ≤40% HF. Randomized to Dapagliflozin 10mg daily or placebo. Primary outcome: composite of CV death, HF hospitalization, or urgent HF visit. Median follow-up 18.2 months.\n\nResults: Primary composite occurred in 386/2373 (16.3%) Dapagliflozin vs 502/2371 (21.2%) placebo. HR 0.74 (95% CI 0.65–0.85). CV death: Dapagliflozin 227/2373 (9.6%) vs placebo 273/2371 (11.5%). HF hospitalization: Dapagliflozin 237/2373 (10.0%) vs placebo 326/2371 (13.7%).",
-  };
-
-  const fields = [
-    { key: "events_tx", zh: "治療組事件數", en: "Treatment events", placeholder: "e.g. 386" },
-    { key: "total_tx", zh: "治療組總人數", en: "Treatment total", placeholder: "e.g. 2373" },
-    { key: "events_ctrl", zh: "對照組事件數", en: "Control events", placeholder: "e.g. 502" },
-    { key: "total_ctrl", zh: "對照組總人數", en: "Control total", placeholder: "e.g. 2371" },
-    { key: "notes", zh: "其他備註（選填）", en: "Notes (optional)", placeholder: lang === "zh" ? "例如：研究設計、追蹤時間…" : "e.g. study design, follow-up..." },
-  ];
-
-  const hasData = inputs.events_tx.trim() && inputs.total_tx.trim() && inputs.events_ctrl.trim() && inputs.total_ctrl.trim();
-
-  const checkExtraction = async () => {
-    if (!hasData) return;
-    setLoading(true);
-    setFeedback(null);
-
-    const userInput = fields.map(f => `${f.en}: ${inputs[f.key] || "N/A"}`).join("\n");
-    const systemPrompt = lang === "zh"
-      ? `你是一位系統性回顧數據萃取教學助手。學生被要求從以下研究中萃取二分類結局數據：
-
-${scenario.zh}
-
-學生萃取的數據如下。請用繁體中文審查：
-1. 判斷每個欄位是否正確
-2. 指出常見錯誤（如混淆 ITT vs per-protocol、萃取百分比而非原始數字、選錯結局指標）
-3. 如果備註中有重要的遺漏，指出來
-4. 給一個整體評分（優秀/良好/需改善）和建議
-
-保持簡潔。不要用 Markdown 格式。`
-      : `You are a systematic review data extraction teaching assistant. The student was asked to extract dichotomous outcome data from this study:
-
-${scenario.en}
-
-The student's extraction is below. Review it:
-1. Check if each field is correct
-2. Flag common mistakes (confusing ITT vs per-protocol, extracting percentages instead of raw counts, wrong outcome)
-3. If notes are missing important info, point it out
-4. Give an overall rating (Excellent/Good/Needs Improvement) with suggestions
-
-Be concise. Don't use Markdown formatting.`;
-
-    try {
-      const response = await fetch("/api/ai-feedback", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ system: systemPrompt, userMessage: userInput }),
-      });
-      const data = await response.json();
-      const text = data.content?.map(item => item.text || "").join("") || t("c3aiNoResult");
-      setFeedback(text);
-    } catch (err) {
-      setFeedback(t("c3aiError"));
-    }
-    setLoading(false);
-  };
-
-  return (
-    <div style={{ background: CARD_BG, borderRadius: 20, border: `1px solid ${LIGHT_BORDER}`, padding: "32px 24px", boxShadow: "0 2px 20px rgba(0,0,0,0.04)" }}>
-      <h4 style={{ fontSize: 15, fontWeight: 600, color: DARK, marginBottom: 12 }}>
-        {lang === "zh" ? "從以下研究中萃取主要結局數據：" : "Extract primary outcome data from this study:"}
-      </h4>
-
-      {/* Study scenario */}
-      <div style={{ background: "#FAFAF7", borderRadius: 12, padding: "16px 18px", marginBottom: 20, border: `1px solid ${LIGHT_BORDER}`, fontSize: 13, lineHeight: 1.7, color: DARK, whiteSpace: "pre-wrap", maxHeight: 200, overflowY: "auto" }}>
-        {lang === "zh" ? scenario.zh : scenario.en}
-      </div>
-
-      {/* Extraction fields */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 10, marginBottom: 16 }}>
-        {fields.map(f => (
-          <div key={f.key}>
-            <label style={{ fontSize: 12, fontWeight: 600, color: MUTED, marginBottom: 4, display: "block" }}>
-              {lang === "zh" ? f.zh : f.en}
-            </label>
-            <input
-              value={inputs[f.key]}
-              onChange={(e) => { setInputs(prev => ({ ...prev, [f.key]: e.target.value })); setFeedback(null); }}
-              placeholder={f.placeholder}
-              style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: `1.5px solid ${LIGHT_BORDER}`, fontSize: 14, color: DARK, background: "#FAFAF7", outline: "none", transition: "border-color 0.2s", boxSizing: "border-box" }}
-            />
-          </div>
-        ))}
-      </div>
-
-      <button onClick={checkExtraction} disabled={!hasData || loading}
-        style={{
-          background: hasData ? GOLD : "#E8E6E1", border: "none", color: hasData ? "#FFF" : MUTED,
-          padding: "13px 28px", borderRadius: 10, fontSize: 14, fontWeight: 600,
-          cursor: hasData ? "pointer" : "default", transition: "all 0.2s", width: "100%",
-          boxShadow: hasData ? `0 2px 12px ${GOLD}33` : "none",
-        }}>
-        {loading
-          ? (lang === "zh" ? "正在審查…" : "Reviewing…")
-          : (lang === "zh" ? "AI 審查我的萃取" : "AI Review My Extraction")}
-      </button>
-
-      {feedback && (
-        <div style={{ marginTop: 16, padding: "18px 20px", borderRadius: 14, background: `${GOLD}06`, border: `1.5px solid ${GOLD}22`, fontSize: 14, lineHeight: 1.7, color: DARK, whiteSpace: "pre-wrap", animation: "fadeInTrack 0.3s ease-out" }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: GOLD, marginBottom: 8 }}>
-            {lang === "zh" ? "AI 審查結果" : "AI Review Results"}
-          </div>
-          {feedback}
-        </div>
-      )}
-    </div>
-  );
-}
-
 // ═══ ROB TOOL CARDS (Section 5) ═══
 function RoBToolCards({ lang }) {
   const [activeCard, setActiveCard] = useState(null); // "rob2" | "nos" | null
@@ -580,32 +462,32 @@ function RoBToolCards({ lang }) {
           border: `2px solid ${activeCard === "rob2" ? CORAL : LIGHT_BORDER}`,
           borderRadius: 16, padding: "20px 18px", cursor: "pointer", transition: "all 0.3s",
         }}>
-        <div style={{ fontSize: 14, fontWeight: 700, color: activeCard === "rob2" ? CORAL : DARK, marginBottom: 6 }}>
+        <div style={{ fontSize: 16, fontWeight: 700, color: activeCard === "rob2" ? CORAL : DARK, marginBottom: 6 }}>
           🔬 Cochrane RoB 2
         </div>
-        <p style={{ fontSize: 12, color: MUTED, marginBottom: 10 }}>
+        <p style={{ fontSize: 14, color: MUTED, marginBottom: 10 }}>
           {lang === "zh" ? "用於隨機對照試驗 (RCT)" : "For Randomized Controlled Trials"}
         </p>
         {activeCard === "rob2" && (
           <div style={{ animation: "fadeInTrack 0.3s ease-out" }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: CORAL, marginBottom: 8 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: CORAL, marginBottom: 10 }}>
               {lang === "zh" ? "5 個評估領域：" : "5 Assessment Domains:"}
             </div>
             {rob2Domains.map((d, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, fontSize: 12 }}>
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, fontSize: 14 }}>
                 <span>{d.icon}</span>
                 <span style={{ color: DARK }}>{d[lang]}</span>
               </div>
             ))}
-            <div style={{ display: "flex", gap: 6, marginTop: 10 }}>
+            <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
               {[
                 { label: lang === "zh" ? "低" : "Low", color: GREEN, bg: "#E6F5F0" },
                 { label: lang === "zh" ? "有疑慮" : "Some", color: GOLD, bg: "#FFF8EE" },
                 { label: lang === "zh" ? "高" : "High", color: RED, bg: "#FDEEEB" },
               ].map((level) => (
                 <span key={level.label} style={{
-                  fontSize: 10, fontWeight: 600, color: level.color,
-                  background: level.bg, padding: "3px 8px", borderRadius: 6,
+                  fontSize: 12, fontWeight: 600, color: level.color,
+                  background: level.bg, padding: "4px 10px", borderRadius: 6,
                 }}>{level.label}</span>
               ))}
             </div>
@@ -620,19 +502,19 @@ function RoBToolCards({ lang }) {
           border: `2px solid ${activeCard === "nos" ? GOLD : LIGHT_BORDER}`,
           borderRadius: 16, padding: "20px 18px", cursor: "pointer", transition: "all 0.3s",
         }}>
-        <div style={{ fontSize: 14, fontWeight: 700, color: activeCard === "nos" ? GOLD : DARK, marginBottom: 6 }}>
+        <div style={{ fontSize: 16, fontWeight: 700, color: activeCard === "nos" ? GOLD : DARK, marginBottom: 6 }}>
           ⭐ Newcastle-Ottawa Scale
         </div>
-        <p style={{ fontSize: 12, color: MUTED, marginBottom: 10 }}>
+        <p style={{ fontSize: 14, color: MUTED, marginBottom: 10 }}>
           {lang === "zh" ? "用於觀察性研究" : "For Observational Studies"}
         </p>
         {activeCard === "nos" && (
           <div style={{ animation: "fadeInTrack 0.3s ease-out" }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: GOLD, marginBottom: 8 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: GOLD, marginBottom: 10 }}>
               {lang === "zh" ? "3 個評估類別（最高 9★）：" : "3 Categories (max 9★):"}
             </div>
             {nosCategories.map((cat, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, fontSize: 12 }}>
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, fontSize: 14 }}>
                 <span>{cat.icon}</span>
                 <span style={{ color: DARK }}>{cat[lang]}</span>
                 <span style={{ color: GOLD, marginLeft: "auto" }}>{"★".repeat(cat.stars)}</span>
@@ -773,7 +655,7 @@ export default function Course3({ onNavigate, user, onLogin, onLogout }) {
 
   // Track which section is in view
   useEffect(() => {
-    const sectionIds = ["hero", "s1", "s2", "s3", "s4", "s5", "s6", "s7", "game", "ai-workshop"];
+    const sectionIds = ["hero", "s1", "s2", "s3", "s4", "s5", "s6", "s7", "game"];
     const observers = [];
     sectionIds.forEach(id => {
       const el = document.getElementById(id);
@@ -797,7 +679,6 @@ export default function Course3({ onNavigate, user, onLogin, onLogout }) {
     { id: "s6", num: 6, label: lang === "zh" ? "整合應用" : "Putting It Together" },
     { id: "s7", num: 7, label: lang === "zh" ? "雙人萃取" : "Dual Extraction" },
     { id: "game", num: 8, label: lang === "zh" ? "恐龍守護家園" : "Dino Home Save" },
-    { id: "ai-workshop", num: 9, label: lang === "zh" ? "AI 工作坊" : "AI Workshop" },
   ];
 
   return (
@@ -1019,19 +900,6 @@ export default function Course3({ onNavigate, user, onLogin, onLogout }) {
         <div style={{ maxWidth: 640, margin: "0 auto" }}>
           <FadeIn><SectionLabel text={t("c3gameLabel")} /></FadeIn>
           <FadeIn delay={0.1}><DinoHomeSave t={t} lang={lang} /></FadeIn>
-        </div>
-      </section>
-
-      {/* AI WORKSHOP — Extraction Reviewer */}
-      <section id="ai-workshop" style={{ padding: "80px 24px", background: "#F1F0EC" }}>
-        <div style={{ maxWidth: 880, margin: "0 auto" }}>
-          <FadeIn><SectionLabel text={lang === "zh" ? "AI 工作坊" : "AI Workshop"} /><SectionTitle>{lang === "zh" ? "用 AI 審查你的數據萃取" : "Let AI Review Your Data Extraction"}</SectionTitle></FadeIn>
-          <FadeIn delay={0.1}><Paragraph style={{ marginBottom: 32 }}>
-            {lang === "zh"
-              ? "從真實研究中練習萃取數據。填入你認為正確的數字，AI 會檢查你是否抓對了數據，並指出常見錯誤。"
-              : "Practice extracting data from a real study. Fill in the numbers you think are correct, and AI will check if you grabbed the right data and flag common mistakes."}
-          </Paragraph></FadeIn>
-          <FadeIn delay={0.15}><AIExtractionReviewer t={t} lang={lang} /></FadeIn>
         </div>
       </section>
 
