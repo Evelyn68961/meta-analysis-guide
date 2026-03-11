@@ -51,7 +51,7 @@ function SectionTitle({ children }) {
 }
 
 function Paragraph({ children, style = {} }) {
-  return <p style={{ fontSize: 16, lineHeight: 1.75, color: MUTED, maxWidth: 640, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif", ...style }}>{children}</p>;
+  return <p style={{ fontSize: 16, lineHeight: 1.75, color: MUTED, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif", ...style }}>{children}</p>;
 }
 
 const btnPrimary = { background: TEAL, border: "none", color: "#FFF", padding: "12px 28px", borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "'Noto Sans TC', 'Outfit', sans-serif", transition: "all 0.2s" };
@@ -517,7 +517,7 @@ export default function Course0({ onNavigate, user, onLogin, onLogout }) {
         </FadeIn>
         <FadeIn delay={0.1}><ForestPlotExplainer /></FadeIn>
         <FadeIn delay={0.15}>
-          <div style={{ marginTop: 40, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 14 }}>
+          <div style={{ marginTop: 40, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 14 }}>
             {glossary.map((item, i) => (
               <div key={i} style={{ background: CARD_BG, border: `1px solid ${LIGHT_BORDER}`, borderRadius: 14, padding: "18px 20px" }}>
                 <h4 style={{ fontSize: 14, fontWeight: 600, color: TEAL, marginBottom: 6, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>{item.term}</h4>
