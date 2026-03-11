@@ -31,7 +31,7 @@ Courses 4–5 games introduce **progressive difficulty** (3 foundation MCQ → g
 | **Precourse** | 0 | What is Meta-Analysis? | Dino Egg Hunt (7 eggs, 7 categories, 35-question bank, cheat sheet rewards) | ✅ Live on `main` |
 | **Foundations** | 1 | PICO/PICOS Research Question | Dino Egg Hatch (pick 1 of 7 eggs, 7 Qs from 70-question bank, 5 correct = hatch, 3 wrong = freeze, sun/frost particles) | ✅ Built on `dev` |
 | | 2 | Literature Search & PRISMA | Dino Food Rescue (pick 1 of 7 dinos, 7 Qs from 70-question bank, crack ice with pickaxe, second chance on wrong, species-matched food) | ✅ Built on `dev` (upgraded: +3 teaching sections, +4 interactive exercises, AI Boolean checker) |
-| | 3 | Data Extraction & Risk of Bias | Dino Home Save (pick 1 of 7 dinos, 7 Qs from 70-question bank, 10s timer, correct = fire grows, wrong/timeout = fire dims, 5 correct = win, 3 wrong = lose) | ✅ Built on `dev` (upgraded: +2 teaching sections, +3 interactive exercises, AI extraction reviewer) |
+| | 3 | Data Extraction & Risk of Bias | Dino Home Save (pick 1 of 7 dinos, 7 Qs from 70-question bank, 10s timer, correct = fire grows, wrong/timeout = fire dims, 5 correct = win, 3 wrong = lose) | ✅ Built on `dev` (upgraded: +2 teaching sections, +3 interactive exercises, layout polish) |
 | | **—** | **MA Workshop: Planning** | **5-step guided workshop: Define PICO (🤖 AI), Search Strategy (🤖 AI), Add Studies, Data Extraction, Risk of Bias. Gate: PICO ✅ + ≥3 studies.** | ✅ Built on `dev` |
 | **Advanced** | 4 | Effect Sizes & Forest Plots | Dino Key Quest (pick 1 of 7 dinos, 9 Qs from 105-question bank: 3 foundation MCQ + 6 advanced mixed-type, progressive unlock, crystal cave theme) | ✅ Built on `dev` (upgraded: +1 teaching section "Common Pitfalls", click-based forest plot, 2×2 effect size cards, wider layout) |
 | | 5 | Heterogeneity & Publication Bias | Dino Door Escape → Dino Map Escape (pick 1 of 7 dinos, 9 Qs from 105-question bank: 3 foundation MCQ + 6 advanced mixed-type, progressive unlock, treasure map + door theme) | ✅ Built on `dev` |
@@ -55,7 +55,7 @@ src/
 ├── Course0.jsx          ← Precourse: What is Meta-Analysis? (teaching sections; game extracted to DinoEggHunt)
 ├── Course1.jsx          ← Course 1: PICO (teaching sections + AI workshop + AI freestyle PICO; game extracted to DinoEggHatch)
 ├── Course2.jsx          ← Course 2: Literature Search & PRISMA (10 teaching sections + 4 interactive exercises + AI Boolean checker; game extracted to DinoFoodRescue)
-├── Course3.jsx          ← Course 3: Data Extraction & RoB (9 sections: 6 teaching + dual extraction + game + AI extraction reviewer; 7 interactive components)
+├── Course3.jsx          ← Course 3: Data Extraction & RoB (8 sections: 6 teaching + dual extraction + game; 7 interactive components)
 ├── Course4.jsx          ← Course 4: Effect Sizes & Forest Plots (7 teaching sections + 5 interactive demos; game: DinoKeyQuest)
 ├── Course5.jsx          ← Course 5: Heterogeneity & Publication Bias (6 teaching sections + 4 interactive demos; game: DinoDoorEscape)
 │
@@ -283,9 +283,8 @@ api/
 6. **Putting It Together** — Interactive traffic-light matrix for 5 example studies, with a "sensitivity analysis" toggle button that excludes the high-risk study and shows the pooled estimate change.
 7. **Dual Extraction & Disagreement Resolution** ← NEW — 4-step workflow cards (independent extraction → compare with Cohen's kappa → resolve disagreements → pilot calibrate) + tool tip about Covidence/Rayyan.
 8. **Dino Home Save Game** — Pick 1 of 7 dinos → 7 questions → 10s timer → keep the fireplace burning
-9. **AI Extraction Reviewer** ← NEW — DAPA-HF study scenario: learner fills in extraction fields (events/totals per group), AI checks if they grabbed the right numbers and flags common mistakes (ITT vs per-protocol, percentages vs raw counts). Uses `/api/ai-feedback` Vercel serverless proxy.
 
-### Sidebar catalog: 9 items
+### Sidebar catalog: 8 items
 1. Why It Matters
 2. Extraction Table
 3. What Numbers (with Extraction Drill)
@@ -294,7 +293,6 @@ api/
 6. Putting It Together
 7. Dual Extraction ← NEW
 8. Dino Home Save
-9. AI Workshop ← NEW
 
 ### Game Mechanics (Dino Home Save):
 - Standalone component in `DinoHomeSave.jsx`, imported by `Course3.jsx`
@@ -557,7 +555,7 @@ api/
 ## Technical Notes
 
 ### Adding a New Course:
-1. Create `CourseN.jsx` with teaching sections + AI workshop
+1. Create `CourseN.jsx` with teaching sections (AI workshop optional — only if AI feedback adds clear value beyond existing interactive exercises)
 2. Add sticky sidebar catalog with `catalogItems` array, `activeSection` state, and IntersectionObserver (copy pattern from any existing course)
 3. Create game as standalone component (e.g., `DinoGameN.jsx`) — import by CourseN
 4. Create `courseNQuestions.js` — for foundation courses: 70 bilingual MCQ (10 per category × 7 categories); for advanced courses: 70 MCQ + 35 advanced (5 per category: 2 true/false, 1 multi-select, 1 ordering, 1 spot-error); import helpers from `questionHelpers.js`
@@ -598,7 +596,7 @@ api/
 - **API key:** Stored in Vercel Environment Variables (`ANTHROPIC_API_KEY`), never exposed in frontend code
 - **Local dev:** Use `vercel dev` (not `npm start`) to test serverless functions locally; `.env.local` pulled from Vercel
 - **Cost:** ~$0.003–0.01 per AI check (prepaid credits at console.anthropic.com)
-- **Courses using it:** Course 1 AI PICO Workshop + Freestyle PICO, Course 2 AI Boolean Query Checker, Course 3 AI Extraction Reviewer, **MA Workshop: Planning** (PICO check + Search strategy check), **MA Workshop: Analysis** (Conclusions check)
+- **Courses using it:** Course 1 AI PICO Workshop + Freestyle PICO, Course 2 AI Boolean Query Checker, **MA Workshop: Planning** (PICO check + Search strategy check), **MA Workshop: Analysis** (Conclusions check)
 - **Future courses:** Can reuse the same `/api/ai-feedback` endpoint — just send different system prompts from frontend
 
 ### Backend Status (Supabase Integration):
