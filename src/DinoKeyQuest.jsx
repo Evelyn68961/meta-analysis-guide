@@ -61,7 +61,7 @@ function KeyFragment({ filled, index }) {
 // ═══ CAVE BACKGROUND ═══
 function CaveBackground({ phase, children }) {
   return (
-    <div style={{
+    <div className="cave-bg" style={{
       background: `linear-gradient(180deg,${CAVE_BG} 0%,${CAVE_FLOOR} 60%,#1E2245 100%)`,
       borderRadius: 16, padding: "32px clamp(20px,4vw,48px)", position: "relative", overflow: "hidden", minHeight: 480,
     }}>
@@ -79,7 +79,7 @@ function CaveBackground({ phase, children }) {
         background: "radial-gradient(ellipse at 50% 80%,rgba(244,208,63,0.12) 0%,transparent 70%)",
         pointerEvents: "none",
       }}/>}
-      <style>{`@keyframes kqSparkle{0%{opacity:0.2;transform:scale(0.8)}100%{opacity:0.7;transform:scale(1.2)}}`}</style>
+      <style>{`@keyframes kqSparkle{0%{opacity:0.2;transform:scale(0.8)}100%{opacity:0.7;transform:scale(1.2)}} .cave-bg ::selection{background:#7FB3D866;color:#FFF}`}</style>
       <div style={{ position: "relative", zIndex: 1 }}>{children}</div>
     </div>
   );

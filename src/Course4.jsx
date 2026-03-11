@@ -666,7 +666,7 @@ export default function Course4({ onNavigate, user, onLogin, onLogout }) {
     { id: "s5", num: 5, label: lang === "zh" ? "森林圖解剖" : "Forest Plot Anatomy" },
     { id: "s6", num: 6, label: lang === "zh" ? "判讀森林圖" : "Reading Forest Plots" },
     { id: "s7", num: 7, label: lang === "zh" ? "常見陷阱" : "Common Pitfalls" },
-    { id: "game", num: 8, label: lang === "zh" ? "恐龍小遊戲" : "Dino Game" },
+    { id: "game", num: 8, label: lang === "zh" ? "恐龍鑰匙探索" : "Dino Key Quest" },
   ];
 
   return (
