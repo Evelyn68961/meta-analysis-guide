@@ -45,7 +45,7 @@ function SectionTitle({ children }) {
 }
 
 function Paragraph({ children, style = {} }) {
-  return <p style={{ fontSize: 16, lineHeight: 1.75, color: MUTED, maxWidth: 640, ...style }}>{children}</p>;
+  return <p style={{ fontSize: 16, lineHeight: 1.75, color: MUTED, ...style }}>{children}</p>;
 }
 
 const btnPrimary = { background: CRIMSON, border: "none", color: "#FFF", padding: "12px 28px", borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: "pointer", transition: "all 0.2s" };
@@ -158,7 +158,7 @@ function HeterogeneitySourceCards({ lang }) {
       descEn: "Residual variation that remains even after exploring all known factors. This is normal and should be reported honestly.",
       descZh: "即使探索了所有已知因素後仍存在的殘餘差異。這是正常的，應如實報告。",
       exEn: "After subgroup analysis and meta-regression, some heterogeneity remains.",
-      exZh: "做了亞組分析和統合迴歸後，仍有部分異質性無法解釋。",
+      exZh: "做了次族群分析和統合迴歸後，仍有部分異質性無法解釋。",
     },
   ];
 
@@ -413,7 +413,7 @@ function PrismaHighlights({ lang }) {
       <h3 style={{ fontSize: 18, fontWeight: 600, color: DARK, marginBottom: 16, textAlign: "center" }}>
         {lang === "zh" ? "📋 PRISMA 2020 重點清單" : "📋 PRISMA 2020 Key Checklist Items"}
       </h3>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 8 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
         {items.map((item) => {
           const isActive = activeItem === item.key;
           return (
@@ -480,8 +480,8 @@ export default function Course5({ onNavigate, user, onLogin, onLogout }) {
     { id: "s3", num: 3, label: lang === "zh" ? "異質性來源" : "Sources" },
     { id: "s4", num: 4, label: lang === "zh" ? "探索異質性" : "Exploring" },
     { id: "s5", num: 5, label: lang === "zh" ? "發表偏倚" : "Publication Bias" },
-    { id: "s6", num: 6, label: lang === "zh" ? "報告你的分析" : "Reporting" },
-    { id: "game", num: 7, label: lang === "zh" ? "恐龍小遊戲" : "Dino Game" },
+    { id: "s6", num: 6, label: lang === "zh" ? "完整報告" : "Reporting" },
+    { id: "game", num: 7, label: lang === "zh" ? "恐龍地圖大逃脫" : "Dino Map Escape" },
   ];
 
   return (
@@ -630,7 +630,7 @@ export default function Course5({ onNavigate, user, onLogin, onLogout }) {
 
       {/* DINO DOOR ESCAPE GAME */}
       <section id="game" style={{ padding: "80px 24px", background: "#F1F0EC" }}>
-        <div style={{ maxWidth: 700, margin: "0 auto" }}>
+        <div style={{ maxWidth: 880, margin: "0 auto" }}>
           <FadeIn><SectionLabel text={t("c5gameLabel")} /></FadeIn>
           <FadeIn delay={0.1}>
             <DinoDoorEscape lang={lang} />

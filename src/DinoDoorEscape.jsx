@@ -1,16 +1,16 @@
 // ═══════════════════════════════════════════════════════════
 //  DinoDoorEscape.jsx — "Dino Door Escape" game for Course 5
 //
-//  The dinos have the key — now find the RIGHT DOOR to their new home!
-//  Navigate a mysterious corridor and eliminate wrong doors.
+//  The dinos must find pieces of a treasure map to discover
+//  which door leads to their new home!
 //
 //  Mechanics:
 //    - Pick 1 of 7 dinos → 9 questions (3 foundation + 6 advanced)
 //    - Foundation: 3 MCQ → must pass ≥2/3 to unlock advanced
 //    - Advanced: 6 mixed types (true/false, multi-select, ordering, spot-error)
-//    - Correct → illuminate a door (reveals it's safe)
-//    - Wrong → door slams shut (eliminated)
-//    - Final: find the glowing door to your new home
+//    - Correct → earn a map piece (reveals part of the escape route)
+//    - Wrong → map piece stays hidden (fog remains)
+//    - Final: collected map pieces reveal which door is correct
 // ═══════════════════════════════════════════════════════════
 
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -32,6 +32,8 @@ const BLUE = "#2E86C1";
 const CORRIDOR_BG = "#1A0F2E";
 const CORRIDOR_FLOOR = "#2D1B4E";
 const DOOR_GLOW = "#E8D5B7";
+const MAP_BG = "#F5E6C8";
+const MAP_BORDER = "#C4A265";
 const DINO_COLORS = ["#2ECC71","#3498DB","#F1C40F","#E74C3C","#9B59B6","#E67E22","#95A5A6"];
 const DINO_NAMES_EN = ["Rex","Azure","Zephyr","Blaze","Thistle","Velo","Dome"];
 const DINO_NAMES_ZH = ["翠牙龍","蒼瀾龍","金翼龍","焰角龍","紫棘龍","珀爪龍","鐵穹龍"];
@@ -43,43 +45,174 @@ const btnPrimary = (bg) => ({
   fontFamily: FONT, transition: "all 0.2s",
 });
 
-// ═══ DOOR SVG ═══
-function DoorIcon({ state = "closed", index = 0 }) {
-  // states: closed, open (correct), locked (wrong)
-  const doorColors = ["#8B4513","#A0522D","#6B3410","#7B3F00","#9B6330","#5C3317","#804020"];
-  const baseColor = doorColors[index % doorColors.length];
-  const w = 32, h = 44;
+// ═══ TREASURE MAP — 3×3 SVG GRID ═══
+// Path route: [0,0]→[1,0]→[2,0]→[2,1]→[2,2] = door 2
+// Each tile is 80×80. Revealed tiles show the path; hidden tiles show fog.
+const TILE = 80;
+const PATH_COLOR = "#D4A843";
+const PATH_W = 6;
+const LAND_COLOR = "#E8D5B0";
+const LAND_DARK = "#D6C49E";
+const FOG_COLOR = "#2A1B3E";
+
+// Each tile's SVG content: path segments + decorations
+// Grid positions: row 0-2, col 0-2
+function MapTile({ row, col, state }) {
+  // state: "found" | "missed" | "hidden"
+  const key = `${row}-${col}`;
+
+  if (state !== "found") {
+    return (
+      <g>
+        <rect width={TILE} height={TILE} fill={FOG_COLOR} />
+        <text x={TILE/2} y={TILE/2+6} fontSize="20" fill="#555" textAnchor="middle" fontWeight="700">?</text>
+        {state === "hidden" && (
+          <circle cx={TILE/2} cy={TILE/2} r="12" fill="#444" opacity="0.3">
+            <animate attributeName="opacity" values="0.2;0.4;0.2" dur="3s" repeatCount="indefinite"/>
+          </circle>
+        )}
+      </g>
+    );
+  }
+
+  // ── Revealed tile content ──
+  // Path route: (0,0)→(1,0)→(2,0)↓(2,1)↓(2,2)
+  const isPath = (row===0&&col<=2) || (col===2&&row>=0);
+  const mid = TILE/2;
+
   return (
-    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`}>
-      {/* Door frame */}
-      <rect x="2" y="2" width={w-4} height={h-4} rx="3" fill={state==="locked"?"#333":"#5C4033"} stroke={state==="open"?GOLD:"#3A2A1A"} strokeWidth="2"/>
-      {/* Door panel */}
-      <rect x="5" y="5" width={w-10} height={h-10} rx="2"
-        fill={state==="open"?`${GOLD}88`:state==="locked"?"#222":baseColor}
-        opacity={state==="locked"?0.4:1}/>
-      {/* Doorknob */}
-      <circle cx={w-10} cy={h/2} r="2.5" fill={state==="open"?GOLD:state==="locked"?"#555":"#DAA520"}/>
-      {/* Open glow */}
-      {state==="open" && (
-        <rect x="5" y="5" width={w-10} height={h-10} rx="2" fill={GOLD} opacity="0.25">
-          <animate attributeName="opacity" values="0.15;0.35;0.15" dur="2s" repeatCount="indefinite"/>
+    <g>
+      {/* Parchment background */}
+      <rect width={TILE} height={TILE} fill={LAND_COLOR} />
+      {/* Subtle texture lines */}
+      <line x1="0" y1={20+row*7} x2={TILE} y2={22+row*5} stroke={LAND_DARK} strokeWidth="0.5" opacity="0.5"/>
+      <line x1="0" y1={50+col*5} x2={TILE} y2={48+col*7} stroke={LAND_DARK} strokeWidth="0.5" opacity="0.4"/>
+
+      {/* Path segments */}
+      {/* (0,0): dino start → path goes right */}
+      {row===0 && col===0 && <>
+        <path d={`M${mid} ${mid} L${TILE} ${mid}`} stroke={PATH_COLOR} strokeWidth={PATH_W} fill="none" strokeLinecap="round"/>
+        <circle cx={mid-8} cy={mid} r="3" fill="#2ECC71"/>
+        <text x={mid-8} y={mid-10} fontSize="16" textAnchor="middle">🦕</text>
+      </>}
+      {/* (0,1): path goes left→right */}
+      {row===0 && col===1 && <>
+        <path d={`M0 ${mid} L${TILE} ${mid}`} stroke={PATH_COLOR} strokeWidth={PATH_W} fill="none" strokeLinecap="round"/>
+        {/* tree decoration */}
+        <circle cx={mid} cy={18} r="8" fill="#5B8C5A" opacity="0.6"/>
+        <rect x={mid-1.5} y={22} width={3} height={8} fill="#8B6914" opacity="0.5" rx="1"/>
+      </>}
+      {/* (0,2): path comes from left, turns down */}
+      {row===0 && col===2 && <>
+        <path d={`M0 ${mid} Q${mid} ${mid} ${mid} ${TILE}`} stroke={PATH_COLOR} strokeWidth={PATH_W} fill="none" strokeLinecap="round"/>
+        <circle cx={TILE-15} cy={18} r="6" fill="#5B8C5A" opacity="0.5"/>
+      </>}
+      {/* (1,0): empty land with trees */}
+      {row===1 && col===0 && <>
+        <circle cx={25} cy={35} r="10" fill="#5B8C5A" opacity="0.5"/>
+        <rect x={23.5} y={41} width={3} height={10} fill="#8B6914" opacity="0.4" rx="1"/>
+        <circle cx={60} cy={55} r="7" fill="#4A7A49" opacity="0.4"/>
+      </>}
+      {/* (1,1): empty land with rocks */}
+      {row===1 && col===1 && <>
+        <ellipse cx={30} cy={45} rx="12" ry="8" fill="#B8A88A" opacity="0.5"/>
+        <ellipse cx={55} cy={30} rx="8" ry="6" fill="#C4B494" opacity="0.4"/>
+      </>}
+      {/* (1,2): path goes top→bottom */}
+      {row===1 && col===2 && <>
+        <path d={`M${mid} 0 L${mid} ${TILE}`} stroke={PATH_COLOR} strokeWidth={PATH_W} fill="none" strokeLinecap="round"/>
+        <circle cx={18} cy={mid} r="6" fill="#5B8C5A" opacity="0.4"/>
+      </>}
+      {/* (2,0): door 1 (wrong) */}
+      {row===2 && col===0 && <>
+        <rect x={mid-12} y={10} width={24} height={36} rx="3" fill="#8B4513"/>
+        <rect x={mid-10} y={12} width={20} height={32} rx="2" fill="#6B3410"/>
+        <circle cx={mid+6} cy={30} r="2.5" fill="#DAA520"/>
+        <text x={mid} y={62} fontSize="10" fill="#8B6914" textAnchor="middle" fontWeight="700">1</text>
+      </>}
+      {/* (2,1): door 2 (wrong) */}
+      {row===2 && col===1 && <>
+        <rect x={mid-12} y={10} width={24} height={36} rx="3" fill="#8B4513"/>
+        <rect x={mid-10} y={12} width={20} height={32} rx="2" fill="#7B3F00"/>
+        <circle cx={mid+6} cy={30} r="2.5" fill="#DAA520"/>
+        <text x={mid} y={62} fontSize="10" fill="#8B6914" textAnchor="middle" fontWeight="700">2</text>
+      </>}
+      {/* (2,2): door 3 (CORRECT — path leads here) */}
+      {row===2 && col===2 && <>
+        <path d={`M${mid} 0 L${mid} 10`} stroke={PATH_COLOR} strokeWidth={PATH_W} fill="none" strokeLinecap="round"/>
+        <rect x={mid-14} y={12} width={28} height={38} rx="3" fill="#DAA520" opacity="0.3"/>
+        <rect x={mid-12} y={14} width={24} height={34} rx="3" fill="#8B4513"/>
+        <rect x={mid-10} y={16} width={20} height={30} rx="2" fill="#6B4423"/>
+        <circle cx={mid+6} cy={32} r="2.5" fill={GOLD}/>
+        <text x={mid} y={66} fontSize="10" fill={GOLD_DARK} textAnchor="middle" fontWeight="900">3</text>
+        {/* glow */}
+        <rect x={mid-14} y={12} width={28} height={38} rx="3" fill={GOLD} opacity="0.12">
+          <animate attributeName="opacity" values="0.06;0.18;0.06" dur="2s" repeatCount="indefinite"/>
         </rect>
-      )}
-      {/* Locked X */}
-      {state==="locked" && (
-        <g stroke={RED} strokeWidth="2.5" strokeLinecap="round" opacity="0.8">
-          <line x1="10" y1="14" x2={w-10} y2={h-14}/>
-          <line x1={w-10} y1="14" x2="10" y2={h-14}/>
-        </g>
-      )}
-    </svg>
+      </>}
+    </g>
+  );
+}
+
+function TreasureMap({ pieces, lang, compact = false }) {
+  const foundCount = pieces.filter(p => p === "found").length;
+  const total = pieces.length;
+  const scale = compact ? 0.65 : 1;
+  const tileSize = TILE * scale;
+  const gap = 2 * scale;
+  const gridW = tileSize * 3 + gap * 2;
+  const gridH = tileSize * 3 + gap * 2;
+
+  // Map 9 pieces to 3×3 grid: index 0-2 = row 0, 3-5 = row 1, 6-8 = row 2
+  const getState = (row, col) => {
+    const idx = row * 3 + col;
+    return pieces[idx] || "hidden";
+  };
+
+  return (
+    <div style={{
+      background: `linear-gradient(135deg, ${MAP_BG} 0%, #EDD9B3 100%)`,
+      border: `2px solid ${MAP_BORDER}`,
+      borderRadius: compact ? 10 : 14, padding: compact ? "10px 12px" : "14px 16px",
+      position: "relative", overflow: "hidden",
+      boxShadow: "inset 0 1px 4px rgba(139,105,20,0.15)",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: compact ? 6 : 10 }}>
+        <span style={{ fontSize: compact ? 11 : 12, fontWeight: 700, color: "#8B6914", fontFamily: FONT }}>
+          🗺️ {lang === "zh" ? "藏寶地圖" : "Treasure Map"}
+        </span>
+        <span style={{ fontSize: compact ? 10 : 11, color: "#A0894A", fontFamily: FONT, fontWeight: 600 }}>
+          {foundCount}/{total} {lang === "zh" ? "碎片" : "pieces"}
+        </span>
+      </div>
+
+      <div style={{ display: "flex", justifyContent: "center" }}>
+        <svg width={gridW} height={gridH} viewBox={`0 0 ${gridW} ${gridH}`}>
+          {/* Border */}
+          <rect x="0" y="0" width={gridW} height={gridH} rx={compact ? 6 : 8} fill={MAP_BORDER} />
+          {[0,1,2].map(row =>
+            [0,1,2].map(col => {
+              const x = col * (tileSize + gap) + gap/2;
+              const y = row * (tileSize + gap) + gap/2;
+              const state = getState(row, col);
+              return (
+                <g key={`${row}-${col}`} transform={`translate(${x},${y}) scale(${scale})`}>
+                  <rect width={TILE} height={TILE} rx="4" fill={state === "found" ? LAND_COLOR : FOG_COLOR} />
+                  <MapTile row={row} col={col} state={state} />
+                </g>
+              );
+            })
+          )}
+        </svg>
+      </div>
+    </div>
   );
 }
 
 // ═══ CORRIDOR BACKGROUND ═══
 function CorridorBackground({ phase, children }) {
   return (
-    <div style={{
+    <div className="corridor-bg" style={{
       background: `linear-gradient(180deg,${CORRIDOR_BG} 0%,${CORRIDOR_FLOOR} 60%,#1F0F35 100%)`,
       borderRadius: 16, padding: "24px 20px", position: "relative", overflow: "hidden", minHeight: 400,
     }}>
@@ -99,7 +232,7 @@ function CorridorBackground({ phase, children }) {
         background:"radial-gradient(ellipse at 50% 50%,rgba(192,57,43,0.08) 0%,transparent 70%)",
         pointerEvents:"none",
       }}/>}
-      <style>{`@keyframes deFlicker{0%{opacity:0.25;transform:scale(0.8)}100%{opacity:0.55;transform:scale(1.15)}}`}</style>
+      <style>{`@keyframes deFlicker{0%{opacity:0.25;transform:scale(0.8)}100%{opacity:0.55;transform:scale(1.15)}} .corridor-bg ::selection{background:#E8D5B766;color:#FFF}`}</style>
       <div style={{ position:"relative", zIndex:1 }}>{children}</div>
     </div>
   );
@@ -124,7 +257,7 @@ function TypeBadge({ type, lang }) {
   );
 }
 
-// ═══ QUESTION RENDERERS (same logic, different accent) ═══
+// ═══ QUESTION RENDERERS ═══
 function MCQRenderer({ q, lang, onAnswer, answered, sel }) {
   const data = q[lang];
   return (
@@ -238,7 +371,7 @@ function SERenderer({ q, lang, onAnswer, answered, sel }) {
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
       <p style={{ fontSize:12, color:DOOR_GLOW, margin:0, fontFamily:FONT }}>{lang==="zh"?"🔍 點擊有錯的敘述":"🔍 Click the statement with an error"}</p>
-      {data.statements.map((stmt,i)=>{
+      {(data.statements || data.opts).map((stmt,i)=>{
         let bg="rgba(255,255,255,0.08)",border="1px solid rgba(255,255,255,0.15)";
         if(answered){if(i===q.correct){bg=`${RED}33`;border=`2px solid ${RED}`;}else if(sel===i){bg=`${CORAL}22`;border=`2px solid ${CORAL}66`;}else{bg=`${GREEN}15`;border=`1px solid ${GREEN}44`;}}
         return(
@@ -255,10 +388,78 @@ function SERenderer({ q, lang, onAnswer, answered, sel }) {
   );
 }
 
+// ═══ DOOR CHOICE SCENE ═══
+function DoorChoiceScene({ pieces, selectedDino, lang, onChoose }) {
+  const foundCount = pieces.filter(p => p === "found").length;
+  const correctDoor = 2; // Door 3 (index 2) — path leads to bottom-right
+  const [hoveredDoor, setHoveredDoor] = useState(null);
+
+  return (
+    <div style={{ textAlign: "center", padding: "16px 0" }}>
+      <div style={{ marginBottom: 16 }}>
+        <CuteDino index={selectedDino} size={80} color={DINO_COLORS[selectedDino]} />
+      </div>
+      <h3 style={{ color: GOLD, fontSize: 20, fontFamily: FONT, marginBottom: 6 }}>
+        {lang === "zh" ? "🚪 看地圖，選擇正確的門！" : "🚪 Read the Map, Pick the Door!"}
+      </h3>
+      <p style={{ color: "#9988BB", fontSize: 14, fontFamily: FONT, maxWidth: 480, margin: "0 auto 20px", lineHeight: 1.6 }}>
+        {lang === "zh"
+          ? `你收集了 ${foundCount}/9 張地圖碎片。地圖上的路徑通往正確的門——碎片越多，路徑越清楚！`
+          : `You collected ${foundCount}/9 map pieces. The path on the map leads to the correct door — more pieces = clearer path!`}
+      </p>
+
+      {/* Show the assembled map */}
+      <div style={{ marginBottom: 24 }}>
+        <TreasureMap pieces={pieces} lang={lang} />
+      </div>
+
+      {/* 3 doors to choose */}
+      <p style={{ color: GOLD, fontSize: 13, fontFamily: FONT, marginBottom: 12, fontWeight: 600 }}>
+        {lang === "zh" ? "選擇一扇門：" : "Choose a door:"}
+      </p>
+      <div style={{ display: "flex", justifyContent: "center", gap: 16, flexWrap: "wrap" }}>
+        {[0, 1, 2].map((idx) => {
+          const isHovered = hoveredDoor === idx;
+          return (
+            <button key={idx}
+              onClick={() => onChoose(idx, idx === correctDoor)}
+              onMouseEnter={() => setHoveredDoor(idx)}
+              onMouseLeave={() => setHoveredDoor(null)}
+              style={{
+                background: isHovered ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.05)",
+                border: `2px solid ${isHovered ? GOLD : "rgba(255,255,255,0.15)"}`,
+                borderRadius: 14, padding: "16px 28px", cursor: "pointer",
+                transition: "all 0.2s", transform: isHovered ? "translateY(-3px)" : "translateY(0)",
+                display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
+              }}>
+              <svg width="48" height="64" viewBox="0 0 48 64">
+                <rect x="4" y="4" width="40" height="56" rx="4" fill="#3A2A1A" stroke={isHovered ? GOLD : "#5C4033"} strokeWidth="2"/>
+                <rect x="8" y="8" width="32" height="48" rx="3" fill={isHovered ? "#7B5B3A" : "#6B4423"}/>
+                <rect x="12" y="12" width="24" height="18" rx="2" fill="rgba(0,0,0,0.15)"/>
+                <rect x="12" y="34" width="24" height="18" rx="2" fill="rgba(0,0,0,0.15)"/>
+                <circle cx="34" cy="34" r="3" fill={isHovered ? GOLD : "#DAA520"}/>
+                {isHovered && (
+                  <rect x="8" y="8" width="32" height="48" rx="3" fill={GOLD} opacity="0.1">
+                    <animate attributeName="opacity" values="0.05;0.15;0.05" dur="1.5s" repeatCount="indefinite"/>
+                  </rect>
+                )}
+              </svg>
+              <span style={{ fontSize: 15, fontWeight: 700, color: isHovered ? GOLD : "#AAA", fontFamily: FONT, transition: "color 0.2s" }}>
+                {lang === "zh" ? `門 ${idx + 1}` : `Door ${idx + 1}`}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+
 // ═══ MAIN GAME ═══
 export default function DinoDoorEscape({ lang: langProp }) {
   const lang = langProp || "en";
-  const [phase, setPhase] = useState("select");
+  const [phase, setPhase] = useState("select"); // select|foundation|gate|advanced|choose|result
   const [selectedDino, setSelectedDino] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [qi, setQi] = useState(0);
@@ -267,8 +468,9 @@ export default function DinoDoorEscape({ lang: langProp }) {
   const [answered, setAnswered] = useState(false);
   const [sel, setSel] = useState(null);
   const [correct, setCorrect] = useState(false);
-  const [doors, setDoors] = useState(Array(9).fill("closed")); // closed|open|locked
+  const [mapPieces, setMapPieces] = useState(Array(9).fill("hidden")); // hidden|found|missed
   const [shake, setShake] = useState(false);
+  const [doorChoice, setDoorChoice] = useState(null); // null | { door, correct }
 
   const startGame = useCallback((dinoIdx) => {
     setSelectedDino(dinoIdx);
@@ -277,7 +479,8 @@ export default function DinoDoorEscape({ lang: langProp }) {
     const advanced = pickAdvancedMix(course5Questions, 6);
     setQuestions([...foundation, ...advanced]);
     setPhase("foundation"); setQi(0); setScore(0); setFoundScore(0);
-    setAnswered(false); setSel(null); setDoors(Array(9).fill("closed"));
+    setAnswered(false); setSel(null); setMapPieces(Array(9).fill("hidden"));
+    setDoorChoice(null);
   }, []);
 
   const handleAnswer = useCallback((answer, isCorrect) => {
@@ -286,9 +489,9 @@ export default function DinoDoorEscape({ lang: langProp }) {
     if (isCorrect) {
       setScore(s => s+1);
       if (qi < 3) setFoundScore(s => s+1);
-      setDoors(prev => { const n=[...prev]; n[qi]="open"; return n; });
+      setMapPieces(prev => { const n=[...prev]; n[qi]="found"; return n; });
     } else {
-      setDoors(prev => { const n=[...prev]; n[qi]="locked"; return n; });
+      setMapPieces(prev => { const n=[...prev]; n[qi]="missed"; return n; });
       setShake(true); setTimeout(() => setShake(false), 500);
     }
   }, [answered, qi]);
@@ -302,36 +505,45 @@ export default function DinoDoorEscape({ lang: langProp }) {
       } else { setPhase("result"); }
       return;
     }
-    if (next >= questions.length) { setPhase("result"); return; }
+    if (next >= questions.length) {
+      // All questions done → go to door choice phase
+      setPhase("choose");
+      return;
+    }
     setQi(next); setAnswered(false); setSel(null);
+  };
+
+  const handleDoorChoice = (doorIdx, isCorrect) => {
+    setDoorChoice({ door: doorIdx, correct: isCorrect });
+    setTimeout(() => setPhase("result"), 1500);
   };
 
   // ── SELECT ──
   if (phase === "select") {
     return (
       <CorridorBackground phase="select">
-        <div style={{ textAlign:"center", padding:"20px 0" }}>
-          <h2 style={{ color:DOOR_GLOW, fontSize:"clamp(22px,4vw,30px)", fontFamily:FONT, marginBottom:4 }}>
-            {lang==="zh"?"🚪 恐龍找門大逃脫":"🚪 Dino Door Escape"}
+        <div style={{ textAlign:"center", padding:"28px 0" }}>
+          <h2 style={{ color:DOOR_GLOW, fontSize:"clamp(24px,4.5vw,32px)", fontFamily:FONT, marginBottom:6 }}>
+            {lang==="zh"?"🗺️ 恐龍地圖大逃脫":"🗺️ Dino Map Escape"}
           </h2>
-          <p style={{ color:"#9988BB", fontSize:14, fontFamily:FONT, maxWidth:500, margin:"8px auto 24px", lineHeight:1.6 }}>
+          <p style={{ color:"#9988BB", fontSize:16, fontFamily:FONT, maxWidth:580, margin:"8px auto 28px", lineHeight:1.7 }}>
             {lang==="zh"
-              ?"恐龍們拿到了鑰匙，但走廊裡有 9 扇門——只有答對的才能打開！先通過 3 題基礎題，再挑戰 6 題進階題（是非、複選、排序、找錯）。找到通往新家的門！"
-              :"The dinos have the key, but the corridor has 9 doors — only correct answers open them! Pass 3 foundation questions, then face 6 advanced challenges (true/false, multi-select, ordering, spot-the-error). Find the door to your new home!"}
+              ?"恐龍們需要找到藏寶地圖的碎片，才能知道哪扇門通往新家！答對題目就能獲得地圖碎片，碎片越多，線索越清楚。先通過 3 題基礎題，再挑戰 6 題進階題！"
+              :"The dinos need to find pieces of a treasure map to discover which door leads home! Correct answers earn map pieces — the more you find, the clearer the clues. Pass 3 foundation questions, then face 6 advanced challenges!"}
           </p>
-          <p style={{ color:GOLD, fontSize:13, fontFamily:FONT, marginBottom:20 }}>
+          <p style={{ color:GOLD, fontSize:15, fontFamily:FONT, marginBottom:20 }}>
             {lang==="zh"?"選擇你的恐龍夥伴：":"Choose your dino companion:"}
           </p>
-          <div style={{ display:"flex", flexWrap:"wrap", justifyContent:"center", gap:12 }}>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(110px, 1fr))", gap:14, maxWidth:600, margin:"0 auto" }}>
             {DINO_NAMES_EN.map((_,i) => (
               <button key={i} onClick={()=>startGame(i)} style={{
                 background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.12)",
-                borderRadius:14, padding:"14px 10px", cursor:"pointer", width:100,
-                display:"flex", flexDirection:"column", alignItems:"center", gap:6, transition:"all 0.2s",
+                borderRadius:14, padding:"18px 10px", cursor:"pointer",
+                display:"flex", flexDirection:"column", alignItems:"center", gap:8, transition:"all 0.2s",
               }} onMouseEnter={e=>{e.currentTarget.style.background="rgba(192,57,43,0.2)";e.currentTarget.style.borderColor=CRIMSON;}}
                  onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.06)";e.currentTarget.style.borderColor="rgba(255,255,255,0.12)";}}>
-                <div style={{ transform:"scale(0.6)", transformOrigin:"center" }}><CuteDino species={i} size={80} color={DINO_COLORS[i]}/></div>
-                <span style={{ color:"#CCC", fontSize:11, fontFamily:FONT, fontWeight:600 }}>{lang==="zh"?DINO_NAMES_ZH[i]:DINO_NAMES_EN[i]}</span>
+                <div style={{ transform:"scale(0.7)", transformOrigin:"center" }}><CuteDino index={i} size={80} color={DINO_COLORS[i]}/></div>
+                <span style={{ color:"#CCC", fontSize:13, fontFamily:FONT, fontWeight:600 }}>{lang==="zh"?DINO_NAMES_ZH[i]:DINO_NAMES_EN[i]}</span>
               </button>
             ))}
           </div>
@@ -345,38 +557,73 @@ export default function DinoDoorEscape({ lang: langProp }) {
     return (
       <CorridorBackground phase="gate">
         <div style={{ textAlign:"center", padding:"60px 20px" }}>
-          <div style={{ fontSize:48, marginBottom:16 }}>🔓</div>
+          <div style={{ fontSize:48, marginBottom:16 }}>🗺️</div>
           <h3 style={{ color:GOLD, fontSize:22, fontFamily:FONT, marginBottom:8 }}>{lang==="zh"?"進階走廊已解鎖！":"Advanced Corridor Unlocked!"}</h3>
           <p style={{ color:"#9988BB", fontSize:14, fontFamily:FONT }}>
-            {lang==="zh"?`基礎題通過 (${foundScore}/3)！前方有 6 扇更難的門等著你。`:`Foundation passed (${foundScore}/3)! 6 tougher doors await.`}
+            {lang==="zh"?`基礎題通過 (${foundScore}/3)！前方有 6 張更珍貴的地圖碎片等你收集。`:`Foundation passed (${foundScore}/3)! 6 more precious map pieces await.`}
           </p>
+          <div style={{ marginTop: 20 }}>
+            <TreasureMap pieces={mapPieces} lang={lang} />
+          </div>
         </div>
+      </CorridorBackground>
+    );
+  }
+
+  // ── DOOR CHOICE ──
+  if (phase === "choose") {
+    return (
+      <CorridorBackground phase="choose">
+        {/* Show completed map */}
+        <div style={{ marginBottom: 16 }}>
+          <TreasureMap pieces={mapPieces} lang={lang} />
+        </div>
+        {doorChoice ? (
+          <div style={{ textAlign: "center", padding: "30px 16px" }}>
+            <div style={{ fontSize: 48, marginBottom: 12 }}>{doorChoice.correct ? "🎉" : "😢"}</div>
+            <h3 style={{ color: doorChoice.correct ? GREEN : CORAL, fontSize: 20, fontFamily: FONT }}>
+              {doorChoice.correct
+                ? (lang === "zh" ? "找到正確的門了！" : "You found the right door!")
+                : (lang === "zh" ? "不是這扇門..." : "Not this door...")}
+            </h3>
+          </div>
+        ) : (
+          <DoorChoiceScene pieces={mapPieces} selectedDino={selectedDino} lang={lang} onChoose={handleDoorChoice} />
+        )}
       </CorridorBackground>
     );
   }
 
   // ── RESULT ──
   if (phase === "result") {
-    const openCount = doors.filter(d=>d==="open").length;
-    const tier = foundScore<2?"locked":score>=8?"master":score>=6?"navigator":score>=4?"seeker":"lost";
+    const foundCount = mapPieces.filter(p => p === "found").length;
+    const choseDoorCorrectly = doorChoice?.correct ?? false;
+    const tier = foundScore < 2 ? "locked"
+      : choseDoorCorrectly && score >= 8 ? "master"
+      : choseDoorCorrectly && score >= 6 ? "navigator"
+      : choseDoorCorrectly ? "seeker"
+      : score >= 6 ? "close"
+      : "lost";
     const T = {
       locked:    { zh:{t:"走廊被封鎖 🔒",m:"需要通過至少 2/3 基礎題。再試一次！"}, en:{t:"Corridor Locked 🔒",m:"Need 2/3 foundation to proceed. Try again!"}, c:MUTED },
-      master:    { zh:{t:"門之大師 🚪✨",m:`太強了！打開了 ${openCount}/9 扇門——你已完全掌握異質性與發表偏倚！`}, en:{t:"Door Master 🚪✨",m:`Outstanding! ${openCount}/9 doors open — heterogeneity & bias mastered!`}, c:GOLD },
-      navigator: { zh:{t:"走廊導航者 🚪",m:`做得好！打開了 ${openCount}/9 扇門——幾乎找到新家了！`}, en:{t:"Corridor Navigator 🚪",m:`Well done! ${openCount}/9 doors — nearly home!`}, c:CRIMSON_LIGHT },
-      seeker:    { zh:{t:"探門學徒 🔍",m:`不錯！打開了 ${openCount}/9 扇門——繼續練習！`}, en:{t:"Door Seeker 🔍",m:`Good start! ${openCount}/9 doors — keep practicing!`}, c:CORAL },
-      lost:      { zh:{t:"迷路冒險家 🌀",m:`打開了 ${openCount}/9 扇門——回顧課程再試！`}, en:{t:"Lost Adventurer 🌀",m:`${openCount}/9 doors — review the course and try again!`}, c:"#95A5A6" },
+      master:    { zh:{t:"地圖大師 🗺️✨",m:`完美！收集了 ${foundCount}/9 張碎片並找到正確的門——你已完全掌握異質性與發表偏倚！`}, en:{t:"Map Master 🗺️✨",m:`Perfect! ${foundCount}/9 pieces collected and the right door found — heterogeneity & bias mastered!`}, c:GOLD },
+      navigator: { zh:{t:"地圖導航者 🧭",m:`很棒！收集了 ${foundCount}/9 張碎片並成功逃脫——幾乎完美！`}, en:{t:"Map Navigator 🧭",m:`Great job! ${foundCount}/9 pieces and escaped successfully — nearly perfect!`}, c:CRIMSON_LIGHT },
+      seeker:    { zh:{t:"碎片探索者 🔍",m:`不錯！收集了 ${foundCount}/9 張碎片並找到了路——繼續練習！`}, en:{t:"Piece Seeker 🔍",m:`Good start! ${foundCount}/9 pieces and found the way — keep practicing!`}, c:CORAL },
+      close:     { zh:{t:"差一點！ 🚪",m:`收集了 ${foundCount}/9 張碎片，但選錯了門。線索不夠清楚嗎？再試一次！`}, en:{t:"So Close! 🚪",m:`${foundCount}/9 pieces collected, but wrong door. Not enough clues? Try again!`}, c:BLUE },
+      lost:      { zh:{t:"迷路冒險家 🌀",m:`收集了 ${foundCount}/9 張碎片——回顧課程再試！`}, en:{t:"Lost Adventurer 🌀",m:`${foundCount}/9 pieces — review the course and try again!`}, c:"#95A5A6" },
     };
     const info = T[tier];
     return (
       <CorridorBackground phase="result">
         <div style={{ textAlign:"center", padding:"24px 16px" }}>
-          <div style={{ display:"flex", justifyContent:"center", gap:6, marginBottom:20, flexWrap:"wrap" }}>
-            {doors.map((d,i) => <DoorIcon key={i} state={d} index={i}/>)}
+          {/* Final map display */}
+          <div style={{ maxWidth: 320, margin: "0 auto 20px" }}>
+            <TreasureMap pieces={mapPieces} lang={lang} />
           </div>
-          <div style={{ marginBottom:16 }}><CuteDino species={selectedDino} size={100} color={DINO_COLORS[selectedDino]}/></div>
+          <div style={{ marginBottom:16 }}><CuteDino index={selectedDino} size={100} color={DINO_COLORS[selectedDino]}/></div>
           <h2 style={{ color:info.c, fontSize:24, fontFamily:FONT, marginBottom:8 }}>{info[lang].t}</h2>
           <p style={{ color:"#AAB8CC", fontSize:14, fontFamily:FONT, maxWidth:400, margin:"0 auto 24px", lineHeight:1.6 }}>{info[lang].m}</p>
-          <button onClick={()=>{setPhase("select");setSelectedDino(null);}} style={btnPrimary(CRIMSON)}>
+          <button onClick={()=>{setPhase("select");setSelectedDino(null);setDoorChoice(null);}} style={btnPrimary(CRIMSON)}>
             {lang==="zh"?"再玩一次 🔄":"Play Again 🔄"}
           </button>
         </div>
@@ -396,12 +643,17 @@ export default function DinoDoorEscape({ lang: langProp }) {
       {/* Header */}
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
         <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-          <div style={{ transform:"scale(0.4)", transformOrigin:"left center", marginRight:-24 }}><CuteDino species={selectedDino} size={70} color={DINO_COLORS[selectedDino]}/></div>
-          <span style={{ color:"#9988BB", fontSize:12, fontFamily:FONT, fontWeight:600 }}>{phaseLabel}</span>
+          <div style={{ transform:"scale(0.8)", transformOrigin:"left center", marginRight:-16 }}><CuteDino index={selectedDino} size={70} color={DINO_COLORS[selectedDino]}/></div>
+          <span style={{ color:"#9988BB", fontSize:14, fontFamily:FONT, fontWeight:600 }}>{phaseLabel}</span>
         </div>
-        <div style={{ display:"flex", alignItems:"center", gap:4 }}>
-          {doors.map((d,i) => <DoorIcon key={i} state={i<=qi?d:"closed"} index={i}/>)}
-        </div>
+        <span style={{ color:GOLD_DARK, fontSize:13, fontFamily:FONT, fontWeight:600 }}>
+          🗺️ {mapPieces.filter(p=>p==="found").length}/9
+        </span>
+      </div>
+
+      {/* Mini map display */}
+      <div style={{ marginBottom: 16 }}>
+        <TreasureMap pieces={mapPieces.map((s, i) => i <= qi ? s : "hidden")} lang={lang} compact />
       </div>
 
       {/* Question */}
@@ -409,32 +661,32 @@ export default function DinoDoorEscape({ lang: langProp }) {
         <style>{`@keyframes deShake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}`}</style>
         <div style={{ marginBottom:12, display:"flex", alignItems:"center", gap:8 }}>
           <TypeBadge type={type} lang={lang}/>
-          {isFound && <span style={{ fontSize:10, color:GOLD, background:`${GOLD}22`, padding:"2px 8px", borderRadius:8, fontFamily:FONT }}>
+          {isFound && <span style={{ fontSize:12, color:GOLD, background:`${GOLD}22`, padding:"2px 8px", borderRadius:8, fontFamily:FONT }}>
             {lang==="zh"?"通過 ≥2/3 解鎖進階":"Pass ≥2/3 to unlock"}
           </span>}
         </div>
-        <h3 style={{ color:"#F0F0F0", fontSize:"clamp(15px,3vw,18px)", fontFamily:FONT, fontWeight:600, lineHeight:1.6, marginBottom:16 }}>
+        <h3 style={{ color:"#F0F0F0", fontSize:"clamp(17px,3vw,20px)", fontFamily:FONT, fontWeight:600, lineHeight:1.6, marginBottom:16 }}>
           {q[lang].q}
         </h3>
 
         {type==="mcq"&&<MCQRenderer q={q} lang={lang} onAnswer={handleAnswer} answered={answered} sel={sel}/>}
         {type==="true_false"&&<TFRenderer q={q} lang={lang} onAnswer={handleAnswer} answered={answered} sel={sel}/>}
-        {type==="multi_select"&&<MSRenderer q={q} lang={lang} onAnswer={handleAnswer} answered={answered}/>}
-        {type==="ordering"&&<OrderRenderer q={q} lang={lang} onAnswer={handleAnswer} answered={answered}/>}
+        {type==="multi_select"&&<MSRenderer key={qi} q={q} lang={lang} onAnswer={handleAnswer} answered={answered}/>}
+        {type==="ordering"&&<OrderRenderer key={qi} q={q} lang={lang} onAnswer={handleAnswer} answered={answered}/>}
         {type==="spot_error"&&<SERenderer q={q} lang={lang} onAnswer={handleAnswer} answered={answered} sel={sel}/>}
 
         {/* Feedback */}
         {answered && (
           <div style={{ marginTop:16, padding:"14px 16px", borderRadius:10, background:correct?`${GREEN}22`:`${RED}22`, border:`1px solid ${correct?GREEN:RED}44` }}>
             <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
-              <span style={{ fontSize:18 }}>{correct?"🚪":"🔒"}</span>
-              <span style={{ color:correct?GREEN:CORAL, fontWeight:700, fontSize:14, fontFamily:FONT }}>
-                {correct?(lang==="zh"?"正確！門已打開！":"Correct! Door opened!"):(lang==="zh"?"不正確——門被鎖住了":"Wrong — door locked")}
+              <span style={{ fontSize:18 }}>{correct?"🗺️":"❌"}</span>
+              <span style={{ color:correct?GREEN:CORAL, fontWeight:700, fontSize:16, fontFamily:FONT }}>
+                {correct?(lang==="zh"?"正確！獲得地圖碎片！":"Correct! Map piece found!"):(lang==="zh"?"不正確——碎片遺失了":"Wrong — piece stays hidden")}
               </span>
             </div>
-            <p style={{ color:"#AAB8CC", fontSize:13, fontFamily:FONT, margin:0, lineHeight:1.6 }}>{q[lang].exp}</p>
-            <button onClick={nextQ} style={{ ...btnPrimary(CRIMSON), marginTop:12, fontSize:13, padding:"10px 24px" }}>
-              {qi>=questions.length-1?(lang==="zh"?"查看結果":"See Results"):qi===2?(lang==="zh"?"進入進階走廊 →":"Enter Advanced Corridor →"):(lang==="zh"?"下一扇門 →":"Next Door →")}
+            <p style={{ color:"#AAB8CC", fontSize:15, fontFamily:FONT, margin:0, lineHeight:1.6 }}>{q[lang].exp}</p>
+            <button onClick={nextQ} style={{ ...btnPrimary(CRIMSON), marginTop:12, fontSize:14, padding:"10px 24px" }}>
+              {qi>=questions.length-1?(lang==="zh"?"前往選門 →":"Choose Your Door →"):qi===2?(lang==="zh"?"進入進階走廊 →":"Enter Advanced Corridor →"):(lang==="zh"?"下一題 →":"Next Question →")}
             </button>
           </div>
         )}
