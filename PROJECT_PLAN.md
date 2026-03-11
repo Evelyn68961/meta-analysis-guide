@@ -11,7 +11,7 @@ Across all 6 courses, the dino games tell a connected story:
 - **Course 3:** Save the dinos' homes from a blizzard (Home Save)
 - **Courses 4–5 (The Migration):** The environment gets too harsh — dinos must find new homes.
   - **Course 4:** Find the KEY to the new home (Key Quest — crystal cave)
-  - **Course 5:** Find the right DOOR to the new home (Door Escape — mysterious corridor)
+  - **Course 5:** Find the right DOOR using a treasure MAP (Map Escape — corridor with 3×3 map puzzle)
 
 Courses 4–5 games introduce **progressive difficulty** (3 foundation MCQ → gate → 6 advanced mixed-type questions) and **diverse question types** (true/false, multi-select, ordering, spot-the-error) beyond the standard MCQ used in Courses 0–3.
 
@@ -34,7 +34,7 @@ Courses 4–5 games introduce **progressive difficulty** (3 foundation MCQ → g
 | | 3 | Data Extraction & Risk of Bias | Dino Home Save (pick 1 of 7 dinos, 7 Qs from 70-question bank, 10s timer, correct = fire grows, wrong/timeout = fire dims, 5 correct = win, 3 wrong = lose) | ✅ Built on `dev` (upgraded: +2 teaching sections, +3 interactive exercises, AI extraction reviewer) |
 | | **—** | **MA Workshop: Planning** | **5-step guided workshop: Define PICO (🤖 AI), Search Strategy (🤖 AI), Add Studies, Data Extraction, Risk of Bias. Gate: PICO ✅ + ≥3 studies.** | ✅ Built on `dev` |
 | **Advanced** | 4 | Effect Sizes & Forest Plots | Dino Key Quest (pick 1 of 7 dinos, 9 Qs from 105-question bank: 3 foundation MCQ + 6 advanced mixed-type, progressive unlock, crystal cave theme) | ✅ Built on `dev` (upgraded: +1 teaching section "Common Pitfalls", click-based forest plot, 2×2 effect size cards, wider layout) |
-| | 5 | Heterogeneity & Publication Bias | Dino Door Escape (pick 1 of 7 dinos, 9 Qs from 105-question bank: 3 foundation MCQ + 6 advanced mixed-type, progressive unlock, corridor/door theme) | ✅ Built on `dev` (game needs fixes) |
+| | 5 | Heterogeneity & Publication Bias | Dino Door Escape → Dino Map Escape (pick 1 of 7 dinos, 9 Qs from 105-question bank: 3 foundation MCQ + 6 advanced mixed-type, progressive unlock, treasure map + door theme) | ✅ Built on `dev` |
 | | **—** | **MA Workshop: Analysis** | **5-step guided workshop: Effect Size & Model, Prepare Data (CSV + R code), Run Analysis (Onlinemeta / R), Interpret & Report, Conclusions (🤖 AI).** | ✅ Built on `dev` |
 
 ---
@@ -64,7 +64,7 @@ src/
 ├── DinoFoodRescue.jsx   ← Course 2 game: ice-breaking food rescue
 ├── DinoHomeSave.jsx     ← Course 3 game: save dino's home from freezing
 ├── DinoKeyQuest.jsx     ← Course 4 game: crystal cave key fragment collection (progressive: 3 foundation MCQ + 6 advanced mixed-type)
-├── DinoDoorEscape.jsx   ← Course 5 game: corridor door escape (progressive: 3 foundation MCQ + 6 advanced mixed-type)
+├── DinoDoorEscape.jsx   ← Course 5 game: treasure map escape (progressive: 3 foundation MCQ + 6 advanced mixed-type; 3×3 SVG map assembles piece by piece, path leads to correct door)
 ├── CuteDino.jsx         ← Shared dinosaur SVG component (7 unique species, used across courses)
 ├── DinoIntro.jsx        ← Dino Codex page (RPG-style character intro; accessible at #dino or #dino=N; linked from ProfilePage dino cards)
 │
@@ -439,22 +439,41 @@ api/
   - Per category: 2 true/false, 1 multi-select, 1 ordering, 1 spot-error
   - All questions have `type` field: `"mcq"`, `"true_false"`, `"multi_select"`, `"ordering"`, `"spot_error"`
 
-### Game: Dino Door Escape ✅ BUILT (needs fixes)
+### Game: Dino Map Escape ✅ BUILT & FIXED
 - Standalone component in `DinoDoorEscape.jsx`, imported by `Course5.jsx`
-- **Narrative:** The dinos have the key — now find the RIGHT DOOR to their new home in a mysterious corridor
+- **Narrative:** The dinos must find pieces of a treasure map to discover which door leads to their new home
 - **Progressive difficulty (same structure as Course 4):**
   - **Phase 1 (Foundation):** 3 standard MCQ. Must pass ≥2/3 to unlock Phase 2.
   - **Phase 2 (Advanced):** 6 mixed-type questions (2 true/false, 2 multi-select, 1 ordering, 1 spot-error).
 - **Visual theme:** Dark corridor (purple gradient), torch-like flickering lights, crimson glow in advanced phase
-- **Progress tracker:** 9 door icons. Correct → door opens (golden glow). Wrong → door locks (red X).
-- **Door SVG:** Unique wood colors per door, three states: closed (neutral), open (golden glow + animate), locked (dark + red X overlay)
-- **Result tiers:** Door Master (≥8/9), Navigator (≥6), Seeker (≥4), Lost (<4), Locked (failed foundation)
+- **Treasure map mechanic:** 3×3 SVG grid map assembles piece by piece as questions are answered:
+  - **Found pieces** (correct answer) → tile revealed showing part of the illustrated map
+  - **Missed pieces** (wrong answer) → tile stays as dark fog with "?"
+  - The full map shows a path from a dino (top-left) winding right then down to Door 3 (bottom-right)
+  - Top row: dino start → path right → path turns down
+  - Middle row: trees/scenery → rocks → path continues down
+  - Bottom row: Door 1 → Door 2 → Door 3 (path ends here, golden glow)
+- **Door choice phase:** After all 9 questions, player sees their assembled map + 3 doors to pick from
+  - More pieces found = clearer path visible = easier to identify correct door
+  - Critical piece: bottom-right tile (piece 9) shows path connecting to Door 3
+  - If player missed key tiles, they must guess
+- **Result tiers:** Map Master (≥8 + correct door), Navigator (≥6 + correct door), Seeker (correct door), So Close (wrong door but good score), Lost (<4), Locked (failed foundation)
 - **Question type renderers:** Same types as Course 4 but with crimson accent color
+- **Text selection:** `::selection` CSS override ensures text is readable when highlighted inside dark game background
 - Accent color: CRIMSON `#C0392B` (matching Course 5)
 - Bilingual UI strings handled internally
 
-### Known Issues (Course 5 Game):
-- Game needs visual polish and bug fixes (paused for now)
+### Known Issues (Course 5):
+- ~~Game used generic door open/lock mechanic~~ ✅ FIXED: Redesigned as treasure map puzzle — 3×3 SVG grid with path illustration, door choice phase at end
+- ~~CuteDino prop `species` not recognized~~ ✅ FIXED: Changed to `index` to match CuteDino component API
+- ~~Game container narrower than course sections~~ ✅ FIXED: `maxWidth: 700` → `880` to match other sections
+- ~~Dino select grid clipped 7th dino~~ ✅ FIXED: Matched DinoKeyQuest's grid pattern (`repeat(auto-fit, minmax(110px, 1fr))`, `maxWidth: 600`)
+- ~~MSRenderer/OrderRenderer kept state across questions~~ ✅ FIXED: Added `key={qi}` to force remount (same fix applied to DinoKeyQuest)
+- ~~SERenderer crashed on spot_error questions~~ ✅ FIXED: Was reading `data.opts` but spot_error uses `data.statements`; changed to `(data.statements || data.opts)`
+- ~~Selected text invisible in dark game area~~ ✅ FIXED: Added `::selection` CSS to CorridorBackground (same fix applied to DinoKeyQuest's CaveBackground)
+- ~~Section label "報告你的分析" was awkward Chinese~~ ✅ FIXED: Changed to "完整報告" in i18n.js + sidebar catalog
+- ~~PRISMA checklist in 5-column layout~~ ✅ FIXED: Changed to `repeat(3, 1fr)` for 3×2 grid
+- ~~Paragraph maxWidth mismatch~~ ✅ FIXED: Removed `maxWidth: 640` from Paragraph component
 
 ### Note:
 - AI workshop section planned but not yet designed — backend proxy is now ready (`api/ai-feedback.js`), so future AI sections just need frontend implementation
