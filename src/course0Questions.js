@@ -127,7 +127,7 @@ export const course0Questions = [
   },
   {
     id: "c0-HT02", category: 3,
-    zh: { q: "你的統合分析顯示I² = 85%。這告訴你什麼？", opts: ["85%的研究發現了顯著結果", "85%的研究間變異是由真實差異造成的，而非偶然", "統合分析的準確率為85%", "85%的研究應該被排除"], exp: "I²描述了總變異中有多少百分比是真正的異質性而非抽樣誤差。85%很高——你應該探索結果為何不同（例如，通過亞組分析或Meta回歸）。" },
+    zh: { q: "你的統合分析顯示I² = 85%。這告訴你什麼？", opts: ["85%的研究發現了顯著結果", "85%的研究間變異是由真實差異造成的，而非偶然", "統合分析的準確率為85%", "85%的研究應該被排除"], exp: "I²描述了總變異中有多少百分比是真正的異質性而非抽樣誤差。85%很高——你應該探索結果為何不同（例如，通過次族群分析或Meta回歸）。" },
     en: { q: "Your meta-analysis shows I² = 85%. What does this tell you?", opts: ["85% of studies found a significant result", "85% of variability across studies is due to real differences, not chance", "The meta-analysis is 85% accurate", "85% of studies should be excluded"], exp: "I² describes what percentage of total variation is genuine heterogeneity rather than sampling error. 85% is high — you should explore why results differ (e.g., through subgroup analysis or meta-regression)." },
     correct: 1
   },
@@ -139,7 +139,7 @@ export const course0Questions = [
   },
   {
     id: "c0-HT04", category: 3,
-    zh: { q: "你的統合分析I² = 75%。最佳的下一步是什麼？", opts: ["刪除研究直到I²降到50%以下", "報告結果並忽略異質性", "通過亞組分析或Meta回歸調查異質性的來源", "切換到固定效應模型以隱藏異質性"], exp: "高異質性是一個需要探索的信號，而不是忽略或人為減少。亞組分析和Meta回歸有助於識別什麼驅動了差異。在沒有科學理由的情況下刪除研究是不恰當的。" },
+    zh: { q: "你的統合分析I² = 75%。最佳的下一步是什麼？", opts: ["刪除研究直到I²降到50%以下", "報告結果並忽略異質性", "通過次族群分析或Meta回歸調查異質性的來源", "切換到固定效應模型以隱藏異質性"], exp: "高異質性是一個需要探索的信號，而不是忽略或人為減少。次族群分析和Meta回歸有助於識別什麼驅動了差異。在沒有科學理由的情況下刪除研究是不恰當的。" },
     en: { q: "Your meta-analysis has I² = 75%. What is the BEST next step?", opts: ["Remove studies until I² drops below 50%", "Report the result and ignore heterogeneity", "Investigate sources of heterogeneity through subgroup analysis or meta-regression", "Switch to fixed-effect model to hide the heterogeneity"], exp: "High heterogeneity is a signal to explore, not ignore or artificially reduce. Subgroup analysis and meta-regression help identify what drives differences. Removing studies without scientific justification is inappropriate." },
     correct: 2
   },

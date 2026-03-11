@@ -12,7 +12,7 @@
 // ============================================================
 
 export const course5Categories = {
-  zh: ["異質性的概念", "I²、Q 統計量與預測區間", "異質性來源", "亞組分析與統合迴歸", "發表偏倚與漏斗圖", "Egger 檢定與修剪填補法", "PRISMA 報告與綜合解讀"],
+  zh: ["異質性的概念", "I²、Q 統計量與預測區間", "異質性來源", "次族群分析與統合迴歸", "發表偏倚與漏斗圖", "Egger 檢定與修剪填補法", "PRISMA 報告與綜合解讀"],
   en: ["What Heterogeneity Is", "I², Q Statistic & Prediction Intervals", "Sources of Heterogeneity", "Subgroup Analysis & Meta-Regression", "Publication Bias & Funnel Plots", "Egger's Test & Trim-and-Fill", "PRISMA Reporting & Interpretation"],
 };
 
@@ -175,7 +175,7 @@ export const course5Questions = [
   },
   {
     id: "c5-025", category: 2, type: "mcq",
-    zh: { q: "當異質性高時，正確的做法是？", opts: ["直接忽略異質性報告合併結果", "只報告 I² 就夠了", "探索異質性的來源（臨床、方法學），而不只是報告 I²", "刪除所有結果不同的研究"], exp: "高異質性是一個信號，提示需要探索原因。可以透過亞組分析或統合迴歸來找出哪些因素解釋了差異。" },
+    zh: { q: "當異質性高時，正確的做法是？", opts: ["直接忽略異質性報告合併結果", "只報告 I² 就夠了", "探索異質性的來源（臨床、方法學），而不只是報告 I²", "刪除所有結果不同的研究"], exp: "高異質性是一個信號，提示需要探索原因。可以透過次族群分析或統合迴歸來找出哪些因素解釋了差異。" },
     en: { q: "When heterogeneity is high, the correct approach is?", opts: ["Ignore it and report pooled results", "Reporting I² alone is sufficient", "Investigate the sources of heterogeneity (clinical, methodological), not just report I²", "Delete all studies with different results"], exp: "High heterogeneity is a signal to investigate causes. Subgroup analysis or meta-regression can help identify which factors explain the differences." },
     correct: 2
   },
@@ -187,7 +187,7 @@ export const course5Questions = [
   },
   {
     id: "c5-027", category: 2, type: "mcq",
-    zh: { q: "「無法解釋的異質性」(unexplained heterogeneity) 指的是？", opts: ["異質性不存在", "即使探索了臨床和方法學因素，仍有部分研究間差異無法解釋", "異質性太低不需要解釋", "異質性來自統計錯誤"], exp: "即使做了亞組分析和統合迴歸，有時仍有殘餘異質性無法完全歸因於已知因素——這很正常，應如實報告。" },
+    zh: { q: "「無法解釋的異質性」(unexplained heterogeneity) 指的是？", opts: ["異質性不存在", "即使探索了臨床和方法學因素，仍有部分研究間差異無法解釋", "異質性太低不需要解釋", "異質性來自統計錯誤"], exp: "即使做了次族群分析和統合迴歸，有時仍有殘餘異質性無法完全歸因於已知因素——這很正常，應如實報告。" },
     en: { q: "'Unexplained heterogeneity' refers to?", opts: ["Heterogeneity doesn't exist", "Between-study variation that remains even after exploring clinical and methodological factors", "Heterogeneity too low to explain", "From statistical errors"], exp: "Even after subgroup analysis and meta-regression, some residual heterogeneity may remain unexplained — this is normal and should be honestly reported." },
     correct: 1
   },
@@ -199,13 +199,13 @@ export const course5Questions = [
   },
   {
     id: "c5-029", category: 2, type: "mcq",
-    zh: { q: "以下哪種做法無法幫助探索異質性？", opts: ["亞組分析", "統合迴歸", "增加小數位數報告 I²", "敏感性分析"], exp: "把 I² 報告到更多小數位不會幫助理解異質性的原因。亞組分析、統合迴歸和敏感性分析才是探索工具。" },
+    zh: { q: "以下哪種做法無法幫助探索異質性？", opts: ["次族群分析", "統合迴歸", "增加小數位數報告 I²", "敏感性分析"], exp: "把 I² 報告到更多小數位不會幫助理解異質性的原因。次族群分析、統合迴歸和敏感性分析才是探索工具。" },
     en: { q: "Which approach does NOT help explore heterogeneity?", opts: ["Subgroup analysis", "Meta-regression", "Reporting I² to more decimal places", "Sensitivity analysis"], exp: "Reporting I² to more decimal places doesn't help understand why heterogeneity exists. Subgroup analysis, meta-regression, and sensitivity analysis are actual exploration tools." },
     correct: 2
   },
   {
     id: "c5-030", category: 2, type: "mcq",
-    zh: { q: "在 protocol 階段就應該預先設定可能的異質性探索因素，這是為什麼？", opts: ["為了讓分析更複雜", "為了避免事後（post-hoc）挖掘數據、製造虛假發現", "因為審稿人要求", "因為 I² 的計算需要"], exp: "預先設定探索因素可以避免在看到數據後才選擇性地做亞組分析——這會增加偶然發現的風險（釣魚式分析）。" },
+    zh: { q: "在 protocol 階段就應該預先設定可能的異質性探索因素，這是為什麼？", opts: ["為了讓分析更複雜", "為了避免事後（post-hoc）挖掘數據、製造虛假發現", "因為審稿人要求", "因為 I² 的計算需要"], exp: "預先設定探索因素可以避免在看到數據後才選擇性地做次族群分析——這會增加偶然發現的風險（釣魚式分析）。" },
     en: { q: "Why should potential heterogeneity exploration factors be pre-specified in the protocol?", opts: ["To make analysis more complex", "To avoid post-hoc data dredging and false findings", "Because reviewers require it", "Because I² calculations need it"], exp: "Pre-specifying factors prevents selective subgroup analysis after seeing data — which increases the risk of chance findings (data-dredging/fishing)." },
     correct: 1
   },
@@ -215,19 +215,19 @@ export const course5Questions = [
   // ════════════════════════════════════════
   {
     id: "c5-031", category: 3, type: "mcq",
-    zh: { q: "亞組分析 (subgroup analysis) 的基本原理是什麼？", opts: ["把所有研究合在一起", "按照某個預設因素（如劑量高低）把研究分組，分別計算合併效應並比較", "只看最大的研究", "用統計方法消除異質性"], exp: "亞組分析是把研究按某個特徵（如高劑量 vs 低劑量）分成小組，分別做統合分析並比較，看該因素是否解釋了異質性。" },
+    zh: { q: "次族群分析 (subgroup analysis) 的基本原理是什麼？", opts: ["把所有研究合在一起", "按照某個預設因素（如劑量高低）把研究分組，分別計算合併效應並比較", "只看最大的研究", "用統計方法消除異質性"], exp: "次族群分析是把研究按某個特徵（如高劑量 vs 低劑量）分成小組，分別做統合分析並比較，看該因素是否解釋了異質性。" },
     en: { q: "What is the basic principle of subgroup analysis?", opts: ["Pool all studies together", "Split studies by a pre-specified factor (e.g., high vs low dose), calculate pooled effects separately, and compare", "Only look at the largest study", "Statistically remove heterogeneity"], exp: "Subgroup analysis splits studies by a characteristic (e.g., high vs low dose), pools each group separately, and compares — testing whether that factor explains heterogeneity." },
     correct: 1
   },
   {
     id: "c5-032", category: 3, type: "mcq",
-    zh: { q: "亞組分析的一個重要注意事項是？", opts: ["可以隨意選擇分組因素", "分組因素最好在 protocol 中預先設定，且不宜太多（避免多重比較）", "亞組越多越好", "不需要做統計檢定"], exp: "亞組因素應預先設定（而非看到數據後才選），且數量有限。太多亞組比較會增加偶然顯著的風險。" },
+    zh: { q: "次族群分析的一個重要注意事項是？", opts: ["可以隨意選擇分組因素", "分組因素最好在 protocol 中預先設定，且不宜太多（避免多重比較）", "次族群越多越好", "不需要做統計檢定"], exp: "次族群因素應預先設定（而非看到數據後才選），且數量有限。太多次族群比較會增加偶然顯著的風險。" },
     en: { q: "An important caveat of subgroup analysis is?", opts: ["You can choose factors freely", "Factors should be pre-specified in the protocol, and limited in number (avoid multiple comparisons)", "More subgroups are better", "No statistical test needed"], exp: "Subgroup factors should be pre-specified (not chosen after seeing data) and limited in number. Too many comparisons increase the risk of chance findings." },
     correct: 1
   },
   {
     id: "c5-033", category: 3, type: "mcq",
-    zh: { q: "統合迴歸 (meta-regression) 和亞組分析的主要區別是？", opts: ["完全相同", "統合迴歸處理連續型共變數（如劑量 10-50mg），亞組分析處理類別型分組", "統合迴歸更簡單", "亞組分析更精確"], exp: "亞組分析適用於類別變數（高/低劑量），統合迴歸適用於連續變數（可以看劑量從 10mg 到 50mg 的效應趨勢）。" },
+    zh: { q: "統合迴歸 (meta-regression) 和次族群分析的主要區別是？", opts: ["完全相同", "統合迴歸處理連續型共變數（如劑量 10-50mg），次族群分析處理類別型分組", "統合迴歸更簡單", "次族群分析更精確"], exp: "次族群分析適用於類別變數（高/低劑量），統合迴歸適用於連續變數（可以看劑量從 10mg 到 50mg 的效應趨勢）。" },
     en: { q: "The main difference between meta-regression and subgroup analysis is?", opts: ["Identical", "Meta-regression handles continuous covariates (e.g., dose 10-50mg); subgroup analysis handles categorical splits", "Meta-regression is simpler", "Subgroup analysis is more precise"], exp: "Subgroup analysis works with categorical variables (high/low dose); meta-regression works with continuous covariates (examining the trend from 10mg to 50mg)." },
     correct: 1
   },
@@ -245,7 +245,7 @@ export const course5Questions = [
   },
   {
     id: "c5-036", category: 3, type: "mcq",
-    zh: { q: "在亞組分析中，如果兩個亞組的效應量方向相反（一組 OR < 1，一組 OR > 1），這暗示什麼？", opts: ["數據有錯", "該分組因素可能是異質性的重要來源——效果在不同亞組中真的不同", "統合分析完全失敗", "應該刪除結果相反的亞組"], exp: "方向相反的亞組結果強烈暗示該因素是效果修飾因子（effect modifier），解釋了為什麼整體合併結果的異質性高。" },
+    zh: { q: "在次族群分析中，如果兩個次族群的效應量方向相反（一組 OR < 1，一組 OR > 1），這暗示什麼？", opts: ["數據有錯", "該分組因素可能是異質性的重要來源——效果在不同次族群中真的不同", "統合分析完全失敗", "應該刪除結果相反的次族群"], exp: "方向相反的次族群結果強烈暗示該因素是效果修飾因子（effect modifier），解釋了為什麼整體合併結果的異質性高。" },
     en: { q: "In subgroup analysis, if two subgroups have opposite effect directions (one OR < 1, other OR > 1), this suggests?", opts: ["Data error", "The grouping factor may be an important source of heterogeneity — effects genuinely differ across subgroups", "Meta-analysis has completely failed", "Delete the opposing subgroup"], exp: "Opposite directions strongly suggest the factor is an effect modifier, explaining why overall pooled results show high heterogeneity." },
     correct: 1
   },
@@ -257,13 +257,13 @@ export const course5Questions = [
   },
   {
     id: "c5-038", category: 3, type: "mcq",
-    zh: { q: "亞組分析的結果應該如何在森林圖中呈現？", opts: ["只顯示整體合併結果", "森林圖按亞組分段，每個亞組有自己的菱形，最下方有整體菱形", "不能用森林圖", "只用數字表格"], exp: "分亞組的森林圖讓讀者一眼看到每個亞組的合併效應和整體效應，是最直觀的呈現方式。" },
+    zh: { q: "次族群分析的結果應該如何在森林圖中呈現？", opts: ["只顯示整體合併結果", "森林圖按次族群分段，每個次族群有自己的菱形，最下方有整體菱形", "不能用森林圖", "只用數字表格"], exp: "分次族群的森林圖讓讀者一眼看到每個次族群的合併效應和整體效應，是最直觀的呈現方式。" },
     en: { q: "How should subgroup analysis results be presented in a forest plot?", opts: ["Only show overall pooled result", "Forest plot split by subgroup, each with its own diamond, plus an overall diamond at the bottom", "Can't use forest plots", "Only numeric tables"], exp: "A subgroup forest plot lets readers see each subgroup's pooled effect and the overall effect at a glance — the most intuitive presentation." },
     correct: 1
   },
   {
     id: "c5-039", category: 3, type: "mcq",
-    zh: { q: "亞組之間的差異檢定 (test for subgroup differences) 的 p 值 < 0.05 代表什麼？", opts: ["亞組一定有差異", "有統計證據表明亞組之間的合併效應不同，但需謹慎解讀", "亞組完全相同", "每個亞組的結果都顯著"], exp: "亞組差異檢定 p < 0.05 表示亞組間效應有統計顯著差異，但仍需考慮是否預先設定、是否有生物學合理性。" },
+    zh: { q: "次族群之間的差異檢定 (test for subgroup differences) 的 p 值 < 0.05 代表什麼？", opts: ["次族群一定有差異", "有統計證據表明次族群之間的合併效應不同，但需謹慎解讀", "次族群完全相同", "每個次族群的結果都顯著"], exp: "次族群差異檢定 p < 0.05 表示次族群間效應有統計顯著差異，但仍需考慮是否預先設定、是否有生物學合理性。" },
     en: { q: "If the test for subgroup differences yields p < 0.05, what does it mean?", opts: ["Subgroups definitely differ", "There's statistical evidence that pooled effects differ between subgroups, but cautious interpretation is needed", "Subgroups are identical", "Each subgroup result is significant"], exp: "p < 0.05 for subgroup differences suggests statistically different effects, but interpretation requires considering pre-specification and biological plausibility." },
     correct: 1
   },
@@ -480,7 +480,7 @@ export const course5Questions = [
   },
   {
     id: "c5-072", category: 0, type: "true_false",
-    zh: { q: "「高異質性代表統合分析一定不可靠。」", exp: "不一定。高異質性提醒需要探索原因，但如果能解釋異質性來源（如亞組分析），合併結果仍可提供有用資訊。" },
+    zh: { q: "「高異質性代表統合分析一定不可靠。」", exp: "不一定。高異質性提醒需要探索原因，但如果能解釋異質性來源（如次族群分析），合併結果仍可提供有用資訊。" },
     en: { q: "'High heterogeneity means the meta-analysis is definitely unreliable.'", exp: "Not necessarily. High heterogeneity signals the need for exploration, but if sources can be explained (e.g., subgroup analysis), pooled results can still be informative." },
     correct: false
   },
@@ -498,7 +498,7 @@ export const course5Questions = [
         "異質性指研究間效應量的差異程度。",
         "所有統合分析都應該評估異質性。",
         "I² = 0% 確定代表完全沒有異質性。",
-        "高異質性時應探索原因（如亞組分析）。"
+        "高異質性時應探索原因（如次族群分析）。"
       ],
       exp: "I² = 0% 不代表「確定沒有異質性」。少量研究時 I² 的估計可能不精確，0% 可能是偵測不到而非真的為零。"
     },
@@ -552,7 +552,7 @@ export const course5Questions = [
         "Q 檢定 p < 0.001 進一步支持存在異質性。",
         "I² 高代表我們不能做統合分析。"
       ],
-      exp: "I² 高不代表「不能做統合分析」。可以做，但需要用隨機效應模型、進行亞組分析等來探索和解釋異質性。"
+      exp: "I² 高不代表「不能做統合分析」。可以做，但需要用隨機效應模型、進行次族群分析等來探索和解釋異質性。"
     },
     en: {
       q: "Find the error in this I² interpretation:",
@@ -640,7 +640,7 @@ export const course5Questions = [
   },
   {
     id: "c5-085", category: 2, type: "true_false",
-    zh: { q: "「亞組分析可以完全解決異質性問題。」", exp: "錯誤。亞組分析可以解釋部分異質性，但不一定能完全消除。且亞組分析有統計效力限制和多重比較問題。" },
+    zh: { q: "「次族群分析可以完全解決異質性問題。」", exp: "錯誤。次族群分析可以解釋部分異質性，但不一定能完全消除。且次族群分析有統計效力限制和多重比較問題。" },
     en: { q: "'Subgroup analysis can completely solve the heterogeneity problem.'", exp: "False. Subgroup analysis can explain some heterogeneity but may not eliminate all of it. It also has power limitations and multiple comparison issues." },
     correct: false
   },
@@ -648,27 +648,27 @@ export const course5Questions = [
   // ── Category 3: Advanced (5 Qs) ──
   {
     id: "c5-086", category: 3, type: "true_false",
-    zh: { q: "「亞組分析中，如果各亞組的效應量不同，就可以確定亞組變數是異質性的原因。」", exp: "不一定。亞組分析是觀察性的比較，可能受到混淆因素影響。亞組差異可能是巧合或與其他變數共線性。" },
+    zh: { q: "「次族群分析中，如果各次族群的效應量不同，就可以確定次族群變數是異質性的原因。」", exp: "不一定。次族群分析是觀察性的比較，可能受到混淆因素影響。次族群差異可能是巧合或與其他變數共線性。" },
     en: { q: "'If subgroup effects differ, the subgroup variable is confirmed as the cause of heterogeneity.'", exp: "Not necessarily. Subgroup analysis is observational and may be confounded. Differences could be coincidental or collinear with other variables." },
     correct: false
   },
   {
     id: "c5-087", category: 3, type: "multi_select",
-    zh: { q: "亞組分析的限制包括？（選出所有正確答案）", opts: ["各亞組研究數量可能太少", "多重比較增加偽陽性風險", "只是觀察性比較，不能證因果", "永遠不能用"], exp: "亞組分析受限於少量研究、多重比較問題、觀察性質。但它仍是有用的探索工具，不是「永遠不能用」。" },
+    zh: { q: "次族群分析的限制包括？（選出所有正確答案）", opts: ["各次族群研究數量可能太少", "多重比較增加偽陽性風險", "只是觀察性比較，不能證因果", "永遠不能用"], exp: "次族群分析受限於少量研究、多重比較問題、觀察性質。但它仍是有用的探索工具，不是「永遠不能用」。" },
     en: { q: "Limitations of subgroup analysis include? (Select ALL correct)", opts: ["Each subgroup may have too few studies", "Multiple comparisons increase false positive risk", "It's observational — cannot prove causation", "It should never be used"], exp: "Subgroup analysis is limited by small numbers, multiple comparisons, observational nature. But it's still a useful exploratory tool — not 'never to be used.'" },
     correctAll: [0, 1, 2]
   },
   {
     id: "c5-088", category: 3, type: "spot_error",
     zh: {
-      q: "找出以下亞組分析報告中的錯誤：",
+      q: "找出以下次族群分析報告中的錯誤：",
       statements: [
-        "我們按劑量高低進行亞組分析。",
+        "我們按劑量高低進行次族群分析。",
         "高劑量組 OR = 0.5，低劑量組 OR = 0.9。",
         "因為兩組效應量看起來不同，我們確認劑量是異質性的原因。",
-        "亞組間差異檢定 p = 0.08。"
+        "次族群間差異檢定 p = 0.08。"
       ],
-      exp: "p = 0.08 表示亞組間差異不具統計顯著性。不能因為「看起來不同」就確認是原因——必須通過正式的亞組間差異檢定。"
+      exp: "p = 0.08 表示次族群間差異不具統計顯著性。不能因為「看起來不同」就確認是原因——必須通過正式的次族群間差異檢定。"
     },
     en: {
       q: "Find the error in this subgroup analysis report:",
@@ -686,8 +686,8 @@ export const course5Questions = [
     id: "c5-089", category: 3, type: "ordering",
     zh: {
       q: "將以下異質性探索方法從「最基本」到「最進階」排列：",
-      items: ["視覺檢查森林圖的 CI 重疊", "計算 I² 和 Q 統計量", "進行預設的亞組分析", "進行統合迴歸分析"],
-      exp: "先視覺檢查→量化（I²/Q）→亞組分析→統合迴歸。從簡單到複雜，逐步深入探索。"
+      items: ["視覺檢查森林圖的 CI 重疊", "計算 I² 和 Q 統計量", "進行預設的次族群分析", "進行統合迴歸分析"],
+      exp: "先視覺檢查→量化（I²/Q）→次族群分析→統合迴歸。從簡單到複雜，逐步深入探索。"
     },
     en: {
       q: "Rank heterogeneity exploration methods from 'most basic' to 'most advanced':",
