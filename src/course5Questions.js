@@ -93,7 +93,7 @@ export const course5Questions = [
   },
   {
     id: "c5-012", category: 1, type: "mcq",
-    zh: { q: "Q 檢定的一個主要限制是什麼？", opts: ["太敏感，永遠顯著", "當研究數量少時統計效力低（容易漏掉真實異質性），研究數量多時又容易達顯著", "它完美無缺", "只能用於連續性結局"], exp: "Q 的效力取決於研究數量：少量研究可能無法偵測到異質性（假陰性），大量研究可能對微小異質性也顯著。" },
+    zh: { q: "Q 檢定的一個主要限制是什麼？", opts: ["太敏感，永遠顯著", "當研究數量少時統計效力低（容易漏掉真實異質性），研究數量多時又容易達顯著", "它完美無缺", "只能用於連續性結果"], exp: "Q 的效力取決於研究數量：少量研究可能無法偵測到異質性（假陰性），大量研究可能對微小異質性也顯著。" },
     en: { q: "What is a major limitation of the Q test?", opts: ["Too sensitive; always significant", "Low power with few studies (may miss real heterogeneity) and oversensitive with many studies", "It's flawless", "Only for continuous outcomes"], exp: "Q's power depends on the number of studies: few studies may miss heterogeneity (false negatives), while many studies can make even trivial heterogeneity significant." },
     correct: 1
   },
@@ -151,7 +151,7 @@ export const course5Questions = [
   // ════════════════════════════════════════
   {
     id: "c5-021", category: 2, type: "mcq",
-    zh: { q: "「臨床異質性」(clinical diversity) 指的是什麼？", opts: ["研究使用不同的統計方法", "研究在族群特徵、介入劑量、結局定義或追蹤時間等臨床方面的差異", "研究的品質不同", "研究數量不同"], exp: "臨床異質性來自臨床層面的差異：不同病人族群、藥物劑量、治療時間、結局定義等。" },
+    zh: { q: "「臨床異質性」(clinical diversity) 指的是什麼？", opts: ["研究使用不同的統計方法", "研究在族群特徵、介入劑量、結果定義或追蹤時間等臨床方面的差異", "研究的品質不同", "研究數量不同"], exp: "臨床異質性來自臨床層面的差異：不同病人族群、藥物劑量、治療時間、結果定義等。" },
     en: { q: "What does 'clinical diversity' refer to?", opts: ["Studies use different statistical methods", "Differences in populations, intervention doses, outcome definitions, or follow-up duration across studies", "Studies have different quality", "Different numbers of studies"], exp: "Clinical diversity arises from clinical-level differences: different patient populations, drug doses, treatment durations, outcome definitions, etc." },
     correct: 1
   },
@@ -169,7 +169,7 @@ export const course5Questions = [
   },
   {
     id: "c5-024", category: 2, type: "mcq",
-    zh: { q: "以下哪個不是臨床異質性的來源？", opts: ["納入的病人年齡範圍不同", "藥物劑量不同", "使用了不同的隨機分配方法", "結局測量時間點不同"], exp: "不同的隨機分配方法屬於方法學異質性，不是臨床異質性。其餘三項都是臨床層面的差異。" },
+    zh: { q: "以下哪個不是臨床異質性的來源？", opts: ["納入的病人年齡範圍不同", "藥物劑量不同", "使用了不同的隨機分配方法", "結果測量時間點不同"], exp: "不同的隨機分配方法屬於方法學異質性，不是臨床異質性。其餘三項都是臨床層面的差異。" },
     en: { q: "Which is NOT a source of clinical heterogeneity?", opts: ["Different patient age ranges", "Different drug doses", "Different randomization methods used", "Different outcome measurement time points"], exp: "Different randomization methods is methodological heterogeneity, not clinical. The other three are clinical-level differences." },
     correct: 2
   },
@@ -193,7 +193,7 @@ export const course5Questions = [
   },
   {
     id: "c5-028", category: 2, type: "mcq",
-    zh: { q: "如果不同研究對同一結局的定義不同（如「腎功能惡化」的標準不同），這屬於什麼異質性？", opts: ["統計異質性", "臨床異質性（結局定義差異）", "方法學異質性", "無異質性"], exp: "結局定義的差異是臨床層面的差異——雖然都叫「腎功能惡化」，但標準不同（eGFR 下降 30% vs 40%），會導致效應量不同。" },
+    zh: { q: "如果不同研究對同一結果的定義不同（如「腎功能惡化」的標準不同），這屬於什麼異質性？", opts: ["統計異質性", "臨床異質性（結果定義差異）", "方法學異質性", "無異質性"], exp: "結果定義的差異是臨床層面的差異——雖然都叫「腎功能惡化」，但標準不同（eGFR 下降 30% vs 40%），會導致效應量不同。" },
     en: { q: "If studies define the same outcome differently (e.g., different thresholds for 'renal decline'), this is what type of heterogeneity?", opts: ["Statistical", "Clinical heterogeneity (outcome definition differences)", "Methodological", "No heterogeneity"], exp: "Differences in outcome definitions are clinical-level: even though all called 'renal decline,' different thresholds (eGFR drop 30% vs 40%) lead to different effect sizes." },
     correct: 1
   },
@@ -333,7 +333,7 @@ export const course5Questions = [
   },
   {
     id: "c5-050", category: 4, type: "mcq",
-    zh: { q: "為什麼「結果導向報告」(outcome reporting bias) 也是發表偏倚的一種？", opts: ["因為所有結局都被完整報告", "因為研究者可能只報告顯著的結局而隱藏不顯著的結局，扭曲可得證據", "因為結局不重要", "這不屬於偏倚"], exp: "即使研究被發表了，如果只報告了有利的結局而隱藏了不利的，統合分析仍會受到偏差影響。" },
+    zh: { q: "為什麼「結果導向報告」(outcome reporting bias) 也是發表偏倚的一種？", opts: ["因為所有結果都被完整報告", "因為研究者可能只報告顯著的結果而隱藏不顯著的結果，扭曲可得證據", "因為結果不重要", "這不屬於偏倚"], exp: "即使研究被發表了，如果只報告了有利的結果而隱藏了不利的，統合分析仍會受到偏差影響。" },
     en: { q: "Why is 'outcome reporting bias' also a form of publication bias?", opts: ["All outcomes are fully reported", "Researchers may report only significant outcomes while hiding non-significant ones, distorting available evidence", "Outcomes don't matter", "Not a form of bias"], exp: "Even if a study is published, selectively reporting only favorable outcomes while hiding unfavorable ones still biases the meta-analysis." },
     correct: 1
   },
@@ -605,7 +605,7 @@ export const course5Questions = [
     zh: {
       q: "找出以下異質性來源分析中的錯誤：",
       statements: [
-        "臨床異質性來自病人、介入、結局定義的差異。",
+        "臨床異質性來自病人、介入、結果定義的差異。",
         "方法學異質性來自研究設計和偏誤風險的差異。",
         "統計異質性可用 I² 和 Q 來量化。",
         "如果統計異質性低，就不需要考慮臨床和方法學異質性。"

@@ -165,7 +165,7 @@ export const course0Questions = [
   },
   {
     id: "c0-SS03", category: 4,
-    zh: { q: "系統性綜論中的「納入和排除標準」是什麼？", opts: ["期刊用來決定是否發表綜述的規則", "預先定義的規則，指定哪些研究符合綜述資格，哪些不符合", "允許為綜述做貢獻的作者名單", "決定結果是否顯著的統計閾值"], exp: "在搜索之前，審查者定義資格標準——通常使用PICO框架（人群、干預、對照、結局）。這確保了研究選擇是系統的和可重複的，而不是基於審查者的偏好。" },
+    zh: { q: "系統性綜論中的「納入和排除標準」是什麼？", opts: ["期刊用來決定是否發表綜述的規則", "預先定義的規則，指定哪些研究符合綜述資格，哪些不符合", "允許為綜述做貢獻的作者名單", "決定結果是否顯著的統計閾值"], exp: "在搜索之前，審查者定義資格標準——通常使用PICO框架（人群、干預、對照、結果）。這確保了研究選擇是系統的和可重複的，而不是基於審查者的偏好。" },
     en: { q: "What are \"inclusion and exclusion criteria\" in a systematic review?", opts: ["Rules the journal uses to decide whether to publish the review", "Pre-defined rules that specify which studies qualify for the review and which do not", "A list of authors who are allowed to contribute to the review", "Statistical thresholds for deciding whether a result is significant"], exp: "Before searching, reviewers define eligibility criteria — often using the PICO framework (Population, Intervention, Comparison, Outcome). This ensures study selection is systematic and reproducible, not based on the reviewers' preferences." },
     correct: 1
   },
@@ -197,7 +197,7 @@ export const course0Questions = [
   },
   {
     id: "c0-BQ03", category: 5,
-    zh: { q: "為什麼評估每項納入研究的「偏倚風險」很重要？", opts: ["這是期刊要求的形式，但不影響結果", "因為設計不良的研究可能產生誤導性結果——不經評估就納入它們可能使合併估計值產生偏差", "這只有觀察性研究才需要，隨機試驗不需要", "確定每項研究的樣本量"], exp: "統合分析的質量取決於其納入的研究。Cochrane偏倚風險工具等工具評估隨機化、盲法和不完整結局數據等領域。高風險研究可以在敏感性分析中單獨分析。" },
+    zh: { q: "為什麼評估每項納入研究的「偏倚風險」很重要？", opts: ["這是期刊要求的形式，但不影響結果", "因為設計不良的研究可能產生誤導性結果——不經評估就納入它們可能使合併估計值產生偏差", "這只有觀察性研究才需要，隨機試驗不需要", "確定每項研究的樣本量"], exp: "統合分析的質量取決於其納入的研究。Cochrane偏倚風險工具等工具評估隨機化、盲法和不完整結果數據等領域。高風險研究可以在敏感性分析中單獨分析。" },
     en: { q: "Why is it important to assess the \"risk of bias\" in each included study?", opts: ["It is a formality required by journals but does not affect results", "Because poorly designed studies can produce misleading results — including them without assessment can bias the pooled estimate", "It is only needed for observational studies, not randomized trials", "To determine the sample size of each study"], exp: "A meta-analysis is only as good as its included studies. Tools like the Cochrane Risk of Bias tool assess domains such as randomization, blinding, and incomplete outcome data. High-risk studies can be analyzed separately in a sensitivity analysis." },
     correct: 1
   },
@@ -241,7 +241,7 @@ export const course0Questions = [
   },
   {
     id: "c0-IN05", category: 6,
-    zh: { q: "兩項關於同一主題的統合分析得出了相反的結論。這怎麼可能？", opts: ["其中一項一定犯了數學錯誤", "搜索日期、納入標準、結局定義或統計模型的差異可以導致不同結果——兩者在技術上可能都是有效的", "如果兩者都遵循了PRISMA指南，這是不可能的", "包含更多研究的那個自動正確"], exp: "統合分析涉及許多判斷：哪些數據庫、哪些研究、如何定義結局、哪個模型。這些選擇可以導致不同的合併估計值。這就是為什麼提前註冊你的計畫書（例如在PROSPERO上）如此重要。" },
+    zh: { q: "兩項關於同一主題的統合分析得出了相反的結論。這怎麼可能？", opts: ["其中一項一定犯了數學錯誤", "搜索日期、納入標準、結果定義或統計模型的差異可以導致不同結果——兩者在技術上可能都是有效的", "如果兩者都遵循了PRISMA指南，這是不可能的", "包含更多研究的那個自動正確"], exp: "統合分析涉及許多判斷：哪些數據庫、哪些研究、如何定義結果、哪個模型。這些選擇可以導致不同的合併估計值。這就是為什麼提前註冊你的計畫書（例如在PROSPERO上）如此重要。" },
     en: { q: "Two meta-analyses on the same topic reach opposite conclusions. How is this possible?", opts: ["One of them must have made a mathematical error", "Differences in search dates, inclusion criteria, outcome definitions, or statistical models can lead to different results — both may be technically valid", "This is impossible if both followed PRISMA guidelines", "The one with more studies is automatically correct"], exp: "Meta-analyses involve many judgment calls: which databases, which studies, how to define outcomes, which model. These choices can lead to different pooled estimates. This is why registering your protocol in advance (e.g., on PROSPERO) is so important." },
     correct: 1
   },

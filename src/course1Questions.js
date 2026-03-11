@@ -267,7 +267,7 @@ export const course1Questions = [
     id: "c1-018", category: 1,
     zh: {
       q: "為什麼在 P 中指定「成人」或「兒童」很重要？",
-      opts: ["只是格式要求，沒有實質意義", "因為兒童和成人的藥物動力學、劑量和結局可能不同，混合會增加異質性", "因為期刊審稿要求", "為了讓字數更多"],
+      opts: ["只是格式要求，沒有實質意義", "因為兒童和成人的藥物動力學、劑量和結果可能不同，混合會增加異質性", "因為期刊審稿要求", "為了讓字數更多"],
       exp: "兒童和成人在藥物代謝、適應症、劑量和預後方面往往不同，混合分析會增加異質性並使結果難以解讀。",
     },
     en: {
@@ -616,7 +616,7 @@ export const course1Questions = [
     zh: {
       q: "研究延長輸注抗生素的效果，以下哪個 O 最合適？",
       opts: ["主要：院內死亡率；次要：臨床治癒率、ICU 住院天數", "抗生素的副作用", "細菌培養結果", "病人有沒有出院"],
-      exp: "選項 A 有分主要和次要結局指標，且都是具體、可量測的臨床終點。",
+      exp: "選項 A 有分主要和次要結果指標，且都是具體、可量測的臨床終點。",
     },
     en: {
       q: "For studying prolonged antibiotic infusion, which Outcome is most appropriate?",
@@ -629,7 +629,7 @@ export const course1Questions = [
     id: "c1-043", category: 4,
     zh: {
       q: "以下哪個是良好 Outcome 定義的特徵？",
-      opts: ["越模糊越好，這樣更有彈性", "需要具體、可量測，且指定時間點", "只需要寫「有效」或「無效」", "不需要區分主要和次要結局"],
+      opts: ["越模糊越好，這樣更有彈性", "需要具體、可量測，且指定時間點", "只需要寫「有效」或「無效」", "不需要區分主要和次要結果"],
       exp: "好的 O 必須具體（用什麼工具量？）、可量測（數值變化？事件發生率？）、有時間點（治療後多久？）。",
     },
     en: {
@@ -684,9 +684,9 @@ export const course1Questions = [
   {
     id: "c1-047", category: 4,
     zh: {
-      q: "以下哪個 O 是「患者報告結局」(PRO, patient-reported outcome)？",
+      q: "以下哪個 O 是「患者報告結果」(PRO, patient-reported outcome)？",
       opts: ["eGFR 斜率", "KCCQ 生活品質問卷分數", "白血球計數", "X 光影像變化"],
-      exp: "KCCQ（Kansas City Cardiomyopathy Questionnaire）是由病人自己填寫的量表，屬於患者報告結局。其他都是實驗室或影像指標。",
+      exp: "KCCQ（Kansas City Cardiomyopathy Questionnaire）是由病人自己填寫的量表，屬於患者報告結果。其他都是實驗室或影像指標。",
     },
     en: {
       q: "Which O is a patient-reported outcome (PRO)?",
@@ -726,9 +726,9 @@ export const course1Questions = [
   {
     id: "c1-050", category: 4,
     zh: {
-      q: "以下哪一組主要和次要結局的設定最合理？",
+      q: "以下哪一組主要和次要結果的設定最合理？",
       opts: ["主要：所有不良事件；次要：死亡率", "主要：死亡率；次要：不良事件、住院天數、生活品質", "主要：住院天數、死亡率、不良事件、費用、滿意度（全部列為主要）", "主要：無；次要：死亡率"],
-      exp: "主要結局應該是最重要的單一或複合指標（如死亡率），次要結局補充其他面向。列太多主要結局會增加多重比較的問題。",
+      exp: "主要結果應該是最重要的單一或複合指標（如死亡率），次要結果補充其他面向。列太多主要結果會增加多重比較的問題。",
     },
     en: {
       q: "Which primary/secondary outcome setup is most reasonable?",
@@ -973,8 +973,8 @@ export const course1Questions = [
     id: "c1-067", category: 6,
     zh: {
       q: "以下哪個是 PICO 中「Outcome 偏差」的例子？",
-      opts: ["在統合分析前就決定好要看的結局指標", "做完分析後，選擇 p 值最顯著的結局指標來報告", "同時報告主要和次要結局", "在 PICO 中明列預期的結局方向"],
-      exp: "事後挑選最顯著的結局是「選擇性報告偏差」(selective reporting bias)。正確做法是在研究前就預先決定並註冊主要結局。",
+      opts: ["在統合分析前就決定好要看的結果指標", "做完分析後，選擇 p 值最顯著的結果指標來報告", "同時報告主要和次要結果", "在 PICO 中明列預期的結果方向"],
+      exp: "事後挑選最顯著的結果是「選擇性報告偏差」(selective reporting bias)。正確做法是在研究前就預先決定並註冊主要結果。",
     },
     en: {
       q: "Which is an example of 'outcome bias' in PICO?",

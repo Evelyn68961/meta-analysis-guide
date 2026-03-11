@@ -87,7 +87,7 @@ export const course3Questions = [
   // ════════════════════════════════════════
   {
     id: "c3-011", category: 1,
-    zh: { q: "二分類結局（dichotomous outcome）指的是什麼？", opts: ["可以測量為任何數值的結果", "只有兩種可能結果的結局，例如死亡/存活、治癒/未治癒", "中位數和四分位距", "只有連續性數據"], exp: "二分類結局只有兩種結果（是/否），例如死亡率、治癒率、復發與否。這是臨床試驗中最常見的結局類型之一。" },
+    zh: { q: "二分類結果（dichotomous outcome）指的是什麼？", opts: ["可以測量為任何數值的結果", "只有兩種可能結果的結果，例如死亡/存活、治癒/未治癒", "中位數和四分位距", "只有連續性數據"], exp: "二分類結果只有兩種結果（是/否），例如死亡率、治癒率、復發與否。這是臨床試驗中最常見的結果類型之一。" },
     en: { q: "What is a dichotomous outcome?", opts: ["A result measured as any numerical value", "An outcome with only two possible results, e.g., death/survival, cured/not cured", "Median and interquartile range", "Only continuous data"], exp: "A dichotomous outcome has only two results (yes/no), e.g., mortality, cure rate, recurrence. This is one of the most common outcome types in clinical trials." },
     correct: 1
   },
@@ -135,7 +135,7 @@ export const course3Questions = [
   },
   {
     id: "c3-019", category: 1,
-    zh: { q: "以下哪個是二分類結局的常見效應量？", opts: ["均數差 (MD)", "勝算比 (OR) 或風險比 (RR)", "標準化均數差 (SMD)", "相關係數 (r)"], exp: "二分類結局最常用的效應量是勝算比 (OR)、風險比 (RR) 和風險差 (RD)。MD 和 SMD 用於連續性結局。" },
+    zh: { q: "以下哪個是二分類結果的常見效應量？", opts: ["均數差 (MD)", "勝算比 (OR) 或風險比 (RR)", "標準化均數差 (SMD)", "相關係數 (r)"], exp: "二分類結果最常用的效應量是勝算比 (OR)、風險比 (RR) 和風險差 (RD)。MD 和 SMD 用於連續性結果。" },
     en: { q: "Which is a common effect size for dichotomous outcomes?", opts: ["Mean difference (MD)", "Odds ratio (OR) or risk ratio (RR)", "Standardized mean difference (SMD)", "Correlation coefficient (r)"], exp: "The most common effect sizes for dichotomous outcomes are odds ratio (OR), risk ratio (RR), and risk difference (RD). MD and SMD are for continuous outcomes." },
     correct: 1
   },
@@ -151,7 +151,7 @@ export const course3Questions = [
   // ════════════════════════════════════════
   {
     id: "c3-021", category: 2,
-    zh: { q: "連續性結局（continuous outcome）需要萃取哪三個關鍵數字？", opts: ["p 值、信賴區間、樣本量", "均值 (mean)、標準差 (SD)、每組樣本量 (n)", "中位數、最小值、最大值", "勝算比、風險比、風險差"], exp: "連續性結局的統合分析需要每組的均值、標準差和樣本量。這三個數字缺一不可。" },
+    zh: { q: "連續性結果（continuous outcome）需要萃取哪三個關鍵數字？", opts: ["p 值、信賴區間、樣本量", "均值 (mean)、標準差 (SD)、每組樣本量 (n)", "中位數、最小值、最大值", "勝算比、風險比、風險差"], exp: "連續性結果的統合分析需要每組的均值、標準差和樣本量。這三個數字缺一不可。" },
     en: { q: "What three key numbers do you need for a continuous outcome?", opts: ["p-value, CI, sample size", "Mean, standard deviation (SD), and sample size (n) per group", "Median, minimum, maximum", "OR, RR, RD"], exp: "Meta-analysis of continuous outcomes requires mean, SD, and sample size per group. All three numbers are essential." },
     correct: 1
   },
@@ -181,7 +181,7 @@ export const course3Questions = [
   },
   {
     id: "c3-026", category: 2,
-    zh: { q: "當不同研究使用不同的量表測量同一結局（如憂鬱症用 HAM-D vs BDI）時，應該用什麼效應量？", opts: ["均數差 (MD)", "標準化均數差 (SMD)", "風險比 (RR)", "勝算比 (OR)"], exp: "SMD 將不同量表的效應量標準化到共同尺度（用 SD 為單位），使不同量表的研究可以合併。MD 只能用於相同量表。" },
+    zh: { q: "當不同研究使用不同的量表測量同一結果（如憂鬱症用 HAM-D vs BDI）時，應該用什麼效應量？", opts: ["均數差 (MD)", "標準化均數差 (SMD)", "風險比 (RR)", "勝算比 (OR)"], exp: "SMD 將不同量表的效應量標準化到共同尺度（用 SD 為單位），使不同量表的研究可以合併。MD 只能用於相同量表。" },
     en: { q: "When studies use different scales for the same outcome (e.g., HAM-D vs BDI for depression), which effect size should you use?", opts: ["Mean difference (MD)", "Standardized mean difference (SMD)", "Risk ratio (RR)", "Odds ratio (OR)"], exp: "SMD standardizes effects to a common scale (in SD units), allowing studies using different scales to be combined. MD only works for the same scale." },
     correct: 1
   },
@@ -205,7 +205,7 @@ export const course3Questions = [
   },
   {
     id: "c3-030", category: 2,
-    zh: { q: "一項研究的連續性結局同時報告了 ITT 人群 (n=200) 和 PP 人群 (n=180) 的結果。你應如何處理？", opts: ["取平均", "優先萃取 ITT 的結果，並記錄兩組人數的差異", "只用 PP 因為數據更乾淨", "兩組數據都萃取然後合併"], exp: "ITT 保持了隨機化的完整性，是優先選擇。PP 可以作為敏感性分析使用。應記錄你使用的是哪個人群。" },
+    zh: { q: "一項研究的連續性結果同時報告了 ITT 人群 (n=200) 和 PP 人群 (n=180) 的結果。你應如何處理？", opts: ["取平均", "優先萃取 ITT 的結果，並記錄兩組人數的差異", "只用 PP 因為數據更乾淨", "兩組數據都萃取然後合併"], exp: "ITT 保持了隨機化的完整性，是優先選擇。PP 可以作為敏感性分析使用。應記錄你使用的是哪個人群。" },
     en: { q: "A study reports continuous outcomes for both ITT (n=200) and PP (n=180). How do you handle this?", opts: ["Average them", "Prefer ITT results and document the difference between the two populations", "Only use PP as the data is cleaner", "Extract both and combine them"], exp: "ITT preserves randomization integrity and is preferred. PP can be used in sensitivity analysis. Document which population you used." },
     correct: 1
   },
@@ -221,13 +221,13 @@ export const course3Questions = [
   },
   {
     id: "c3-032", category: 3,
-    zh: { q: "RoB 2 有幾個領域 (domain)？", opts: ["3 個", "5 個", "7 個", "10 個"], exp: "RoB 2 包含 5 個領域：隨機化過程、偏離預設干預、遺失結局數據、結局測量、選擇性報告。" },
+    zh: { q: "RoB 2 有幾個領域 (domain)？", opts: ["3 個", "5 個", "7 個", "10 個"], exp: "RoB 2 包含 5 個領域：隨機化過程、偏離預設干預、遺失結果數據、結果測量、選擇性報告。" },
     en: { q: "How many domains does RoB 2 have?", opts: ["3", "5", "7", "10"], exp: "RoB 2 has 5 domains: randomization process, deviations from intended intervention, missing outcome data, outcome measurement, and selective reporting." },
     correct: 1
   },
   {
     id: "c3-033", category: 3,
-    zh: { q: "RoB 2 的第一個領域「隨機化過程產生的偏倚」主要評估什麼？", opts: ["樣本量是否夠大", "隨機序列是否正確產生、分配是否被隱藏", "統計方法是否正確", "結局是否被盲法測量"], exp: "此領域評估：隨機序列是否用適當方法產生（如電腦亂數）、分配隱藏是否足以防止事先知道分組結果。" },
+    zh: { q: "RoB 2 的第一個領域「隨機化過程產生的偏倚」主要評估什麼？", opts: ["樣本量是否夠大", "隨機序列是否正確產生、分配是否被隱藏", "統計方法是否正確", "結果是否被盲法測量"], exp: "此領域評估：隨機序列是否用適當方法產生（如電腦亂數）、分配隱藏是否足以防止事先知道分組結果。" },
     en: { q: "What does RoB 2's first domain 'bias from the randomization process' mainly assess?", opts: ["Whether sample size is adequate", "Whether random sequence was properly generated and allocation was concealed", "Whether statistical methods are correct", "Whether outcomes were measured with blinding"], exp: "This domain assesses: whether the random sequence was generated by an appropriate method (e.g., computer random), and whether allocation concealment prevented foreknowledge of group assignment." },
     correct: 1
   },
@@ -239,25 +239,25 @@ export const course3Questions = [
   },
   {
     id: "c3-035", category: 3,
-    zh: { q: "「偏離預設干預所產生的偏倚」這個領域主要關注什麼？", opts: ["隨機序列的產生", "參與者或研究人員是否偏離了原定的治療方案（如換藥、依從性差）", "結局評估者是否知道分組", "數據是否選擇性報告"], exp: "此領域關注：參與者是否接受了預定的治療、是否有交叉使用、依從性如何、以及偏離是否與結局相關。" },
+    zh: { q: "「偏離預設干預所產生的偏倚」這個領域主要關注什麼？", opts: ["隨機序列的產生", "參與者或研究人員是否偏離了原定的治療方案（如換藥、依從性差）", "結果評估者是否知道分組", "數據是否選擇性報告"], exp: "此領域關注：參與者是否接受了預定的治療、是否有交叉使用、依從性如何、以及偏離是否與結果相關。" },
     en: { q: "What does the 'bias due to deviations from intended interventions' domain focus on?", opts: ["Random sequence generation", "Whether participants or researchers deviated from the planned treatment protocol (switching, poor adherence)", "Whether outcome assessors knew group allocation", "Whether data was selectively reported"], exp: "This domain addresses: whether participants received intended treatment, crossover, adherence levels, and whether deviations were related to outcomes." },
     correct: 1
   },
   {
     id: "c3-036", category: 3,
-    zh: { q: "RoB 2 的「遺失結局數據」領域評估什麼？", opts: ["是否有研究未被搜尋到", "納入研究中的結局數據是否完整，遺失是否可能與真實結果有關", "是否遺漏了重要的資料庫", "資金來源是否透明"], exp: "此領域評估失訪比例、各組失訪是否平衡、以及遺失數據是否可能與結局相關（會引入偏差）。" },
+    zh: { q: "RoB 2 的「遺失結果數據」領域評估什麼？", opts: ["是否有研究未被搜尋到", "納入研究中的結果數據是否完整，遺失是否可能與真實結果有關", "是否遺漏了重要的資料庫", "資金來源是否透明"], exp: "此領域評估失訪比例、各組失訪是否平衡、以及遺失數據是否可能與結果相關（會引入偏差）。" },
     en: { q: "What does RoB 2's 'missing outcome data' domain assess?", opts: ["Whether some studies weren't found", "Whether outcome data is complete and whether missingness may be related to true outcomes", "Whether important databases were missed", "Whether funding sources are transparent"], exp: "This domain assesses dropout rates, balance of dropout across groups, and whether missing data may be related to outcomes (which would introduce bias)." },
     correct: 1
   },
   {
     id: "c3-037", category: 3,
-    zh: { q: "「結局測量的偏倚」這個領域主要涉及什麼？", opts: ["測量儀器的精確度", "結局評估者是否知道分組（盲法），以及測量方法是否可能受此影響", "樣本量計算", "統計分析方法的選擇"], exp: "如果評估結局的人知道患者屬於哪一組，可能會無意中偏向某個方向。客觀結局（如死亡）受影響較小，主觀結局（如疼痛評分）更易受影響。" },
+    zh: { q: "「結果測量的偏倚」這個領域主要涉及什麼？", opts: ["測量儀器的精確度", "結果評估者是否知道分組（盲法），以及測量方法是否可能受此影響", "樣本量計算", "統計分析方法的選擇"], exp: "如果評估結果的人知道患者屬於哪一組，可能會無意中偏向某個方向。客觀結果（如死亡）受影響較小，主觀結果（如疼痛評分）更易受影響。" },
     en: { q: "What does the 'bias in measurement of the outcome' domain involve?", opts: ["Precision of measurement instruments", "Whether outcome assessors knew group allocation (blinding) and whether measurement could be influenced", "Sample size calculation", "Choice of statistical method"], exp: "If those assessing outcomes knew group allocation, they might unconsciously bias results. Objective outcomes (death) are less affected; subjective outcomes (pain scores) are more vulnerable." },
     correct: 1
   },
   {
     id: "c3-038", category: 3,
-    zh: { q: "「選擇性報告結果的偏倚」指的是什麼？", opts: ["研究者選擇性地報告對假說有利的結局或分析方法", "只納入英文文獻", "選擇特定的隨機方法", "選擇最好的研究設計"], exp: "如果研究者測量了多個結局但只報告顯著的結果，或事後改變主要結局，就產生了選擇性報告偏倚。可對比研究方案和最終報告來發現。" },
+    zh: { q: "「選擇性報告結果的偏倚」指的是什麼？", opts: ["研究者選擇性地報告對假說有利的結果或分析方法", "只納入英文文獻", "選擇特定的隨機方法", "選擇最好的研究設計"], exp: "如果研究者測量了多個結果但只報告顯著的結果，或事後改變主要結果，就產生了選擇性報告偏倚。可對比研究方案和最終報告來發現。" },
     en: { q: "What is 'bias in selection of the reported result'?", opts: ["Researchers selectively report outcomes or analyses favorable to their hypothesis", "Only including English-language studies", "Choosing specific randomization methods", "Choosing the best study design"], exp: "If researchers measure multiple outcomes but only report significant ones, or change the primary outcome post-hoc, selection reporting bias occurs. Compare protocols to final reports to detect it." },
     correct: 0
   },
@@ -285,25 +285,25 @@ export const course3Questions = [
   },
   {
     id: "c3-042", category: 4,
-    zh: { q: "NOS 評估品質的三個大類別是什麼？", opts: ["設計、統計、結論", "選擇 (Selection)、可比性 (Comparability)、結局 (Outcome)", "方法、結果、討論", "篩選、萃取、分析"], exp: "NOS 從三個面向評估品質：選擇（研究對象如何被選取）、可比性（是否控制了干擾因子）、結局（如何評估結果）。" },
+    zh: { q: "NOS 評估品質的三個大類別是什麼？", opts: ["設計、統計、結論", "選擇 (Selection)、可比性 (Comparability)、結果 (Outcome)", "方法、結果、討論", "篩選、萃取、分析"], exp: "NOS 從三個面向評估品質：選擇（研究對象如何被選取）、可比性（是否控制了干擾因子）、結果（如何評估結果）。" },
     en: { q: "What are the three categories NOS uses to assess quality?", opts: ["Design, statistics, conclusions", "Selection, Comparability, Outcome", "Methods, results, discussion", "Screening, extraction, analysis"], exp: "NOS assesses quality from three aspects: Selection (how subjects were selected), Comparability (whether confounders were controlled), and Outcome (how results were assessed)." },
     correct: 1
   },
   {
     id: "c3-043", category: 4,
-    zh: { q: "NOS 使用什麼方式評分？", opts: ["百分比評分", "星星評分系統，最高 9 顆星（世代研究）", "A-F 字母等級", "交通燈系統"], exp: "NOS 使用星星系統：選擇最多 4 顆星、可比性最多 2 顆星、結局最多 3 顆星，總計最高 9 顆星。" },
+    zh: { q: "NOS 使用什麼方式評分？", opts: ["百分比評分", "星星評分系統，最高 9 顆星（世代研究）", "A-F 字母等級", "交通燈系統"], exp: "NOS 使用星星系統：選擇最多 4 顆星、可比性最多 2 顆星、結果最多 3 顆星，總計最高 9 顆星。" },
     en: { q: "What scoring system does NOS use?", opts: ["Percentage scores", "A star rating system, maximum 9 stars (for cohort studies)", "A-F letter grades", "Traffic-light system"], exp: "NOS uses stars: Selection up to 4 stars, Comparability up to 2 stars, Outcome up to 3 stars, for a maximum of 9 stars." },
     correct: 1
   },
   {
     id: "c3-044", category: 4,
-    zh: { q: "在 NOS 的「可比性」類別中，主要評估什麼？", opts: ["樣本量是否足夠", "研究是否控制了最重要的干擾因子（如年齡、性別或其他關鍵變項）", "追蹤時間是否夠長", "結局評估是否盲法"], exp: "可比性評估研究是否控制了關鍵干擾因子。最多給 2 顆星：一顆給最重要的因子，一顆給其他重要因子。" },
+    zh: { q: "在 NOS 的「可比性」類別中，主要評估什麼？", opts: ["樣本量是否足夠", "研究是否控制了最重要的干擾因子（如年齡、性別或其他關鍵變項）", "追蹤時間是否夠長", "結果評估是否盲法"], exp: "可比性評估研究是否控制了關鍵干擾因子。最多給 2 顆星：一顆給最重要的因子，一顆給其他重要因子。" },
     en: { q: "What does the NOS 'Comparability' category mainly assess?", opts: ["Whether sample size is adequate", "Whether the study controlled for the most important confounders (e.g., age, sex, or other key variables)", "Whether follow-up was long enough", "Whether outcome assessment was blinded"], exp: "Comparability assesses confounder control. Up to 2 stars: one for the most important factor, one for other important factors." },
     correct: 1
   },
   {
     id: "c3-045", category: 4,
-    zh: { q: "NOS 的「選擇」類別在世代研究中評估哪些方面？", opts: ["統計分析方法", "暴露組的代表性、非暴露組的選取、暴露的確認方法、研究開始時結局是否尚未發生", "只評估隨機化方法", "只評估盲法"], exp: "選擇類別評估：暴露組是否有代表性、非暴露組是否來自同一族群、暴露如何被確認、以及是否排除了已有結局的個案。" },
+    zh: { q: "NOS 的「選擇」類別在世代研究中評估哪些方面？", opts: ["統計分析方法", "暴露組的代表性、非暴露組的選取、暴露的確認方法、研究開始時結果是否尚未發生", "只評估隨機化方法", "只評估盲法"], exp: "選擇類別評估：暴露組是否有代表性、非暴露組是否來自同一族群、暴露如何被確認、以及是否排除了已有結果的個案。" },
     en: { q: "What aspects does the NOS 'Selection' category assess in cohort studies?", opts: ["Statistical methods", "Representativeness of exposed cohort, selection of non-exposed, ascertainment of exposure, outcome not present at start", "Only randomization methods", "Only blinding"], exp: "Selection assesses: representativeness of exposed cohort, whether non-exposed come from the same population, how exposure was ascertained, and whether existing cases were excluded at baseline." },
     correct: 1
   },
@@ -321,7 +321,7 @@ export const course3Questions = [
   },
   {
     id: "c3-048", category: 4,
-    zh: { q: "在 NOS 的「結局」類別中，「追蹤時間是否夠長」為什麼重要？", opts: ["更長的追蹤總是更好", "因為太短的追蹤可能無法偵測到結局事件，低估了真實風險", "追蹤時間不影響結果", "只對罕見疾病重要"], exp: "如果研究追蹤時間太短，某些結局可能尚未發生，導致低估真實的事件率。例如研究癌症存活率需要足夠長的追蹤期。" },
+    zh: { q: "在 NOS 的「結果」類別中，「追蹤時間是否夠長」為什麼重要？", opts: ["更長的追蹤總是更好", "因為太短的追蹤可能無法偵測到結果事件，低估了真實風險", "追蹤時間不影響結果", "只對罕見疾病重要"], exp: "如果研究追蹤時間太短，某些結果可能尚未發生，導致低估真實的事件率。例如研究癌症存活率需要足夠長的追蹤期。" },
     en: { q: "In NOS's 'Outcome' category, why does 'adequate follow-up duration' matter?", opts: ["Longer follow-up is always better", "Too-short follow-up may miss outcome events, underestimating true risk", "Follow-up duration doesn't affect results", "Only matters for rare diseases"], exp: "If follow-up is too short, some outcomes may not yet have occurred, underestimating true event rates. Cancer survival studies, for example, need sufficiently long follow-up." },
     correct: 1
   },

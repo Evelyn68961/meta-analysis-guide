@@ -87,7 +87,7 @@ export const course4Questions = [
   // ════════════════════════════════════════
   {
     id: "c4-011", category: 1, type: "mcq",
-    zh: { q: "勝算比 (Odds Ratio, OR) 適用於什麼類型的結局？", opts: ["連續性結局（如血壓值）", "二分類結局（如事件發生/未發生）", "排序資料", "時間序列資料"], exp: "OR 用於二分類（是/否）結局，比較兩組中事件發生的「勝算」。" },
+    zh: { q: "勝算比 (Odds Ratio, OR) 適用於什麼類型的結果？", opts: ["連續性結果（如血壓值）", "二分類結果（如事件發生/未發生）", "排序資料", "時間序列資料"], exp: "OR 用於二分類（是/否）結果，比較兩組中事件發生的「勝算」。" },
     en: { q: "What type of outcome is the Odds Ratio (OR) used for?", opts: ["Continuous outcomes (e.g., blood pressure)", "Binary/dichotomous outcomes (e.g., event/no event)", "Ordinal data", "Time-series data"], exp: "OR is used for binary (yes/no) outcomes, comparing the 'odds' of an event between two groups." },
     correct: 1
   },
@@ -141,7 +141,7 @@ export const course4Questions = [
   },
   {
     id: "c4-020", category: 1, type: "mcq",
-    zh: { q: "以下哪個藥學情境最適合使用 OR？", opts: ["比較兩組的平均血壓下降值", "比較新藥 vs 安慰劑的住院率（二分類）", "比較兩組的平均住院天數", "比較三組的 HbA1c 趨勢"], exp: "住院率是二分類結局（住院 / 未住院），適合使用 OR 或 RR。平均值比較則用均差。" },
+    zh: { q: "以下哪個藥學情境最適合使用 OR？", opts: ["比較兩組的平均血壓下降值", "比較新藥 vs 安慰劑的住院率（二分類）", "比較兩組的平均住院天數", "比較三組的 HbA1c 趨勢"], exp: "住院率是二分類結果（住院 / 未住院），適合使用 OR 或 RR。平均值比較則用均差。" },
     en: { q: "Which pharmacy scenario is most appropriate for using OR?", opts: ["Comparing mean blood pressure reduction between groups", "Comparing hospitalization rates (binary) of new drug vs placebo", "Comparing mean length of hospital stay", "Comparing HbA1c trends across three groups"], exp: "Hospitalization rate is binary (hospitalized/not), making it suitable for OR or RR. Mean values use mean difference instead." },
     correct: 1
   },
@@ -151,7 +151,7 @@ export const course4Questions = [
   // ════════════════════════════════════════
   {
     id: "c4-021", category: 2, type: "mcq",
-    zh: { q: "均差 (Mean Difference, MD) 適用於什麼情況？", opts: ["所有研究都用二分類結局", "所有研究都用相同量表測量連續性結局", "不同研究用不同量表", "只有觀察性研究"], exp: "MD 適用於所有研究使用相同量表（如所有研究都量 HbA1c、都用 mmHg 量血壓）的連續性結局。" },
+    zh: { q: "均差 (Mean Difference, MD) 適用於什麼情況？", opts: ["所有研究都用二分類結果", "所有研究都用相同量表測量連續性結果", "不同研究用不同量表", "只有觀察性研究"], exp: "MD 適用於所有研究使用相同量表（如所有研究都量 HbA1c、都用 mmHg 量血壓）的連續性結果。" },
     en: { q: "When is Mean Difference (MD) appropriate?", opts: ["All studies use binary outcomes", "All studies measure a continuous outcome on the same scale", "Different studies use different scales", "Only for observational studies"], exp: "MD is appropriate when all studies measure a continuous outcome using the same scale (e.g., all measure HbA1c, all use mmHg for blood pressure)." },
     correct: 1
   },
@@ -169,7 +169,7 @@ export const course4Questions = [
   },
   {
     id: "c4-024", category: 2, type: "mcq",
-    zh: { q: "什麼時候必須使用 SMD 而不是 MD？", opts: ["所有研究都使用相同量表", "不同研究使用不同量表測量同一個概念（如疼痛用 VAS 和 NRS）", "結局是二分類的", "只有一個研究"], exp: "當研究使用不同量表（如 VAS 0-100 vs NRS 0-10）測量相同概念時，MD 無法直接比較，必須用 SMD 標準化。" },
+    zh: { q: "什麼時候必須使用 SMD 而不是 MD？", opts: ["所有研究都使用相同量表", "不同研究使用不同量表測量同一個概念（如疼痛用 VAS 和 NRS）", "結果是二分類的", "只有一個研究"], exp: "當研究使用不同量表（如 VAS 0-100 vs NRS 0-10）測量相同概念時，MD 無法直接比較，必須用 SMD 標準化。" },
     en: { q: "When must you use SMD instead of MD?", opts: ["All studies use the same scale", "Different studies use different scales to measure the same concept (e.g., pain with VAS and NRS)", "The outcome is binary", "There's only one study"], exp: "When studies use different scales (e.g., VAS 0-100 vs NRS 0-10) to measure the same concept, MD cannot be compared directly, so SMD standardizes the comparison." },
     correct: 1
   },
@@ -181,7 +181,7 @@ export const course4Questions = [
   },
   {
     id: "c4-026", category: 2, type: "mcq",
-    zh: { q: "MD = 0 或 SMD = 0 代表什麼？", opts: ["介入組更好", "對照組更好", "兩組之間沒有差異", "數據有錯誤"], exp: "MD 或 SMD = 0 表示兩組的平均值相同，沒有差異。這就是連續性結局的「無效線」位置（對比 OR/RR 的無效線 = 1）。" },
+    zh: { q: "MD = 0 或 SMD = 0 代表什麼？", opts: ["介入組更好", "對照組更好", "兩組之間沒有差異", "數據有錯誤"], exp: "MD 或 SMD = 0 表示兩組的平均值相同，沒有差異。這就是連續性結果的「無效線」位置（對比 OR/RR 的無效線 = 1）。" },
     en: { q: "What does MD = 0 or SMD = 0 mean?", opts: ["Intervention is better", "Control is better", "No difference between groups", "Data error"], exp: "MD or SMD = 0 means the group means are equal — no difference. This is the 'line of no effect' for continuous outcomes (vs. 1 for OR/RR)." },
     correct: 2
   },
@@ -193,7 +193,7 @@ export const course4Questions = [
   },
   {
     id: "c4-028", category: 2, type: "mcq",
-    zh: { q: "SMD 的一個主要缺點是什麼？", opts: ["不能用於統合分析", "失去原始測量單位，較難有臨床直覺", "計算太簡單不夠精確", "只能用於二分類結局"], exp: "SMD 以 SD 為單位而非原始單位（如 mmHg），因此臨床上較難直觀理解 0.3 個 SD 到底代表多大的差異。" },
+    zh: { q: "SMD 的一個主要缺點是什麼？", opts: ["不能用於統合分析", "失去原始測量單位，較難有臨床直覺", "計算太簡單不夠精確", "只能用於二分類結果"], exp: "SMD 以 SD 為單位而非原始單位（如 mmHg），因此臨床上較難直觀理解 0.3 個 SD 到底代表多大的差異。" },
     en: { q: "What is a major drawback of SMD?", opts: ["Cannot be used in meta-analysis", "Loses the original measurement unit, making clinical intuition harder", "Too simple to be precise", "Only works for binary outcomes"], exp: "SMD is in SD units rather than natural units (e.g., mmHg), making it harder to intuitively understand what a 0.3 SD difference means clinically." },
     correct: 1
   },
@@ -461,7 +461,7 @@ export const course4Questions = [
   },
   {
     id: "c4-070", category: 6, type: "mcq",
-    zh: { q: "選擇效應量類型（OR vs RR vs MD vs SMD）最重要的依據是？", opts: ["作者偏好", "結局的資料類型（二分類 vs 連續性）以及研究是否使用相同量表", "p 值的大小", "研究的年份"], exp: "二分類結局用 OR/RR，連續性結局用 MD（相同量表）或 SMD（不同量表）。資料類型決定效應量類型。" },
+    zh: { q: "選擇效應量類型（OR vs RR vs MD vs SMD）最重要的依據是？", opts: ["作者偏好", "結果的資料類型（二分類 vs 連續性）以及研究是否使用相同量表", "p 值的大小", "研究的年份"], exp: "二分類結果用 OR/RR，連續性結果用 MD（相同量表）或 SMD（不同量表）。資料類型決定效應量類型。" },
     en: { q: "What is the most important basis for choosing the effect size type (OR vs RR vs MD vs SMD)?", opts: ["Author preference", "The data type of the outcome (binary vs continuous) and whether studies use the same scale", "Size of the p-value", "Publication year"], exp: "Binary outcomes → OR/RR; continuous outcomes → MD (same scale) or SMD (different scales). Data type dictates effect size choice." },
     correct: 1
   },,
@@ -519,7 +519,7 @@ export const course4Questions = [
   },
   {
     id: "c4-078", category: 1, type: "spot_error",
-    zh: { q: "找出以下統合分析報告中的錯誤：", statements: ["我們納入了 12 個 RCT 進行統合分析。", "使用勝算比 (OR) 作為二分類結局的效應量。", "合併 OR = 0.5，表示介入組的風險降低了 50%。", "使用隨機效應模型因為研究存在臨床異質性。"], exp: "OR = 0.5 代表介入組的「勝算」是對照組的 50%（降低 50%），而非「風險」降低 50%。風險降低需要用 RR 來描述。" },
+    zh: { q: "找出以下統合分析報告中的錯誤：", statements: ["我們納入了 12 個 RCT 進行統合分析。", "使用勝算比 (OR) 作為二分類結果的效應量。", "合併 OR = 0.5，表示介入組的風險降低了 50%。", "使用隨機效應模型因為研究存在臨床異質性。"], exp: "OR = 0.5 代表介入組的「勝算」是對照組的 50%（降低 50%），而非「風險」降低 50%。風險降低需要用 RR 來描述。" },
     en: { q: "Find the error in this meta-analysis report excerpt:", statements: ["We included 12 RCTs in the meta-analysis.", "Odds Ratio (OR) was used as the effect measure for binary outcomes.", "Pooled OR = 0.5, meaning the intervention reduced risk by 50%.", "Random-effects model was used due to clinical heterogeneity."], exp: "OR = 0.5 means the intervention ODDS are 50% of control — NOT that risk is reduced by 50%. Risk reduction language requires RR." },
     correct: 2
   },
@@ -557,7 +557,7 @@ export const course4Questions = [
   },
   {
     id: "c4-084", category: 2, type: "true_false",
-    zh: { q: "「MD = 0 表示兩組之間沒有差異。」", exp: "正確。對於連續性結局，MD = 0 表示介入組和對照組的平均值完全相同，即無效線的位置。" },
+    zh: { q: "「MD = 0 表示兩組之間沒有差異。」", exp: "正確。對於連續性結果，MD = 0 表示介入組和對照組的平均值完全相同，即無效線的位置。" },
     en: { q: "\'MD = 0 means no difference between the two groups.\'", exp: "True. For continuous outcomes, MD = 0 means the intervention and control group means are identical — this is the line of no effect." },
     correct: true
   },
@@ -577,7 +577,7 @@ export const course4Questions = [
   },
   {
     id: "c4-087", category: 3, type: "multi_select",
-    zh: { q: "反變異數加權法的優點包括？（選出所有正確答案）", opts: ["精確的研究貢獻更多", "可同時用於二分類和連續性結局", "完全消除異質性", "數學上可推導出最小變異數的合併估計"], exp: "反變異數法讓精確研究貢獻更多（正確），適用於所有結局類型（正確），數學上最優（正確）。但它不能消除異質性。" },
+    zh: { q: "反變異數加權法的優點包括？（選出所有正確答案）", opts: ["精確的研究貢獻更多", "可同時用於二分類和連續性結果", "完全消除異質性", "數學上可推導出最小變異數的合併估計"], exp: "反變異數法讓精確研究貢獻更多（正確），適用於所有結果類型（正確），數學上最優（正確）。但它不能消除異質性。" },
     en: { q: "Advantages of inverse-variance weighting include? (Select ALL correct)", opts: ["More precise studies contribute more", "Applicable to both binary and continuous outcomes", "Completely eliminates heterogeneity", "Mathematically yields the minimum-variance pooled estimate"], exp: "Inverse-variance gives more weight to precise studies, works for all types, is mathematically optimal. But doesn't eliminate heterogeneity." },
     correctAll: [0, 1, 3]
   },
