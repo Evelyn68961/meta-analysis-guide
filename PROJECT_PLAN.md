@@ -17,9 +17,10 @@ Courses 4–5 games introduce **progressive difficulty** (3 foundation MCQ → g
 
 ## Teaching Schedule
 - **Precourse:** Course 0 (Introduction to Meta-Analysis)
-- **Foundations:** Courses 1–3 (PICO, Search, Data Extraction) → **Midterm** (checkpoint assessment)
-- **Advanced Courses:** Courses 4–5 (Analysis & Interpretation) → **Final Exam** (comprehensive knowledge check)
+- **Foundations:** Courses 1–3 (PICO, Search, Data Extraction) → **MA Workshop: Planning** (guided hands-on practice)
+- **Advanced Courses:** Courses 4–5 (Analysis & Interpretation) → **MA Workshop: Analysis** (run MA + write conclusions)
 - Games are kept short (2-3 min each) for live classroom use
+- Workshops are open-ended: users bring their own clinical question and build a real meta-analysis across both phases
 
 ---
 
@@ -31,10 +32,10 @@ Courses 4–5 games introduce **progressive difficulty** (3 foundation MCQ → g
 | **Foundations** | 1 | PICO/PICOS Research Question | Dino Egg Hatch (pick 1 of 7 eggs, 7 Qs from 70-question bank, 5 correct = hatch, 3 wrong = freeze, sun/frost particles) | ✅ Built on `dev` |
 | | 2 | Literature Search & PRISMA | Dino Food Rescue (pick 1 of 7 dinos, 7 Qs from 70-question bank, crack ice with pickaxe, second chance on wrong, species-matched food) | ✅ Built on `dev` (upgraded: +3 teaching sections, +4 interactive exercises, AI Boolean checker) |
 | | 3 | Data Extraction & Risk of Bias | Dino Home Save (pick 1 of 7 dinos, 7 Qs from 70-question bank, 10s timer, correct = fire grows, wrong/timeout = fire dims, 5 correct = win, 3 wrong = lose) | ✅ Built on `dev` (upgraded: +2 teaching sections, +3 interactive exercises, AI extraction reviewer) |
-| | **—** | **Midterm** | **Clickable checkpoint card in hub; assessment page TBD** | ❌ Not started |
-| **Advanced** | 4 | Effect Sizes & Forest Plots | Dino Key Quest (pick 1 of 7 dinos, 9 Qs from 105-question bank: 3 foundation MCQ + 6 advanced mixed-type, progressive unlock, crystal cave theme) | ✅ Built on `dev` (game needs fixes) |
+| | **—** | **MA Workshop: Planning** | **5-step guided workshop: Define PICO (🤖 AI), Search Strategy (🤖 AI), Add Studies, Data Extraction, Risk of Bias. Gate: PICO ✅ + ≥3 studies.** | ✅ Built on `dev` |
+| **Advanced** | 4 | Effect Sizes & Forest Plots | Dino Key Quest (pick 1 of 7 dinos, 9 Qs from 105-question bank: 3 foundation MCQ + 6 advanced mixed-type, progressive unlock, crystal cave theme) | ✅ Built on `dev` (upgraded: +1 teaching section "Common Pitfalls", click-based forest plot, 2×2 effect size cards, wider layout) |
 | | 5 | Heterogeneity & Publication Bias | Dino Door Escape (pick 1 of 7 dinos, 9 Qs from 105-question bank: 3 foundation MCQ + 6 advanced mixed-type, progressive unlock, corridor/door theme) | ✅ Built on `dev` (game needs fixes) |
-| | **—** | **Final Exam** | **Clickable checkpoint card in hub; 3-stage assessment TBD** | ❌ Not started |
+| | **—** | **MA Workshop: Analysis** | **5-step guided workshop: Effect Size & Model, Prepare Data (CSV + R code), Run Analysis (Onlinemeta / R), Interpret & Report, Conclusions (🤖 AI).** | ✅ Built on `dev` |
 
 ---
 
@@ -55,7 +56,7 @@ src/
 ├── Course1.jsx          ← Course 1: PICO (teaching sections + AI workshop + AI freestyle PICO; game extracted to DinoEggHatch)
 ├── Course2.jsx          ← Course 2: Literature Search & PRISMA (10 teaching sections + 4 interactive exercises + AI Boolean checker; game extracted to DinoFoodRescue)
 ├── Course3.jsx          ← Course 3: Data Extraction & RoB (9 sections: 6 teaching + dual extraction + game + AI extraction reviewer; 7 interactive components)
-├── Course4.jsx          ← Course 4: Effect Sizes & Forest Plots (6 teaching sections + 4 interactive demos; game: DinoKeyQuest)
+├── Course4.jsx          ← Course 4: Effect Sizes & Forest Plots (7 teaching sections + 5 interactive demos; game: DinoKeyQuest)
 ├── Course5.jsx          ← Course 5: Heterogeneity & Publication Bias (6 teaching sections + 4 interactive demos; game: DinoDoorEscape)
 │
 ├── DinoEggHunt.jsx      ← Course 0 game: egg hunt quiz (7 eggs, 7 categories, cheat sheet rewards; exports StylishEgg SVG)
@@ -66,6 +67,9 @@ src/
 ├── DinoDoorEscape.jsx   ← Course 5 game: corridor door escape (progressive: 3 foundation MCQ + 6 advanced mixed-type)
 ├── CuteDino.jsx         ← Shared dinosaur SVG component (7 unique species, used across courses)
 ├── DinoIntro.jsx        ← Dino Codex page (RPG-style character intro; accessible at #dino or #dino=N; linked from ProfilePage dino cards)
+│
+├── Midterm.jsx          ← MA Workshop Phase 1: Plan Your Meta-Analysis (5-step wizard; PICO + Search with AI checks; study entry, extraction, RoB; gate to Phase 2)
+├── Final.jsx            ← MA Workshop Phase 2: Analysis & Conclusions (5-step wizard; effect size/model choice; data prep with CSV + auto-generated R code; external tool guidance; interpretation with reporting guide; conclusions with AI check)
 │
 ├── questionHelpers.js   ← Shared helper functions: pickQuestions(), pickBalanced(), pickByType(), pickAdvancedMix()
 ├── course0Questions.js  ← Course 0 question bank (35 Qs: 5 per category × 7 categories)
@@ -334,18 +338,20 @@ api/
 
 ### Sections (in order):
 1. **What Is an Effect Size?** — Opening: "A study says the drug 'works' — but how much?" Introduces effect size as the single number encoding magnitude. Analogy: "the Yelp rating for a study — not just thumbs up/down, but a score."
-2. **Types of Effect Sizes** — Four interactive expandable cards: (a) Odds Ratio (OR) — binary outcomes, with formula and pharmacy example. (b) Risk Ratio (RR) — same 2×2 table, different calculation. (c) Mean Difference (MD) — continuous outcomes, same scale. (d) SMD/Cohen's d — different scales. Each shows formula visually + null value.
+2. **Types of Effect Sizes** — Four interactive expandable cards in 2×2 grid: (a) Odds Ratio (OR) — binary outcomes, with formula and pharmacy example. (b) Risk Ratio (RR) — same 2×2 table, different calculation. (c) Mean Difference (MD) — continuous outcomes, same scale. (d) SMD/Cohen's d — different scales. Each shows formula visually + null value.
 3. **Weighting: Not All Studies Are Equal** — Interactive demo: toggle between inverse-variance weighted average and simple average. Visualizes n=30 vs n=3000 study weights. Square sizes change dynamically. Analogy: "trusting a poll of 10,000 more than a poll of 10."
 4. **Fixed vs Random Effects** — Side-by-side toggle. 5-study mini forest plot recalculates under each model. Watch CI widen under random effects. Shows how small study weights shift. Explanation box updates with model description.
-5. **Anatomy of a Forest Plot** — Interactive hover-based visualization. Build a 5-study forest plot piece by piece: study labels, squares (point estimates), CI lines, square sizes (weight), null line (OR=1), pooled diamond. Hover each element for explanations.
+5. **Anatomy of a Forest Plot** — Interactive click-based visualization (matching Course 0 pattern). Build a 5-study forest plot piece by piece: study labels, squares (point estimates), CI lines, square sizes (weight), null line (OR=1, dashed), pooled diamond. Click each element for explanations in a panel above the plot.
 6. **Reading a Forest Plot** — Three practice exercises with guided questions: "Does the pooled effect cross the null?" "Which study has the most weight?" "Is the overall result significant?" Answer options with immediate feedback and explanations.
+7. **Common Pitfalls** ← NEW — Six clickable cards in 2×2 grid covering the most common interpretation mistakes: (a) Significant ≠ Meaningful (p < 0.05 ≠ clinical importance). (b) OR ≠ RR (can't interchange). (c) Don't Ignore CI Width. (d) SD ≠ SE (mixing them up). (e) Non-Significant ≠ No Effect (absence of evidence). (f) Don't Mix Effect Size Types (must convert before pooling). Each card has bilingual description + pharmacy example.
 
 ### Interactive Components:
-- **EffectSizeCards** — 4 expandable cards (OR, RR, MD, SMD) with formulas, descriptions, pharmacy examples, null values
+- **EffectSizeCards** — 4 expandable cards in 2×2 grid (OR, RR, MD, SMD) with formulas, descriptions, pharmacy examples, null values
 - **WeightingDemo** — Toggle weighted vs simple average, dynamic square sizes, pooled diamond position shifts
 - **FixedRandomToggle** — 5-study forest plot that recalculates under fixed/random models, CI width changes visible
-- **ForestPlotAnatomy** — Hover-based forest plot with 6 named parts, tooltip panel
+- **ForestPlotAnatomy** — Click-based forest plot (Course 0 pattern) with 4 clickable elements (squares, lines, null line, diamond), explanation panel above plot, proper log-scale OR axis, dashed null line
 - **ForestPlotExercise** — 3 progressive practice questions with answer feedback
+- **CommonPitfalls** ← NEW — 6 expandable cards in 2×2 grid (significance vs meaningfulness, OR vs RR, CI width, SD vs SE, non-significant vs no effect, mixing effect size types), red accent on active
 
 ### Question Bank (105 Qs = 70 MCQ + 35 advanced):
 - `course4Questions.js` with `course4Categories` export
@@ -361,7 +367,17 @@ api/
   - Per category: 2 true/false, 1 multi-select, 1 ordering, 1 spot-error
   - All questions have `type` field: `"mcq"`, `"true_false"`, `"multi_select"`, `"ordering"`, `"spot_error"`
 
-### Game: Dino Key Quest ✅ BUILT (needs fixes)
+### Sidebar catalog: 8 items
+1. What Is an Effect Size
+2. Types of Effect Sizes (with 2×2 expandable cards)
+3. Weighting (with interactive demo)
+4. Fixed vs Random Effects (with toggle forest plot)
+5. Forest Plot Anatomy (with click-based interactive plot)
+6. Reading Forest Plots (with 3 practice exercises)
+7. Common Pitfalls ← NEW (with 6 expandable mistake cards)
+8. Dino Key Quest Game
+
+### Game: Dino Key Quest ✅ BUILT & FIXED
 - Standalone component in `DinoKeyQuest.jsx`, imported by `Course4.jsx`
 - **Narrative:** The dinos need to find the KEY to their new home — explore a crystal cave and collect key fragments
 - **Progressive difficulty (unique to Courses 4–5):**
@@ -382,8 +398,12 @@ api/
 - Accent color: BLUE `#2E86C1` (matching Course 4)
 - Bilingual UI strings handled internally
 
-### Known Issues (Course 4 Game):
-- Game needs visual polish and bug fixes (paused for now)
+### Known Issues (Course 4):
+- ~~Game needs visual polish and bug fixes~~ ✅ FIXED: CuteDino prop `species` → `index`, game container widened to 880px, text sizes increased across all renderers, dino display scaled up in gameplay header
+- ~~ForestPlotAnatomy was hover-based~~ ✅ FIXED: Converted to click-based pattern matching Course 0's ForestPlotExplainer, proper log-scale axis with positioned ticks, dashed null line
+- ~~EffectSizeCards in 4-column layout with small text~~ ✅ FIXED: 2×2 grid, text sizes bumped up, proper font family applied
+- ~~Paragraph maxWidth mismatch~~ ✅ FIXED: Paragraph component widened from 640px to 880px to match section containers
+- ~~Category 6 "Common Mistakes" questions tested untaught content~~ ✅ FIXED: Added Section 7 "Common Pitfalls" teaching all 6 mistake types before the game
 
 ### Note:
 - AI workshop section planned but not yet designed — backend proxy is now ready (`api/ai-feedback.js`), so future AI sections just need frontend implementation (Heterogeneity & Publication Bias)
@@ -442,81 +462,76 @@ api/
 
 ---
 
-## Midterm (After Course 3)
+## MA Workshop: Planning (Midterm — After Course 3) ✅ BUILT
 
 ### Concept:
-- **Gate between Foundations and Advanced sections.** After completing Courses 1–3 (and their dino games), the user must have at least 3 dinos alive/healthy to unlock Course 4.
-- The "dinos alive" count is a cumulative tracker across the Course 1–3 games. Each game can result in a dino surviving or not (depending on game outcome: hatch success, food rescued, home saved, etc.).
-- This acts as a **midterm check** — ensuring the user has engaged with and understood the foundational material (PICO, search, PRISMA, data extraction, RoB) before moving to the quantitative/analysis courses.
-- **Hub integration:** Midterm appears as a clickable `CheckpointCard` (dashed border, tinted background) at the bottom of the Foundations section in the hub. Navigates to `#midterm`. Page not yet built.
+- **Guided hands-on workshop** replacing the old midterm checkpoint. Instead of a quiz, the user plans their own meta-analysis from scratch (or uses demo data).
+- Open-ended: user brings their own clinical question. AI provides feedback at key checkpoints.
+- **Route:** `#midterm` | **Accent color:** Gold `#8B6914` | **Component:** `Midterm.jsx`
+- **Hub integration:** Clickable `CheckpointCard` (🔬 emoji) at the bottom of the Foundations section.
 
-### Design (TBD — not yet built):
-- **Trigger:** After Course 3 game ends, or when user tries to navigate to Course 4
-- **Pass (≥3 dinos alive):** Celebratory screen showing surviving dinos, then unlocks Course 4
-- **Fail (<3 dinos alive):** Encouraging screen explaining they need more dinos. Options to replay Course 1–3 games to improve results. Not punitive — framed as "your dinos need more help!"
-- **Tracking:** Needs state management to track dino survival across courses (could use Supabase `progress` table if logged in, or local state for anonymous users)
-- **Open questions:**
-  - Exact definition of "dino alive" per game (e.g., Course 1: egg hatched = alive; Course 3: home saved = alive)
-  - Whether Course 0's egg hunt counts toward dino count (it doesn't hatch/save a specific dino)
-  - UI/UX for the checkpoint screen itself
-  - Whether to allow bypass for classroom/demo mode
+### 5-Step Wizard:
+1. **Define PICO** — Free-text clinical question + P/I/C/O form fields. 🤖 **AI check** validates specificity, searchability, feasibility.
+2. **Search Strategy** — Database picker (PubMed, Embase, Cochrane, etc.) + Boolean query builder + grey literature sources. 🤖 **AI check** validates syntax, coverage, appropriateness.
+3. **Add Studies** — Collapsible study cards. Citation, design, N, P/I/C/O per study. Include/exclude toggle with reason field. Minimum 3 included studies required.
+4. **Data Extraction** — Per included study: binary (events/total per arm) or continuous (mean/SD/N per arm). Outcome type toggle.
+5. **Risk of Bias** — Interactive traffic light matrix. 5 domains (Randomization, Blinding, Attrition, Selective Reporting, Other) × L/S/H rating. Overall auto-derived from worst domain.
+
+### Phase Gate:
+- **Requirements to unlock Phase 2:** PICO must pass AI check (✅ in response) + at least 3 included studies.
+- Both conditions shown as checklist. "Go to Analysis Workshop →" button navigates to `#final`.
+
+### Demo Data:
+- Hidden "試用範例資料 / Try with example data" link (top-right, subtle) loads 5 SGLT2i/CKD RCTs (CREDENCE, DAPA-CKD, EMPA-KIDNEY, EMPA-REG OUTCOME, CANVAS) with full extraction data and RoB ratings.
+- PICO pass flag is NOT pre-set — user must still run AI check.
+
+### State:
+- All data stored in single `project` state object, persisted to `sessionStorage` key `ma_project_midterm`.
+- Bilingual text is self-contained inside `Midterm.jsx` (not in `i18n.js`), since the workshop is a standalone module.
 
 ---
 
-## Final Exam (After Course 5)
+## MA Workshop: Analysis (Final — After Course 5) ✅ BUILT
 
 ### Concept:
-- **Three-stage capstone assessment** after completing all courses. Not a simple multiple-choice quiz — each stage tests a different skill level (apply → critique → create), mirroring Bloom's taxonomy.
-- Designed to feel like a real culmination, not a rehash of the mini-games.
-- All three stages must be passed to earn completion. Stages unlock sequentially.
-- **Hub integration:** Final Exam appears as a clickable `CheckpointCard` (dashed border, tinted background) at the bottom of the Advanced section in the hub. Navigates to `#final`. Page not yet built.
+- **Continuation of Phase 1.** User takes their planned MA from the Midterm and runs the actual analysis using external tools, then interprets results and writes conclusions.
+- **Tool-agnostic design:** workshop guides the methodology; computation is delegated to Onlinemeta (web) or R/metafor (code). No in-browser statistics engine.
+- **Route:** `#final` | **Accent color:** Crimson `#C0392B` | **Component:** `Final.jsx`
+- **Hub integration:** Clickable `CheckpointCard` (📊 emoji) at the bottom of the Advanced section.
 
-### Stage 1: Scenario Walk-Through (Apply)
-- **Format:** A complete meta-analysis scenario presented as a narrative case. The user makes decisions at each step of the workflow, walking through the full process they learned across Courses 0–5.
-- **Flow:** The user is given a clinical question (e.g., "Does Drug X reduce hospitalizations in heart failure patients?") and must:
-  1. **Formulate PICO** — Pick the best P, I, C, O from options (Course 1)
-  2. **Design search strategy** — Choose databases, Boolean operators, identify grey literature needs (Course 2)
-  3. **Screen & extract** — Given 3 study abstracts, decide include/exclude; then extract the right numbers from a mock results table (Courses 2–3)
-  4. **Assess quality** — Rate RoB for a mock study using traffic-light levels (Course 3)
-  5. **Choose effect size & model** — Pick OR vs RR vs MD, fixed vs random, justify why (Course 4)
-  6. **Interpret forest plot** — Read a provided forest plot: identify pooled effect, significance, heaviest study, heterogeneity level (Course 4)
-  7. **Evaluate heterogeneity & bias** — Given I² and a funnel plot, assess trustworthiness and suggest next steps (Course 5)
-- **Mechanics:** ~10 decision points. Each is a branching choice (not free-text). Correct = advance. Wrong = explanation + one retry. Must get ≥7/10 to pass.
-- **Presentation:** Could be styled as a "research mission" narrative — the user is a pharmacist tasked with preparing an evidence summary for their hospital's P&T committee.
+### 5-Step Wizard:
+1. **Effect Size & Model** — Choose effect size type (OR/RR/RD for binary; MD/SMD for continuous) with per-option explanations. Choose fixed vs random effects model with rationale text area.
+2. **Prepare Data** — Auto-formatted table of extracted data from Phase 1. "Copy Table" (TSV to clipboard), "Download CSV" buttons. Data is ready to paste into external tools.
+3. **Run Analysis** — Two-tab interface:
+   - **🌐 Online Calculator tab:** Step-by-step guide to [Onlinemeta](https://smuonco.shinyapps.io/Onlinemeta/) with direct link. Alternative links to MetaAnalysisOnline.com and Meta-Mar.
+   - **📟 R Code tab:** Auto-generated `metafor` R script with the user's actual study data pre-filled. Includes `escalc()`, `rma()`, `forest()`, `funnel()`. Dark-themed code block with copy button. Supports both binary and continuous data.
+4. **Interpret & Report** — Opens with a blue guidance box: checklist of what to report (pooled effect, CI, p-value, I², study count) + bilingual example write-up. Then: 4 interpretation text areas (pooled effect meaning, consistency/weight, heterogeneity, funnel plot). Publication bias test selector (Egger's, Trim-and-Fill, Begg's, Fail-safe N). Subgroup/sensitivity analysis plan.
+5. **Conclusions** — Main finding, GRADE certainty selector (High/Moderate/Low/Very Low) with rationale, limitations, clinical implications. 🤖 **AI check** evaluates consistency with described results, GRADE reasonableness, reporting completeness (checks if user included necessary statistics).
 
-### Stage 2: Critical Appraisal (Critique)
-- **Format:** The user is shown 3–4 flawed visualizations or reports and must identify the errors. Tests deeper understanding — not just "can you follow steps" but "can you spot what's wrong."
-- **Examples of flawed materials:**
-  - A **forest plot with errors** — e.g., diamond crosses null but text claims "significant"; square sizes don't match reported weights; OR labeled as RR; CI missing for one study
-  - A **funnel plot that's clearly asymmetric** but the report says "no evidence of publication bias" — user must identify the contradiction
-  - A **PRISMA flow diagram with missing/inconsistent numbers** — e.g., numbers don't add up between stages, exclusion reasons missing, duplicates not accounted for
-  - A **results paragraph with common misinterpretations** — e.g., "OR = 2.5 means risk increased 2.5 times," or "I² = 80% so we used fixed-effect model," or "p = 0.06 means the drug doesn't work"
-- **Mechanics:** Each item presents the flawed material + 3–4 clickable "error zones" or statement-based options. User must find all errors. Partial credit possible (e.g., find 2/3 errors = partial pass). Must pass ≥3/4 items.
-- **Presentation:** Styled as "peer review" — "You're reviewing a colleague's draft. Find the problems before it gets submitted."
+### Completion:
+- Summary card showing: PICO, study count, effect size type/model, user's interpretation, main finding, GRADE, implications.
+- No poster PDF generation — users take their plots (from Onlinemeta/R) and content into their own poster template.
 
-### Stage 3: AI-Powered Mini Plan (Create)
-- **Format:** Free-text creative task. The user writes a brief meta-analysis plan for a given clinical scenario, and AI provides structured feedback.
-- **Flow:**
-  1. User is given a clinical scenario (randomly selected from 3–5 pre-written scenarios, e.g., "Your hospital wants to know if SGLT2 inhibitors reduce CKD progression")
-  2. User writes: (a) PICO statement, (b) 2–3 key databases they'd search, (c) what effect size type they'd use and why, (d) how they'd handle heterogeneity, (e) one potential source of bias and how they'd check for it
-  3. AI evaluates each component with inline feedback (similar to Course 1–2 AI workshops but more comprehensive)
-  4. AI gives an overall assessment: strengths, areas to improve, and a pass/needs-revision verdict
-- **Mechanics:** This is the "creation" level — no multiple choice, the user must synthesize everything. AI feedback is formative (helpful, not punitive). If "needs revision," user can revise and resubmit once.
-- **Requirement:** Same backend proxy as Course 1–2 AI workshops (Anthropic API via serverless function). This stage won't work until the backend is built.
+### R Code Generator (`buildRCode()`):
+- Dynamically writes a complete `metafor` script using the user's citations, data, effect size choice, and model.
+- Binary: `escalc(measure="OR", ai=..., n1i=..., ci=..., n2i=...)` → `rma()` → `forest(atransf=exp)` → `funnel()`
+- Continuous: `escalc(measure="MD", m1i=..., sd1i=..., n1i=..., m2i=..., sd2i=..., n2i=...)` → `rma()` → `forest()` → `funnel()`
+- Includes `cat()` statements for key statistics printout.
 
-### Passing & Rewards:
-- Must pass all 3 stages to earn completion
-- **Reward:** Final celebration screen with all surviving dinos from the journey, completion certificate (downloadable?), summary of the user's meta-analysis learning path
-- **If not passed:** Specific feedback on which stage(s) need work, with links back to the relevant course sections for review. Can retry each stage independently.
+### AI Usage (across both phases):
+- **3 checkpoints total:** PICO (Midterm Step 1), Search Strategy (Midterm Step 2), Conclusions (Final Step 5)
+- Estimated cost: ~$0.01–0.03 per full workshop run (3 API calls)
+- All calls use existing `/api/ai-feedback` endpoint with step-specific system prompts
 
-### Open Questions:
-- Exact scenario content for each stage (how many scenarios to write, how much variety)
-- Visual design of the 3-stage progression UI (linear steps? map? unlock animation?)
-- Whether Stage 3 should be optional (since it depends on backend AI) or required
-- Certificate design and whether it includes the user's name (requires login)
-- Whether to track stage results in Supabase for analytics
-- Time limits per stage? (probably not — let users think carefully)
-- Whether the final is replayable or one-shot with retries
+### State:
+- Reads Phase 1 data from `sessionStorage` key `ma_project_midterm`.
+- Analysis state persisted to `sessionStorage` key `ma_project_final`.
+- Supabase persistence is Phase 3 work (not yet wired).
+
+### External Tools Linked:
+- [Onlinemeta](https://smuonco.shinyapps.io/Onlinemeta/) — primary recommendation (R-Shiny based, free, no login, published in JMIR 2025)
+- [MetaAnalysisOnline.com](https://metaanalysisonline.com/) — alternative
+- [Meta-Mar](https://www.meta-mar.com/) — alternative with AI features
 
 ---
 
@@ -564,7 +579,7 @@ api/
 - **API key:** Stored in Vercel Environment Variables (`ANTHROPIC_API_KEY`), never exposed in frontend code
 - **Local dev:** Use `vercel dev` (not `npm start`) to test serverless functions locally; `.env.local` pulled from Vercel
 - **Cost:** ~$0.003–0.01 per AI check (prepaid credits at console.anthropic.com)
-- **Courses using it:** Course 1 AI PICO Workshop + Freestyle PICO, Course 2 AI Boolean Query Checker, Course 3 AI Extraction Reviewer
+- **Courses using it:** Course 1 AI PICO Workshop + Freestyle PICO, Course 2 AI Boolean Query Checker, Course 3 AI Extraction Reviewer, **MA Workshop: Planning** (PICO check + Search strategy check), **MA Workshop: Analysis** (Conclusions check)
 - **Future courses:** Can reuse the same `/api/ai-feedback` endpoint — just send different system prompts from frontend
 
 ### Backend Status (Supabase Integration):
