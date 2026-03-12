@@ -648,6 +648,44 @@ function TrafficLightDemo({ lang }) {
 }
 
 
+// ═══ DUAL EXTRACTION CARDS (2×2, click-to-expand) ═══
+function DualExtractionCards({ lang }) {
+  const [open, setOpen] = useState(null);
+  const steps = [
+    { num: "1", titleZh: "獨立萃取", titleEn: "Extract Independently", descZh: "兩名審查者各自萃取數據，過程中不互相討論。使用相同的標準化表格。", descEn: "Two reviewers extract data separately without discussing. Use the same standardized form." },
+    { num: "2", titleZh: "比對結果", titleEn: "Compare Results", descZh: "比較兩份萃取結果。計算 Cohen's kappa 評估一致性（>0.8 = 優秀，0.6-0.8 = 良好）。", descEn: "Compare both extractions. Calculate Cohen's kappa for agreement (>0.8 = excellent, 0.6-0.8 = good)." },
+    { num: "3", titleZh: "處理分歧", titleEn: "Resolve Disagreements", descZh: "不一致的地方回到原文核實。無法達成共識時由第三位審查者裁決。記錄所有分歧和解決方式。", descEn: "Disagreements are verified against the original text. If unresolved, a third reviewer decides. Document all disagreements and resolutions." },
+    { num: "4", titleZh: "試行校準", titleEn: "Pilot & Calibrate", descZh: "正式萃取前，先用 2-3 篇文獻進行試行，讓團隊統一萃取標準和判斷。", descEn: "Before formal extraction, pilot with 2-3 studies to calibrate the team's extraction standards and judgments." },
+  ];
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 14, marginBottom: 28 }}>
+      {steps.map((step, i) => {
+        const isOpen = open === i;
+        return (
+          <div key={i}
+            onClick={() => setOpen(isOpen ? null : i)}
+            style={{
+              background: CARD_BG, border: `1px solid ${isOpen ? GOLD + "44" : LIGHT_BORDER}`,
+              borderRadius: 14, padding: "22px 20px", cursor: "pointer",
+              transition: "all 0.3s",
+              boxShadow: isOpen ? `0 4px 16px ${GOLD}12` : "none",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ width: 28, height: 28, borderRadius: 8, background: `${GOLD}15`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: GOLD, flexShrink: 0 }}>{step.num}</div>
+              <h4 style={{ fontSize: 15, fontWeight: 600, color: DARK, flex: 1 }}>{lang === "zh" ? step.titleZh : step.titleEn}</h4>
+              <span style={{ fontSize: 20, color: GOLD, fontWeight: 300, lineHeight: 1, transition: "transform 0.3s", transform: isOpen ? "rotate(45deg)" : "rotate(0)", display: "inline-block" }}>+</span>
+            </div>
+            {isOpen && (
+              <p style={{ fontSize: 13.5, lineHeight: 1.65, color: MUTED, marginTop: 14 }}>{lang === "zh" ? step.descZh : step.descEn}</p>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // ═══ MAIN COURSE 3 COMPONENT ═══
 export default function Course3({ onNavigate, user, onLogin, onLogout }) {
   const { t, lang, toggleLang } = useI18n();
@@ -863,24 +901,7 @@ export default function Course3({ onNavigate, user, onLogin, onLogout }) {
               : "One person extracting data will inevitably make mistakes. Systematic reviews require at least two independent extractors — each completes their work separately, then results are compared using Cohen's kappa for agreement. Disagreements are resolved by a third reviewer or discussion."}
           </Paragraph></FadeIn>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 14, marginBottom: 28 }}>
-            {[
-              { numZh: "1", titleZh: "獨立萃取", titleEn: "Extract Independently", descZh: "兩名審查者各自萃取數據，過程中不互相討論。使用相同的標準化表格。", descEn: "Two reviewers extract data separately without discussing. Use the same standardized form." },
-              { numZh: "2", titleZh: "比對結果", titleEn: "Compare Results", descZh: "比較兩份萃取結果。計算 Cohen's kappa 評估一致性（>0.8 = 優秀，0.6-0.8 = 良好）。", descEn: "Compare both extractions. Calculate Cohen's kappa for agreement (>0.8 = excellent, 0.6-0.8 = good)." },
-              { numZh: "3", titleZh: "處理分歧", titleEn: "Resolve Disagreements", descZh: "不一致的地方回到原文核實。無法達成共識時由第三位審查者裁決。記錄所有分歧和解決方式。", descEn: "Disagreements are verified against the original text. If unresolved, a third reviewer decides. Document all disagreements and resolutions." },
-              { numZh: "4", titleZh: "試行校準", titleEn: "Pilot & Calibrate", descZh: "正式萃取前，先用 2-3 篇文獻進行試行，讓團隊統一萃取標準和判斷。", descEn: "Before formal extraction, pilot with 2-3 studies to calibrate the team's extraction standards and judgments." },
-            ].map((step, i) => (
-              <FadeIn key={i} delay={i * 0.05 + 0.15}>
-                <div style={{ background: CARD_BG, border: `1px solid ${LIGHT_BORDER}`, borderRadius: 14, padding: "22px 20px", height: "100%" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-                    <div style={{ width: 28, height: 28, borderRadius: 8, background: `${GOLD}15`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: GOLD, flexShrink: 0 }}>{step.numZh}</div>
-                    <h4 style={{ fontSize: 15, fontWeight: 600, color: DARK }}>{lang === "zh" ? step.titleZh : step.titleEn}</h4>
-                  </div>
-                  <p style={{ fontSize: 13.5, lineHeight: 1.65, color: MUTED }}>{lang === "zh" ? step.descZh : step.descEn}</p>
-                </div>
-              </FadeIn>
-            ))}
-          </div>
+          <DualExtractionCards lang={lang} />
 
           <FadeIn delay={0.35}>
             <div style={{ background: `${GOLD}08`, border: `1px solid ${GOLD}1A`, borderRadius: 14, padding: "16px 20px", marginBottom: 28 }}>
