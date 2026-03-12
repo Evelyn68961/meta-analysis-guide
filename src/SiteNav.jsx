@@ -99,7 +99,7 @@ function CourseDropdown({ onNavigate, t, currentCourse }) {
             onMouseEnter={(e) => (e.currentTarget.style.background = "#F8F7F4")}
             onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
           >
-            ← {t("hubNavTitle")} {t("hubNavSuffix")} Hub
+            ← {t("aboutBackToHub")}
           </button>
         </div>
       )}
@@ -291,7 +291,7 @@ export default function SiteNav({ onNavigate, user, onLogin, onLogout, courseId,
           <button onClick={() => { onNavigate("hub"); setMobileOpen(false); }} style={{
             background: "none", border: "none", color: TEAL, padding: "14px 8px",
             fontSize: 15, fontWeight: 500, cursor: "pointer", textAlign: "left", fontFamily: FONT,
-          }}>← {t("hubNavTitle")} {t("hubNavSuffix")} Hub</button>
+          }}>← {t("aboutBackToHub")}</button>
 
           <div style={{ borderTop: `1px solid ${LIGHT_BORDER}`, margin: "8px 0" }} />
 
