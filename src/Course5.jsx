@@ -633,7 +633,7 @@ export default function Course5({ onNavigate, user, onLogin, onLogout }) {
         <div style={{ maxWidth: 880, margin: "0 auto" }}>
           <FadeIn><SectionLabel text={t("c5gameLabel")} /></FadeIn>
           <FadeIn delay={0.1}>
-            <DinoDoorEscape lang={lang} />
+            <DinoDoorEscape lang={lang} user={user} />
           </FadeIn>
         </div>
       </section>

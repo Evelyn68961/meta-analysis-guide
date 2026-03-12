@@ -17,6 +17,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import CuteDino from "./CuteDino";
 import { pickBalanced } from "./questionHelpers";
 import { course3Questions } from "./course3Questions";
+import { supabase } from "./supabaseClient";
 
 // ═══ DESIGN TOKENS ═══
 const GOLD = "#D4A843";
@@ -195,7 +196,7 @@ function GameProgress({ correctCount, wrongCount }) {
 }
 
 // ═══ MAIN GAME COMPONENT ═══
-export default function DinoHomeSave({ t, lang }) {
+export default function DinoHomeSave({ t, lang, user }) {
   const [phase, setPhase] = useState("welcome"); // welcome | playing | result_pause | results
   const [chosenDino, setChosenDino] = useState(null);
   const [questions, setQuestions] = useState([]);
@@ -249,7 +250,8 @@ export default function DinoHomeSave({ t, lang }) {
       const newWrong = wrongCount + 1;
       setWrongCount(newWrong);
       setFireLevel(prev => Math.max(0, prev - 1));
-      if (newWrong >= 3) {
+    if (newWrong >= 3) {
+        if (user) { supabase.from("progress").insert({ user_id: user.id, course: 3, game_type: "home_save", dino_index: chosenDino, score: correctCount, max_score: 5, result: "lost" }).then(); }
         setTimeout(() => {
           setGameResult("lose");
           setPhase("results");
@@ -300,6 +302,7 @@ export default function DinoHomeSave({ t, lang }) {
       setCorrectCount(newCorrect);
       setFireLevel(prev => Math.min(5, prev + 1));
       if (newCorrect >= 5) {
+        if (user) { supabase.from("progress").insert({ user_id: user.id, course: 3, game_type: "home_save", dino_index: chosenDino, score: newCorrect, max_score: 5, result: "saved" }).then(); }
         setTimeout(() => {
           setGameResult("win");
           setPhase("results");
@@ -310,6 +313,7 @@ export default function DinoHomeSave({ t, lang }) {
       setWrongCount(newWrong);
       setFireLevel(prev => Math.max(0, prev - 1));
       if (newWrong >= 3) {
+        if (user) { supabase.from("progress").insert({ user_id: user.id, course: 3, game_type: "home_save", dino_index: chosenDino, score: correctCount, max_score: 5, result: "lost" }).then(); }
         setTimeout(() => {
           setGameResult("lose");
           setPhase("results");
@@ -329,6 +333,7 @@ export default function DinoHomeSave({ t, lang }) {
     } else if (!gameResult) {
       // Reached end of questions without triggering win/lose
       const result = correctCount >= 5 ? "win" : "lose";
+      if (user) { supabase.from("progress").insert({ user_id: user.id, course: 3, game_type: "home_save", dino_index: chosenDino, score: correctCount, max_score: 5, result: result === "win" ? "saved" : "lost" }).then(); }
       setGameResult(result);
       setPhase("results");
     }

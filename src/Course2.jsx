@@ -1288,7 +1288,7 @@ export default function Course2({ onNavigate, user, onLogin, onLogout }) {
       <section id="game" style={{ padding: "80px 24px", background: "#F1F0EC" }}>
         <div style={{ maxWidth: 880, margin: "0 auto" }}>
           <FadeIn><SectionLabel text={t("c2gameLabel")} /></FadeIn>
-          <FadeIn delay={0.1}><DinoFoodRescue t={t} lang={lang} /></FadeIn>
+          <FadeIn delay={0.1}><DinoFoodRescue t={t} lang={lang} user={user} /></FadeIn>
         </div>
       </section>
 

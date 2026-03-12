@@ -1060,7 +1060,7 @@ export default function Course1PICO({ onNavigate, user, onLogin, onLogout }) {
       <section id="game" style={{ padding: "80px 24px", background: LIGHT_BG }}>
         <div style={{ maxWidth: 880, margin: "0 auto" }}>
           <FadeIn><SectionLabel text={t("c1gameLabel")} /></FadeIn>
-          <FadeIn delay={0.1}><DinoEggHatch t={t} lang={lang} onNext={() => document.getElementById("ai-workshop")?.scrollIntoView({ behavior: "smooth" })} /></FadeIn>
+          <FadeIn delay={0.1}><DinoEggHatch t={t} lang={lang} user={user} onNext={() => document.getElementById("ai-workshop")?.scrollIntoView({ behavior: "smooth" })} /></FadeIn>
         </div>
       </section>
 

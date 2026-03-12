@@ -2,6 +2,7 @@ import { useState } from "react";
 import CuteDino from "./CuteDino";
 import { pickBalanced } from "./questionHelpers";
 import { course1Questions } from "./course1Questions";
+import { supabase } from "./supabaseClient";
 
 // ═══ DESIGN TOKENS ═══
 const TEAL = "#0E7C86";
@@ -49,7 +50,7 @@ export function DragonEgg({ color = "#3498DB", size = 80, state = "idle", delay 
 }
 
 // ═══ DRAGON EGG HATCHING GAME ═══
-export default function DinoEggHatch({ t, lang, onNext }) {
+export default function DinoEggHatch({ t, lang, onNext, user }) {
   const [phase, setPhase] = useState("welcome"); // welcome | pick | playing | results
   const [chosenEgg, setChosenEgg] = useState(null);
   const [questions, setQuestions] = useState([]);
@@ -103,7 +104,8 @@ export default function DinoEggHatch({ t, lang, onNext }) {
       setCorrectCount(newCorrect);
       setEggStage(newCorrect);
       spawnParticles("sun");
-      if (newCorrect >= 5) {
+    if (newCorrect >= 5) {
+        if (user) { supabase.from("progress").insert({ user_id: user.id, course: 1, game_type: "dino_hatch", dino_index: chosenEgg, score: newCorrect, max_score: 5, result: "hatched" }).then(); }
         setTimeout(() => setPhase("results"), 1200);
       }
     } else {
@@ -112,6 +114,7 @@ export default function DinoEggHatch({ t, lang, onNext }) {
       setIceStage(newWrong);
       spawnParticles("snow");
       if (newWrong >= 3) {
+        if (user) { supabase.from("progress").insert({ user_id: user.id, course: 1, game_type: "dino_hatch", dino_index: chosenEgg, score: correctCount, max_score: 5, result: "frozen" }).then(); }
         setGameOver(true);
         setTimeout(() => setPhase("results"), 1200);
       }

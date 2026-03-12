@@ -14,6 +14,7 @@
 import { useState } from "react";
 import { pickBalanced } from "./questionHelpers";
 import { course0Questions } from "./course0Questions";
+import { supabase } from "./supabaseClient";
 
 // ═══ DESIGN TOKENS ═══
 const TEAL = "#0E7C86";
@@ -184,7 +185,7 @@ export function StylishEgg({ color = "#3498DB", size = 64, variant = "solid", an
 }
 
 // ═══ MAIN GAME COMPONENT ═══
-export default function DinoEggHunt({ t, lang }) {
+export default function DinoEggHunt({ t, lang, user }) {
   const [phase, setPhase] = useState("welcome"); // welcome | playing | results
   const [questions, setQuestions] = useState([]);
   const [current, setCurrent] = useState(0);
@@ -215,6 +216,18 @@ export default function DinoEggHunt({ t, lang }) {
     const isCorrect = idx === questions[current].correct;
     const catId = CATEGORY_NUM_TO_ID[questions[current].category];
     setResults(prev => [...prev, { category: catId, correct: isCorrect }]);
+    // Save collected egg to Supabase (if logged in + correct)
+    if (isCorrect && user) {
+      supabase.from("progress").insert({
+        user_id: user.id,
+        course: 0,
+        game_type: "egg_hunt",
+        dino_index: questions[current].category,
+        score: 1,
+        max_score: 1,
+        result: "collected",
+      }).then();
+    }
   };
 
   const nextEgg = () => {

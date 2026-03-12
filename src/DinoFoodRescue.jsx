@@ -15,6 +15,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import CuteDino from "./CuteDino";
 import { pickBalanced } from "./questionHelpers";
 import { course2Questions } from "./course2Questions";
+import { supabase } from "./supabaseClient";
 
 // ═══ DESIGN TOKENS ═══
 const PURPLE = "#7B68C8";
@@ -192,7 +193,7 @@ function IceProgress({ total, freed, current }) {
 }
 
 // ═══ MAIN GAME COMPONENT ═══
-export default function DinoFoodRescue({ t, lang }) {
+export default function DinoFoodRescue({ t, lang, user }) {
   const [phase, setPhase] = useState("welcome"); // welcome | playing | smashing | results
   const [chosenDino, setChosenDino] = useState(null);
   const [questions, setQuestions] = useState([]);
@@ -268,6 +269,7 @@ export default function DinoFoodRescue({ t, lang }) {
                 setFreedCount(newFreed);
                 // Win condition: 5 correct
                 if (newFreed >= 5) {
+                  if (user) { supabase.from("progress").insert({ user_id: user.id, course: 2, game_type: "food_rescue", dino_index: chosenDino, score: newFreed, max_score: 5, result: "rescued" }).then(); }
                   setTimeout(() => setPhase("results"), 1200);
                 }
               }, 700);
@@ -285,6 +287,7 @@ export default function DinoFoodRescue({ t, lang }) {
       setTimeout(() => setAxeState("idle"), 600);
       // Lose condition: 3 wrong
       if (newWrong >= 3) {
+        if (user) { supabase.from("progress").insert({ user_id: user.id, course: 2, game_type: "food_rescue", dino_index: chosenDino, score: freedCount, max_score: 5, result: "lost" }).then(); }
         setTimeout(() => setPhase("results"), 1200);
       }
     }

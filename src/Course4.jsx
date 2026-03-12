@@ -831,7 +831,7 @@ export default function Course4({ onNavigate, user, onLogin, onLogout }) {
         <div style={{ maxWidth: 880, margin: "0 auto" }}>
           <FadeIn><SectionLabel text={t("c4gameLabel")} /></FadeIn>
           <FadeIn delay={0.1}>
-            <DinoKeyQuest lang={lang} />
+            <DinoKeyQuest lang={lang} user={user} />
           </FadeIn>
         </div>
       </section>

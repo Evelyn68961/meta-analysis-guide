@@ -540,7 +540,7 @@ export default function Course0({ onNavigate, user, onLogin, onLogout }) {
         <FadeIn><SectionLabel text={t("eggHuntLabel")} /><SectionTitle>{t("eggHuntTitle")}</SectionTitle>
           <Paragraph style={{ marginBottom: 32 }}>{t("eggHuntDesc")}</Paragraph>
         </FadeIn>
-        <FadeIn delay={0.1}><DinoEggHunt t={t} lang={lang} /></FadeIn>
+        <FadeIn delay={0.1}><DinoEggHunt t={t} lang={lang} user={user} /></FadeIn>
       </Section>
 
       </div>{/* end .main-content */}
