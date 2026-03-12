@@ -897,7 +897,7 @@ export default function Course3({ onNavigate, user, onLogin, onLogout }) {
 
       {/* GAME */}
       <section id="game" style={{ padding: "80px 24px", background: LIGHT_BG }}>
-        <div style={{ maxWidth: 640, margin: "0 auto" }}>
+        <div style={{ maxWidth: 880, margin: "0 auto" }}>
           <FadeIn><SectionLabel text={t("c3gameLabel")} /></FadeIn>
           <FadeIn delay={0.1}><DinoHomeSave t={t} lang={lang} /></FadeIn>
         </div>
