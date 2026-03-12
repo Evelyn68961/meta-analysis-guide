@@ -149,11 +149,54 @@ This **fulfills** that principle rather than contradicting it. The earlier decis
 
 ---
 
+## Package Availability: ✅ Confirmed
+
+**metafor has a WebAssembly (WASM) binary available.** Verified on March 12, 2026.
+
+R-universe (https://wviechtb.r-universe.dev/metafor) lists `metafor_4.9-30.tgz(r-4.5-emscripten)` — the `emscripten` suffix confirms it is compiled for WebR. This is a pre-built binary that WebR can download and install at runtime.
+
+### Two package sources available
+
+| Source | URL | Status |
+|--------|-----|--------|
+| **R-universe** | `https://wviechtb.r-universe.dev` | ✅ Confirmed — WASM binary listed |
+| **Official WebR repo** | `https://repo.r-wasm.org` | Very likely available (metafor is pure R with standard dependencies) |
+
+In the implementation, both repos are specified as fallback:
+
+```javascript
+await webR.evalRVoid(`
+  webr::install("metafor", repos = c(
+    "https://repo.r-wasm.org",
+    "https://wviechtb.r-universe.dev"
+  ))
+`);
+```
+
+### Manual verification (optional — do this yourself to see it work)
+
+1. Open the WebR REPL: https://webr.r-wasm.org/latest/
+2. Wait for R to load (takes 10-20 seconds)
+3. Type and run the following commands one by one:
+
+```r
+webr::install("metafor")
+library(metafor)
+dat <- dat.bcg
+res <- rma(ai=tpos, bi=tneg, ci=cpos, di=cneg, data=dat, measure="OR")
+print(res)
+forest(res)
+```
+
+4. If you see numerical output from `print(res)` and a forest plot appears in the plot panel → metafor works in WebR. This is the same code path our platform will use.
+
+---
+
 ## Execution Plan
 
 ### Phase 0: Proof of Concept (do first)
 
-**Goal:** Verify WebR + metafor works before touching Final.jsx.
+**Goal:** Build a standalone component and confirm the full pipeline works in our React environment.
 
 **Deliverable:** A standalone `WebRRunner.jsx` component that:
 1. Initializes WebR on mount
@@ -170,8 +213,6 @@ This **fulfills** that principle rather than contradicting it. The earlier decis
 - [ ] `funnel()` renders to canvas
 - [ ] Total load time is acceptable (target: <30s on broadband, <60s on slower connections)
 - [ ] Works in Chrome, Firefox, Safari
-
-**If metafor is NOT in the WebR repo:** Fall back to R-universe as an alternative package source (`https://wviechtb.r-universe.dev`), or evaluate whether the scope needs to be reduced.
 
 ### Phase 1: Integrate into Final.jsx
 
