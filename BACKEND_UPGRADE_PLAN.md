@@ -287,7 +287,7 @@ See **`WIRING_GUIDE.md`** for step-by-step instructions. Summary:
 | `Course0.jsx` – `Course5.jsx` | Pass `user` prop to game components |
 | `ProfilePage.jsx` | Fix stats derivation, use `max_score`, fix dino collection logic, add C4/C5 game types |
 | `Midterm.jsx` | Gate AI check buttons behind login + C3 completion |
-| `Final.jsx` | Gate AI check buttons behind login + C4 completion |
+| `Final.jsx` | Gate AI check buttons behind login + C5 completion |
 
 ### Phase 4 — Progress Dashboard ✅ COMPLETE (UI only — awaiting Phase 3 data)
 - ✅ Built `ProfilePage.jsx` — stat cards, dino collection grid, best scores, empty state
