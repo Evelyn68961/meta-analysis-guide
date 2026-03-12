@@ -45,7 +45,7 @@ function SectionTitle({ children }) {
 }
 
 function Paragraph({ children, style = {} }) {
-  return <p style={{ fontSize: 16, lineHeight: 1.75, color: MUTED, maxWidth: 640, ...style }}>{children}</p>;
+  return <p style={{ fontSize: 16, lineHeight: 1.75, color: MUTED, maxWidth: 880, ...style }}>{children}</p>;
 }
 
 const btnPrimary = { background: PURPLE, border: "none", color: "#FFF", padding: "12px 28px", borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: "pointer", transition: "all 0.2s" };
@@ -962,6 +962,39 @@ Be concise. Don't use Markdown formatting. Use plain text with line breaks.`;
 }
 
 
+// ═══ SCREENING TIP CARDS (2×2, click-to-expand) ═══
+function ScreeningTipCards({ t }) {
+  const [open, setOpen] = useState(null);
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 14 }}>
+      {[1, 2, 3, 4].map(n => {
+        const isOpen = open === n;
+        return (
+          <div key={n}
+            onClick={() => setOpen(isOpen ? null : n)}
+            style={{
+              background: CARD_BG, border: `1px solid ${isOpen ? PURPLE + "44" : LIGHT_BORDER}`,
+              borderRadius: 14, padding: "22px 20px", cursor: "pointer",
+              transition: "all 0.3s",
+              boxShadow: isOpen ? `0 4px 16px ${PURPLE}12` : "none",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ width: 28, height: 28, borderRadius: 8, background: `${PURPLE}15`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: PURPLE, flexShrink: 0 }}>{n}</div>
+              <h4 style={{ fontSize: 15, fontWeight: 600, color: DARK, flex: 1 }}>{t(`c2tip${n}Title`)}</h4>
+              <span style={{ fontSize: 20, color: PURPLE, fontWeight: 300, lineHeight: 1, transition: "transform 0.3s", transform: isOpen ? "rotate(45deg)" : "rotate(0)", display: "inline-block" }}>+</span>
+            </div>
+            {isOpen && (
+              <p style={{ fontSize: 13.5, lineHeight: 1.65, color: MUTED, marginTop: 14 }}>{t(`c2tip${n}Desc`)}</p>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+
 // ═══ MAIN COURSE COMPONENT ═══
 export default function Course2({ onNavigate, user, onLogin, onLogout }) {
   const { t, lang, toggleLang } = useI18n();
@@ -1172,19 +1205,7 @@ export default function Course2({ onNavigate, user, onLogin, onLogout }) {
         <div style={{ maxWidth: 880, margin: "0 auto" }}>
           <FadeIn><SectionLabel text={t("c2s5Label")} /><SectionTitle>{t("c2s5Title")}</SectionTitle></FadeIn>
           <FadeIn delay={0.1}><Paragraph style={{ marginBottom: 32 }}>{t("c2s5Intro")}</Paragraph></FadeIn>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 14 }}>
-            {[1, 2, 3, 4].map(n => (
-              <FadeIn key={n} delay={n * 0.05}>
-                <div style={{ background: CARD_BG, border: `1px solid ${LIGHT_BORDER}`, borderRadius: 14, padding: "22px 20px", height: "100%" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-                    <div style={{ width: 28, height: 28, borderRadius: 8, background: `${PURPLE}15`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: PURPLE, flexShrink: 0 }}>{n}</div>
-                    <h4 style={{ fontSize: 15, fontWeight: 600, color: DARK }}>{t(`c2tip${n}Title`)}</h4>
-                  </div>
-                  <p style={{ fontSize: 13.5, lineHeight: 1.65, color: MUTED }}>{t(`c2tip${n}Desc`)}</p>
-                </div>
-              </FadeIn>
-            ))}
-          </div>
+          <ScreeningTipCards t={t} />
           {/* NEW: Screening drill */}
           <FadeIn delay={0.25}><ScreeningDrill lang={lang} /></FadeIn>
           <FadeIn delay={0.3}><div style={{ textAlign: "center", marginTop: 32 }}><button onClick={() => scrollTo("s6")} style={btnPrimary}>{t("c2s5Next2")}</button></div></FadeIn>
