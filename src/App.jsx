@@ -155,7 +155,7 @@ function CourseHub({ onNavigate, user, onLogin, onLogout }) {
         {/* Midterm checkpoint card */}
         <div style={{ paddingLeft: 20, borderLeft: `2px solid ${CORAL}22`, marginBottom: 40 }}>
           <CheckpointCard
-            emoji="🔬"
+            emoji="🛠️"
             titleKey="hubMidtermTitle"
             descKey="hubMidtermDesc"
             color="#8B6914"
@@ -180,7 +180,7 @@ function CourseHub({ onNavigate, user, onLogin, onLogout }) {
         {/* Final exam card */}
         <div style={{ paddingLeft: 20, borderLeft: `2px solid ${"#2E86C1"}22`, marginBottom: 0 }}>
           <CheckpointCard
-            emoji="📊"
+            emoji="📈"
             titleKey="hubFinalTitle"
             descKey="hubFinalDesc"
             color="#C0392B"
