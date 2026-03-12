@@ -156,7 +156,6 @@ export default function DinoEggHatch({ t, lang, onNext }) {
               onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-6px)"}
               onMouseLeave={(e) => e.currentTarget.style.transform = "translateY(0)"}>
               <DragonEgg color={c} size={64} state="idle" delay={i * 0.3} />
-              <div style={{ fontSize: 11, color: MUTED, marginTop: 4 }}>{Array.isArray(dinoNames) ? dinoNames[i] : `Egg ${i+1}`}</div>
             </div>
           ))}
         </div>
