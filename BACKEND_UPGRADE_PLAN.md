@@ -4,6 +4,10 @@
 
 We are upgrading Meta-Analysis 101 from a frontend-only React site to a **frontend + backend** project with user authentication and a database. The goal is to let users **track their progress** across sessions and devices — how many eggs they collect, how many dinos they hatch, how many dinos survive, course completion, and more. This adds a persistent gamification loop that ties users more deeply into the learning experience.
 
+**Secondary goal: cost control for AI features.** AI workshops (Midterm/Final) use the Anthropic API via Vercel serverless proxy, which costs money per call. By gating AI features behind login + course completion, we ensure only serious learners consume API credits.
+
+**Tertiary goal: database hygiene.** User progress data is auto-deleted 3 months after the user's last login to keep the database lean over years of usage.
+
 ---
 
 ## Technology Choices & Rationale
@@ -62,7 +66,8 @@ We are upgrading Meta-Analysis 101 from a frontend-only React site to a **fronte
 │   Responsive: phone, tablet, desktop │
 │  - Course Hub, Courses 0-5           │
 │  - Games: Egg Hunt, Dino Hatch,      │
-│    Food Rescue, Home Save            │
+│    Food Rescue, Home Save,           │
+│    Key Quest, Door Escape            │
 │  - Login button (Google OAuth)       │
 │  - Progress Dashboard                │
 │  - Supabase JS Client SDK           │
@@ -74,7 +79,7 @@ We are upgrading Meta-Analysis 101 from a frontend-only React site to a **fronte
 │  - PostgreSQL Database               │
 │  - Auth (Google OAuth)               │
 │  - Row-Level Security (RLS)          │
-│  - Real-time subscriptions (future)  │
+│  - pg_cron (3-month auto-cleanup)    │
 └─────────────────────────────────────┘
 ```
 
@@ -82,34 +87,132 @@ We are upgrading Meta-Analysis 101 from a frontend-only React site to a **fronte
 
 ---
 
-## Database Schema (Live)
+## Database Schema
+
+> **Updated March 12, 2026.** Replaces the original schema (which had `egg_index` and `dino_species` columns). All decisions locked in via Schema Discussion on March 11, 2026.
 
 ### `profiles` table
+
 Stores basic user info, auto-created on first Google login.
 
-| Column       | Type        | Notes                              |
-|--------------|-------------|------------------------------------|
-| id           | UUID (PK)   | References Supabase auth.users.id  |
-| display_name | TEXT        | From Google profile                |
-| avatar_url   | TEXT        | From Google profile (optional)     |
-| created_at   | TIMESTAMPTZ | Auto-set on creation               |
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID (PK) | References Supabase `auth.users.id` |
+| display_name | TEXT | From Google profile |
+| avatar_url | TEXT | From Google profile (optional) |
+| created_at | TIMESTAMPTZ | Auto-set on creation |
+| last_login_at | TIMESTAMPTZ | Updated on each login; used for 3-month cleanup |
 
 ### `progress` table
-Tracks per-user game achievements across all courses.
 
-| Column         | Type        | Notes                                       |
-|----------------|-------------|---------------------------------------------|
-| id             | UUID (PK)   | Auto-generated                              |
-| user_id        | UUID (FK)   | References profiles.id                      |
-| course         | INT         | 0, 1, 2, 3, 4, 5                           |
-| game_type      | TEXT        | 'egg_hunt', 'dino_hatch', 'food_rescue', 'home_save' |
-| egg_index      | INT         | Which egg was chosen (0-6)                  |
-| dino_species   | TEXT        | e.g., 'Rex', 'Azure', etc.                 |
-| score          | INT         | Number of correct answers                   |
-| result         | TEXT        | 'hatched', 'frozen', 'fed', 'saved', 'lost' |
-| completed_at   | TIMESTAMPTZ | When this game session happened             |
+Tracks per-user game achievements across all 6 courses. One row = one game session (except C0 which saves one row per collected egg).
 
-> **Note:** This schema is a starting point. We may refine it during implementation — e.g., adding a separate `course_completion` table or `badges` table as features grow.
+| Column | Type | Notes |
+|--------|------|-------|
+| id | UUID (PK) | Auto-generated |
+| user_id | UUID (FK) | References `profiles.id` |
+| course | INT | 0, 1, 2, 3, 4, 5 |
+| game_type | TEXT | `egg_hunt`, `dino_hatch`, `food_rescue`, `home_save`, `key_quest`, `door_escape` |
+| dino_index | INT | 0–6, the universal index linking egg ↔ dino across all courses |
+| score | INT | Correct count for that session |
+| max_score | INT | Denominator: 7 (C0 — but see note), 5 (C1/C2/C3), 9 (C4/C5) |
+| result | TEXT | See result values below |
+| completed_at | TIMESTAMPTZ | Auto (`now()` default) |
+
+### Result values by course
+
+| Course | Game | Possible `result` values | Meaning |
+|--------|------|-------------------------|---------|
+| C0 | EggHunt | `collected` | One row per egg unlocked by correct answer |
+| C1 | EggHatch | `hatched` / `frozen` | Did the dino hatch or freeze? |
+| C2 | FoodRescue | `rescued` / `lost` | Was the food rescued? |
+| C3 | HomeSave | `saved` / `lost` | Was the home saved? |
+| C4 | KeyQuest | `unlocked` / `locked` | Did the dino earn the key? |
+| C5 | DoorEscape | `escaped` / `trapped` | Did the dino escape through the correct door? |
+
+### Score denominators & special cases
+
+| Game | Questions per session | `max_score` saved | Early exit? | Notes |
+|------|----------------------|-------------------|-------------|-------|
+| EggHunt (C0) | 7 (1 per category) | 1 (per row) | No | Saves individual `collected` rows; total derived by counting |
+| EggHatch (C1) | 7 | 5 | Yes (≥5 correct or ≥3 wrong) | `score` = correctCount at game end |
+| FoodRescue (C2) | 7 | 5 | Yes (≥5 freed or ≥3 wrong) | `score` = freedCount at game end |
+| HomeSave (C3) | 7 | 5 | Yes (≥5 correct or ≥3 wrong) | Timeout counts as wrong |
+| KeyQuest (C4) | 9 (3 foundation + 6 advanced) | 9 | No (but locked if foundation <2) | `unlocked` requires foundation ≥2 AND total ≥6 |
+| DoorEscape (C5) | 9 (3 foundation + 6 advanced) + door | 9 | No (but locked if foundation <2) | `escaped` requires foundation ≥2 AND correct door AND total ≥6 |
+
+### dino_index ↔ species mapping (universal across all courses)
+
+| `dino_index` | Egg color | ZH name | EN name | Species |
+|-------------|-----------|---------|---------|---------|
+| 0 | 🟢 `#2ECC71` | 翠牙龍 | Rex | T-Rex |
+| 1 | 🔵 `#3498DB` | 蒼瀾龍 | Azure | Plesiosaur |
+| 2 | 🟡 `#F1C40F` | 金翼龍 | Zephyr | Pterodactyl |
+| 3 | 🔴 `#E74C3C` | 焰角龍 | Blaze | Triceratops |
+| 4 | 🟣 `#9B59B6` | 紫棘龍 | Thistle | Stegosaurus |
+| 5 | 🟠 `#E67E22` | 珀爪龍 | Velo | Velociraptor |
+| 6 | ⚪ `#95A5A6` | 鐵穹龍 | Dome | Pachycephalosaurus |
+
+### Progression chain & gating queries
+
+Each course's outcome gates the next course's available dinos:
+
+```
+C0 (EggHunt)     → collect eggs        → result = 'collected'
+    ↓ collected eggs become available in C1
+C1 (EggHatch)    → hatch dinos         → result = 'hatched' | 'frozen'
+    ↓ hatched dinos become available in C2
+C2 (FoodRescue)  → rescue food         → result = 'rescued' | 'lost'
+    ↓ rescued dinos become available in C3
+C3 (HomeSave)    → save homes          → result = 'saved' | 'lost'
+    ↓ saved dinos become available in C4
+C4 (KeyQuest)    → earn keys           → result = 'unlocked' | 'locked'
+    ↓ unlocked dinos become available in C5
+C5 (DoorEscape)  → escape the maze     → result = 'escaped' | 'trapped'
+```
+
+**Gating is logged-in users only.** Non-logged-in users see all 7 dinos in every course with no gating and no saving.
+
+```sql
+-- C1 available eggs: collected in C0
+SELECT DISTINCT dino_index FROM progress
+WHERE user_id = ? AND course = 0 AND result = 'collected';
+
+-- C2 available dinos: hatched in C1
+SELECT DISTINCT dino_index FROM progress
+WHERE user_id = ? AND course = 1 AND result = 'hatched';
+
+-- C3 available dinos: rescued in C2
+SELECT DISTINCT dino_index FROM progress
+WHERE user_id = ? AND course = 2 AND result = 'rescued';
+
+-- C4 available dinos: saved in C3
+SELECT DISTINCT dino_index FROM progress
+WHERE user_id = ? AND course = 3 AND result = 'saved';
+
+-- C5 available dinos: unlocked in C4
+SELECT DISTINCT dino_index FROM progress
+WHERE user_id = ? AND course = 4 AND result = 'unlocked';
+```
+
+**Replay semantics:** Replaying a game inserts a new row (accumulates history). Gating queries use `SELECT DISTINCT` so duplicates don't cause problems. Players can retry until they succeed.
+
+### AI Workshop Gating
+
+AI workshop features (Midterm/Final AI check buttons) are **only available to logged-in users who have completed the required courses.** This controls API cost.
+
+- **Midterm AI checks:** Require ≥1 row with `course = 3, result = 'saved'` (meaning the user advanced at least one dino through C0→C1→C2→C3)
+- **Final AI check:** Requires ≥1 row with `course = 5, result = 'escaped'` (meaning at least one dino completed the full C0→C1→C2→C3→C4→C5 journey)
+- Workshop UI is always visible (anyone can read instructions and enter data). Only the AI check buttons are disabled when requirements aren't met.
+
+### 3-Month Data Retention
+
+**Purpose:** Keep the database lean. Not a pedagogical urgency mechanic — no user-facing countdown.
+
+- `profiles.last_login_at` is updated on every login/session restore
+- A pg_cron job runs nightly and deletes all `progress` rows for users whose `last_login_at` is >3 months ago
+- Users who return after a long break simply start fresh
+- Active users (logged in at least once every 3 months) keep everything
 
 ---
 
@@ -125,7 +228,7 @@ Tracks per-user game achievements across all courses.
 5. ✅ Create a `supabaseClient.js` file initializing the client with URL + anon key
 6. ✅ Store credentials in environment variables (`.env` file, already in `.gitignore`)
 
-### Phase 1 — Database Schema ✅ COMPLETE
+### Phase 1 — Database Schema ✅ COMPLETE (updated March 12, 2026)
 7. ✅ Open Supabase dashboard → SQL Editor
 8. ✅ Create `profiles` table with SQL
 9. ✅ Create `progress` table with SQL
@@ -134,6 +237,7 @@ Tracks per-user game achievements across all courses.
     - Trigger: `on_auth_user_created` fires after insert on `auth.users`
 11. ✅ Enable Row-Level Security (RLS) on both tables
 12. ✅ Write RLS policies: users can only SELECT/INSERT/UPDATE their own rows
+- ⬅️ **Schema migration needed:** Drop `egg_index` + `dino_species`, add `dino_index` + `max_score`, add `last_login_at` to profiles. See WIRING_GUIDE.md Steps 1–2 for exact SQL.
 
 ### Phase 2 — Authentication (Google OAuth) ✅ COMPLETE
 13. ✅ Create a Google Cloud project at console.cloud.google.com (project name: `meta-analysis-101`)
@@ -149,59 +253,64 @@ Tracks per-user game achievements across all courses.
 19. ✅ Handle auth state with `supabase.auth.getSession()` + `supabase.auth.onAuthStateChange()` in App.jsx
 20. ✅ **Login is optional** — all courses and games remain fully accessible without login
 - **⚠️ Note:** Google OAuth is currently in **Testing mode** — only manually added test users can sign in. Must click "Publish App" in Google Cloud Console → Audience before public launch.
-- **⚠️ Vercel deployment:** Must add `REACT_APP_SUPABASE_URL` and `REACT_APP_SUPABASE_ANON_KEY` to Vercel → Settings → Environment Variables before deploying, or login will break in production (same `.env` issue as local).
+- **⚠️ Vercel deployment:** Must add `REACT_APP_SUPABASE_URL` and `REACT_APP_SUPABASE_ANON_KEY` to Vercel → Settings → Environment Variables before deploying, or login will break in production.
 
 ### Phase 2.5 — Unified Navbar + About + Profile Pages ✅ COMPLETE
-- ✅ Created `SiteNav.jsx` — shared navbar component used on every page (Hub, all courses, About, Profile)
-  - Site logo (clickable → Hub), Course selector dropdown, About link, User profile/login, Language toggle
-  - Inside courses: adds back arrow + course label badge with accent color
-  - Mobile: hamburger menu with full course list, about, profile, login/logout, language toggle
-  - Font consistency: `'Noto Sans TC', 'Outfit', sans-serif'` applied via `FONT` constant everywhere
-- ✅ Created `AboutPage.jsx` — standalone About page at `#about` with 4 info cards (goal, audience, structure, sources) + tech stack badges
+- ✅ Created `SiteNav.jsx` — shared navbar component used on every page
+- ✅ Created `AboutPage.jsx` — standalone About page at `#about`
 - ✅ Created `ProfilePage.jsx` — user progress dashboard at `#profile`
-  - Not logged in: shows lock icon + login prompt
-  - Logged in: fetches from Supabase `progress` table; displays 4 stat overview cards (eggs/7, hatched/7, fed/7, saved/7), dino collection grid (7 slots with hatched/fed/saved status icons), best scores per game, empty state with "Start Learning" button
-- ✅ Updated `App.jsx`:
-  - Added `useRef` import, `SiteNav`, `AboutPage`, `ProfilePage` imports
-  - Replaced Hub's inline nav with `<SiteNav />`
-  - All 6 courses now receive `user`, `onLogin`, `onLogout` props
-  - Added `#about` and `#profile` routes in switch statement
-- ✅ Updated all Course files (0–5):
-  - Each imports `SiteNav` and accepts `user`/`onLogin`/`onLogout` props
-  - Old per-course inline `<nav>` blocks replaced with `<SiteNav courseId="courseX" courseLabel={...} courseColor="..." />`
-  - Course 0: additionally removed redundant section-link nav + mobile hamburger (sidebar catalog is sufficient)
-- ✅ Updated `i18n.js`:
-  - Added nav keys: `navCourses`, `navAbout`, `navLogin`, `navLogout`, `navLoginSave`, `navProfile`
-  - Added ~20 About page keys + ~15 Profile page keys (zh + en)
+- ✅ Updated `App.jsx` with SiteNav, About, Profile imports + routes
+- ✅ Updated all Course files (0–5) to use SiteNav and accept user props
+- ✅ Updated `i18n.js` with nav, About, Profile keys
 
-### Phase 3 — Wire Up Progress Saving ⬅️ NEXT
-21. **Course 0 (Egg Hunt):** When user finds an egg → save to `progress` table
-22. **Course 1 (Dino Egg Hatch):** When game ends → save egg chosen, dino species, score, result (hatched/frozen)
-23. **Course 2 (Dino Food Rescue):** When game ends → save dino chosen, score, result
-24. **Course 3 (Dino Home Save):** When game ends → save dino chosen, score, result (saved/lost)
-25. **Load on login:** When a user signs in, fetch their progress and reflect it in the UI
-26. **Guest mode:** If not logged in, games work normally but nothing is saved to database
-- Each game component needs: `import { supabase } from "./supabaseClient"` and a save function that checks `if (user)` before inserting
-- The `user` object must be passed down from App.jsx → Course → Game component as a prop
+### Phase 3 — Wire Up Progress Saving ⬅️ CURRENT
+See **`WIRING_GUIDE.md`** for step-by-step instructions. Summary:
 
-### Phase 4 — Progress Dashboard ✅ COMPLETE (via ProfilePage.jsx)
-27. ✅ Built "My Progress" page (`ProfilePage.jsx`) accessible from navbar (avatar click or mobile menu)
-28. ✅ Visual summary showing:
-    - Eggs collected: X/7
-    - Dinos hatched: X/7 (with species names and colors)
-    - Dinos fed: X/7
-    - Homes saved: X/7
-    - Dino collection grid (7 species, reveal on interaction, hatched/fed/saved badges)
-    - Best scores per game type
-29. Add visual indicators on Course Hub cards (checkmarks, completion badges) — **TODO**
-30. ✅ Bilingual support — all i18n keys added for Profile page (English + Traditional Chinese)
-- **Note:** Profile page UI is built and queries Supabase. Data will appear once Phase 3 (progress saving) is wired up in game components.
+1. Run schema migration SQL (drop old columns, add new ones, add `last_login_at`)
+2. Update `App.jsx` auth listener to update `last_login_at` on login
+3. Wire each game component (C0–C5) to save progress rows when logged in
+4. Wire dino gating (C1–C5) to query previous course's results for logged-in users
+5. Fix `ProfilePage.jsx` to use new column names and add C4/C5 game types
+6. Gate AI workshop buttons behind login + course completion
+7. Set up pg_cron for 3-month auto-cleanup
+
+| File | What changes |
+|------|-------------|
+| Supabase SQL | ALTER `progress` table + add `last_login_at` to profiles |
+| `App.jsx` | Update `last_login_at` on auth state change |
+| `DinoEggHunt.jsx` | Save `collected` rows per correct answer (if logged in) |
+| `DinoEggHatch.jsx` | Accept `user` prop, query available eggs from C0, save `hatched`/`frozen` result |
+| `DinoFoodRescue.jsx` | Accept `user` prop, query available dinos from C1, save `rescued`/`lost` result |
+| `DinoHomeSave.jsx` | Accept `user` prop, query available dinos from C2, save `saved`/`lost` result |
+| `DinoKeyQuest.jsx` | Accept `user` prop, query available dinos from C3, save `unlocked`/`locked` result |
+| `DinoDoorEscape.jsx` | Accept `user` prop, query available dinos from C4, save `escaped`/`trapped` result |
+| `Course0.jsx` – `Course5.jsx` | Pass `user` prop to game components |
+| `ProfilePage.jsx` | Fix stats derivation, use `max_score`, fix dino collection logic, add C4/C5 game types |
+| `Midterm.jsx` | Gate AI check buttons behind login + C3 completion |
+| `Final.jsx` | Gate AI check buttons behind login + C4 completion |
+
+### Phase 4 — Progress Dashboard ✅ COMPLETE (UI only — awaiting Phase 3 data)
+- ✅ Built `ProfilePage.jsx` — stat cards, dino collection grid, best scores, empty state
+- ⬅️ **Needs Phase 3 fixes:** Old column references (`egg_index`, `dino_species`, `result === "found"`, hardcoded `/7` denominators)
 
 ### Phase 5 — Bonus / Polish (Future)
 31. **Leaderboard:** Anonymous aggregate stats (e.g., "78% of pharmacists hatched their first dino")
 32. **Badges/Achievements:** "Collected all 7 eggs!", "Perfect score on Course 2", etc.
-33. **AI Workshop Backend Proxy:** Since Supabase + Vercel are now in the stack, set up Vercel serverless functions to proxy Anthropic API calls — this fixes the existing broken AI workshops in Courses 1 and 2 (noted in PROJECT_PLAN.md as a known issue)
+33. **Hub completion indicators:** Visual checkmarks on Course Hub cards showing which courses are completed
 34. **Row-Level Security hardening:** Review and tighten RLS policies before any public launch
+
+---
+
+## Variable Names per Game (for wiring reference)
+
+| Game | Dino selection variable | Score variable | Props currently received | Props needed |
+|------|----------------------|----------------|------------------------|-------------|
+| DinoEggHunt | N/A (category from question) | `results.filter(r => r.correct).length` | `t, lang` | `t, lang, user` |
+| DinoEggHatch | `chosenEgg` | `correctCount` | `t, lang, onNext` | `t, lang, onNext, user` |
+| DinoFoodRescue | `chosenDino` | `freedCount` | `t, lang` | `t, lang, user` |
+| DinoHomeSave | `chosenDino` | `correctCount` | `t, lang` | `t, lang, user` |
+| DinoKeyQuest | `selectedDino` | `score` | `lang` | `lang, user` |
+| DinoDoorEscape | `selectedDino` | `score` | `lang` | `lang, user` |
 
 ---
 
@@ -222,83 +331,22 @@ Tracks per-user game achievements across all courses.
 ### Migration & Compatibility
 - **No breaking changes to existing site.** Login is purely additive — the site continues to work exactly as before for users who don't sign in.
 - **Bilingual support:** All new UI elements (login button, progress dashboard, etc.) need entries in `i18n.js` for both English and Traditional Chinese.
-- **Hash routing:** The current app uses hash-based routing (`#hub`, `#course0`, etc.). Auth callback from Google returns to the site URL, so ensure the redirect lands correctly (may need to handle `#` in redirect URL).
+- **Hash routing:** The current app uses hash-based routing (`#hub`, `#course0`, etc.). Auth callback from Google returns to the site URL, so ensure the redirect lands correctly.
 
 ### Mobile & Tablet Responsiveness
-- **The site must work well on phones and tablets**, not just desktops. All new UI (login button, progress dashboard, auth modals) must be designed mobile-first or at minimum fully responsive.
-- **Login button placement:** Must be easily tappable on mobile — avoid tiny icons in corners. Consider placing it in the existing hamburger menu on mobile, and as a visible button in the nav bar on desktop.
-- **Google OAuth on mobile browsers:** `signInWithOAuth` triggers a redirect (not a popup) on mobile, which is the correct behavior. The user leaves the site → signs in on Google's page → returns. Ensure the return redirect URL works correctly with hash routing.
-- **Progress Dashboard:** Use a card/grid layout that stacks vertically on narrow screens. Avoid wide tables that require horizontal scrolling on phones.
-- **Touch targets:** All interactive elements (buttons, cards, toggles) should be at least 44×44px for comfortable tapping on touchscreens.
-- **Existing mobile issues to keep in mind:** The Egg Hunt game previously had a mobile layout issue with 7 eggs overflowing — a hamburger menu was added to fix nav overflow. Any new UI should be tested against similar overflow scenarios on small screens.
+- All new UI (login button, progress dashboard, auth modals) must be mobile-first or fully responsive.
+- Login button in hamburger menu on mobile, visible in nav bar on desktop.
+- Google OAuth on mobile: `signInWithOAuth` triggers a redirect (not popup), which is correct.
+- Touch targets: ≥44×44px for comfortable tapping.
 
 ### Development Workflow
-- **Evelyn uses GitHub Desktop** (not command-line Git) for version control
-- **Dev server:** `npm start` (not `npm run dev`)
+- **Evelyn uses GitHub Desktop** (not command-line Git)
+- **Dev server:** `vercel dev` for testing with serverless functions; `npm start` for frontend-only
 - **Branch strategy:** Develop on `dev` branch, merge to `main` when ready
-- **Prefer plain-language explanations** of code changes — what each piece does and where to apply it — rather than receiving auto-modified files
-
-### Database Considerations
-- Supabase free tier: 500MB database, 50K monthly active users — more than sufficient for this project's scale
-- The schema above is a starting point. As features grow (Courses 4-5, badges, leaderboards), new tables can be added without disrupting existing data.
-- Consider adding an `updated_at` column to `progress` if we want to track replays or best scores over time.
 
 ---
 
-## What We're NOT Doing (Scope Boundaries)
-
-- **No custom backend server.** Supabase handles auth + database directly from the client SDK. Vercel serverless functions only if custom logic is needed.
-- **No email/password login.** Google OAuth only, to keep things simple. Can be added later if users request it.
-- **No native mobile app.** This is a responsive web application that works on phones, tablets, and desktops — not a separate iOS/Android app.
-- **No real-time multiplayer features.** Progress tracking is per-user, not collaborative.
-- **No paid tier features.** Everything stays within Supabase and Vercel free tiers.
-
----
-
-## File Changes
-
-### Already done:
-
-| File | Changes |
-|------|---------|
-| `package.json` | ✅ Added `@supabase/supabase-js` dependency |
-| `App.jsx` | ✅ Auth state management, imports SiteNav/AboutPage/ProfilePage, passes user props to all courses, `#about` + `#profile` routes |
-| `src/supabaseClient.js` | ✅ Created — initializes Supabase client with URL + anon key from `.env` |
-| `.env` | ✅ Created — stores `REACT_APP_SUPABASE_URL` + `REACT_APP_SUPABASE_ANON_KEY` (not in Git) |
-| `SiteNav.jsx` | ✅ Created — unified navbar with course dropdown, about link, user profile, language toggle, mobile hamburger |
-| `AboutPage.jsx` | ✅ Created — About page with project info cards, tech stack, bilingual |
-| `ProfilePage.jsx` | ✅ Created — Progress dashboard with stat cards, dino collection grid, best scores, empty state |
-| `Course0.jsx` | ✅ Stripped old section-link nav/mobile menu, uses SiteNav, accepts user props |
-| `Course1.jsx` | ✅ Old nav replaced with SiteNav, accepts user props |
-| `Course2.jsx` | ✅ Old nav replaced with SiteNav, accepts user props |
-| `Course3.jsx` | ✅ Old nav replaced with SiteNav, accepts user props |
-| `Course4.jsx` | ✅ Old nav replaced with SiteNav, accepts user props |
-| `Course5.jsx` | ✅ Old nav replaced with SiteNav, accepts user props |
-| `i18n.js` | ✅ Added nav keys, About page keys, Profile page keys (zh + en) |
-
-### Still needed:
-
-| File | Changes |
-|------|---------|
-| `DinoEggHunt.jsx` | Add progress saving when eggs are found (if logged in); needs `user` prop from Course0 |
-| `DinoEggHatch.jsx` | Add progress saving when game ends; needs `user` prop from Course1 |
-| `DinoFoodRescue.jsx` | Add progress saving when game ends; needs `user` prop from Course2 |
-| `DinoHomeSave.jsx` | Add progress saving when game ends; needs `user` prop from Course3 |
-
----
-
-## Lessons Learned During Setup
-
-- **Supabase renamed their keys.** What used to be called `anon key` is now `Publishable key` (starts with `sb_publishable_`). What was `service_role key` is now `Secret key` (starts with `sb_secret_`). Same functionality, new names.
-- **`.env` requires dev server restart.** React only reads `.env` at startup. After creating or editing `.env`, you must stop (`Ctrl+C`) and restart (`npm start`). Forgetting this causes `supabaseUrl is required` error.
-- **Google Cloud Console UI has changed.** The OAuth setup now goes through "Google Auth Platform" with a left sidebar (Overview, Branding, Audience, Clients, Data Access). The old "OAuth consent screen" flow is replaced.
-- **Authorized domains in Branding:** `supabase.co` alone is rejected as "not a top private domain." Use the full project domain instead: `souaycpzgabrxdwvqpmq.supabase.co`.
-- **Google OAuth Client Secret is shown only once.** Download the JSON backup immediately when creating the client. Store in Bitwarden, never in Git.
-- **Google OAuth starts in Testing mode.** Only manually added test users can sign in. Must "Publish App" under Audience before public launch.
-
----
-
-
+## Code Reference
 
 ### Initialize client
 ```javascript
@@ -321,27 +369,39 @@ const { data, error } = await supabase.auth.signInWithOAuth({
 await supabase.auth.signOut()
 ```
 
-### Listen for auth changes
+### Listen for auth changes (with last_login_at update)
 ```javascript
-supabase.auth.onAuthStateChange((event, session) => {
-  if (session) {
-    // User is logged in — session.user has their info
-  } else {
-    // User is logged out
-  }
-})
+useEffect(() => {
+  supabase.auth.getSession().then(({ data: { session } }) => {
+    const u = session?.user ?? null;
+    setUser(u);
+    if (u) {
+      supabase.from("profiles").update({ last_login_at: new Date().toISOString() }).eq("id", u.id).then();
+    }
+  });
+  const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    (_event, session) => {
+      const u = session?.user ?? null;
+      setUser(u);
+      if (u) {
+        supabase.from("profiles").update({ last_login_at: new Date().toISOString() }).eq("id", u.id).then();
+      }
+    }
+  );
+  return () => subscription.unsubscribe();
+}, []);
 ```
 
-### Save progress
+### Save progress (example: C1 EggHatch)
 ```javascript
 const { error } = await supabase.from('progress').insert({
   user_id: user.id,
   course: 1,
   game_type: 'dino_hatch',
-  egg_index: 3,
-  dino_species: 'Blaze',
-  score: 5,
-  result: 'hatched'
+  dino_index: 3,          // chosenEgg (0-6)
+  score: 5,               // correctCount
+  max_score: 5,           // win threshold for C1
+  result: 'hatched'       // or 'frozen'
 })
 ```
 
@@ -354,8 +414,41 @@ const { data, error } = await supabase
   .order('completed_at', { ascending: false })
 ```
 
+### Query available dinos for gating (example: C2)
+```javascript
+const { data } = await supabase
+  .from('progress')
+  .select('dino_index')
+  .eq('user_id', user.id)
+  .eq('course', 1)
+  .eq('result', 'hatched');
+const available = [...new Set(data.map(r => r.dino_index))];
+```
+
+---
+
+## Lessons Learned During Setup
+
+- **Supabase renamed their keys.** What used to be called `anon key` is now `Publishable key` (starts with `sb_publishable_`). What was `service_role key` is now `Secret key` (starts with `sb_secret_`). Same functionality, new names.
+- **`.env` requires dev server restart.** React only reads `.env` at startup. After creating or editing `.env`, you must stop (`Ctrl+C`) and restart. Forgetting this causes `supabaseUrl is required` error.
+- **Google Cloud Console UI has changed.** The OAuth setup now goes through "Google Auth Platform" with a left sidebar (Overview, Branding, Audience, Clients, Data Access). The old "OAuth consent screen" flow is replaced.
+- **Authorized domains in Branding:** `supabase.co` alone is rejected as "not a top private domain." Use the full project domain instead: `souaycpzgabrxdwvqpmq.supabase.co`.
+- **Google OAuth Client Secret is shown only once.** Download the JSON backup immediately when creating the client. Store in Bitwarden, never in Git.
+- **Google OAuth starts in Testing mode.** Only manually added test users can sign in. Must "Publish App" under Audience before public launch.
+
+---
+
+## What We're NOT Doing (Scope Boundaries)
+
+- **No custom backend server.** Supabase handles auth + database directly from the client SDK. Vercel serverless functions only for AI proxy.
+- **No email/password login.** Google OAuth only, to keep things simple. Can be added later.
+- **No native mobile app.** Responsive web only.
+- **No real-time multiplayer features.** Progress tracking is per-user.
+- **No paid tier features.** Everything stays within Supabase and Vercel free tiers.
+- **No `tier` column (for now).** C4/C5 tiers (master/explorer/etc.) are collapsed to binary result values for gating. Tiers can be re-derived from `score` if needed later for badges. Adding a `tier` TEXT column is a cheap future migration if we want it.
+
 ---
 
 *Document created: March 8, 2026*
-*Last updated: March 9, 2026*
-*Status: Phases 0-2.5 complete (Supabase + Google OAuth + unified navbar + About page + Profile dashboard). Phase 4 UI built. Next: Phase 3 (wire progress saving into game components so Profile page populates with data).*
+*Last updated: March 12, 2026*
+*Status: Phases 0–2.5 complete. Phase 3 (wiring) in progress. Schema migration needed before wiring.*
