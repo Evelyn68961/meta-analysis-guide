@@ -14,10 +14,12 @@ const FONT = "'Noto Sans TC', 'Outfit', sans-serif";
 const SERIF = "'Noto Sans TC', 'Source Serif 4', serif";
 
 const GAME_TYPES = [
-  { key: "egg_hunt", emoji: "🥚", course: 0, color: "#0E7C86" },
-  { key: "dino_hatch", emoji: "🐣", course: 1, color: "#E8734A" },
-  { key: "food_rescue", emoji: "🍖", course: 2, color: "#7B68C8" },
-  { key: "home_save", emoji: "🏠", course: 3, color: "#D4A843" },
+  { key: "egg_hunt", emoji: "🥚", course: 0, color: "#0E7C86", maxScore: 7 },
+  { key: "dino_hatch", emoji: "🐣", course: 1, color: "#E8734A", maxScore: 5 },
+  { key: "food_rescue", emoji: "🍖", course: 2, color: "#7B68C8", maxScore: 5 },
+  { key: "home_save", emoji: "🏠", course: 3, color: "#D4A843", maxScore: 5 },
+  { key: "key_quest", emoji: "🔑", course: 4, color: "#2E86C1", maxScore: 9 },
+  { key: "door_escape", emoji: "🚪", course: 5, color: "#C0392B", maxScore: 9 },
 ];
 
 const DINO_NAMES_EN = ["Rex", "Azure", "Zephyr", "Blaze", "Thistle", "Velo", "Dome"];
@@ -48,20 +50,27 @@ export default function ProfilePage({ onNavigate, user, onLogin, onLogout }) {
     fetchProgress();
   }, [user]);
 
-  // Derive stats from progress data
-  const eggsCollected = new Set(progress.filter(p => p.game_type === "egg_hunt" && p.result === "found").map(p => p.egg_index)).size;
-  const dinosHatched = progress.filter(p => p.game_type === "dino_hatch" && p.result === "hatched");
-  const hatchedSpecies = new Set(dinosHatched.map(p => p.dino_species));
-  const dinosFed = progress.filter(p => p.game_type === "food_rescue");
-  const fedSpecies = new Set(dinosFed.map(p => p.dino_species));
-  const homesSaved = progress.filter(p => p.game_type === "home_save" && p.result === "saved");
-  const savedSpecies = new Set(homesSaved.map(p => p.dino_species));
+  // Derive stats from progress data (using dino_index, not species name)
+  const eggsCollected = new Set(progress.filter(p => p.course === 0 && p.result === "collected").map(p => p.dino_index)).size;
+  const hatchedSet = new Set(progress.filter(p => p.course === 1 && p.result === "hatched").map(p => p.dino_index));
+  const rescuedSet = new Set(progress.filter(p => p.course === 2 && p.result === "rescued").map(p => p.dino_index));
+  const savedSet = new Set(progress.filter(p => p.course === 3 && p.result === "saved").map(p => p.dino_index));
+  const unlockedSet = new Set(progress.filter(p => p.course === 4 && p.result === "unlocked").map(p => p.dino_index));
+  const escapedSet = new Set(progress.filter(p => p.course === 5 && p.result === "escaped").map(p => p.dino_index));
 
   const bestScores = {};
   GAME_TYPES.forEach(g => {
     const games = progress.filter(p => p.game_type === g.key);
     if (games.length > 0) {
-      bestScores[g.key] = Math.max(...games.map(p => p.score || 0));
+      if (g.key === "egg_hunt") {
+        // C0 saves one row per egg — count unique collected eggs
+        bestScores[g.key] = { score: eggsCollected, maxScore: g.maxScore };
+      } else {
+        bestScores[g.key] = {
+          score: Math.max(...games.map(p => p.score || 0)),
+          maxScore: g.maxScore,
+        };
+      }
     }
   });
 
@@ -127,7 +136,7 @@ export default function ProfilePage({ onNavigate, user, onLogin, onLogout }) {
                   {t("profileOverview")}
                 </h2>
 
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 12, marginBottom: 32 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(100px, 1fr))", gap: 12, marginBottom: 32 }}>
                   {/* Eggs */}
                   <div style={{ background: CARD_BG, border: `1px solid ${LIGHT_BORDER}`, borderRadius: 14, padding: "20px 16px", textAlign: "center" }}>
                     <div style={{ fontSize: 28, marginBottom: 6 }}>🥚</div>
@@ -138,22 +147,36 @@ export default function ProfilePage({ onNavigate, user, onLogin, onLogout }) {
                   {/* Hatched */}
                   <div style={{ background: CARD_BG, border: `1px solid ${LIGHT_BORDER}`, borderRadius: 14, padding: "20px 16px", textAlign: "center" }}>
                     <div style={{ fontSize: 28, marginBottom: 6 }}>🐣</div>
-                    <div style={{ fontSize: 28, fontWeight: 700, color: DARK }}>{hatchedSpecies.size}<span style={{ fontSize: 14, color: MUTED, fontWeight: 400 }}>/7</span></div>
+                    <div style={{ fontSize: 28, fontWeight: 700, color: DARK }}>{hatchedSet.size}<span style={{ fontSize: 14, color: MUTED, fontWeight: 400 }}>/7</span></div>
                     <div style={{ fontSize: 12, color: MUTED, marginTop: 4 }}>{t("profileHatched")}</div>
                   </div>
 
-                  {/* Fed */}
+                  {/* Rescued */}
                   <div style={{ background: CARD_BG, border: `1px solid ${LIGHT_BORDER}`, borderRadius: 14, padding: "20px 16px", textAlign: "center" }}>
                     <div style={{ fontSize: 28, marginBottom: 6 }}>🍖</div>
-                    <div style={{ fontSize: 28, fontWeight: 700, color: DARK }}>{fedSpecies.size}<span style={{ fontSize: 14, color: MUTED, fontWeight: 400 }}>/7</span></div>
+                    <div style={{ fontSize: 28, fontWeight: 700, color: DARK }}>{rescuedSet.size}<span style={{ fontSize: 14, color: MUTED, fontWeight: 400 }}>/7</span></div>
                     <div style={{ fontSize: 12, color: MUTED, marginTop: 4 }}>{t("profileFed")}</div>
                   </div>
 
                   {/* Homes saved */}
                   <div style={{ background: CARD_BG, border: `1px solid ${LIGHT_BORDER}`, borderRadius: 14, padding: "20px 16px", textAlign: "center" }}>
                     <div style={{ fontSize: 28, marginBottom: 6 }}>🏠</div>
-                    <div style={{ fontSize: 28, fontWeight: 700, color: DARK }}>{savedSpecies.size}<span style={{ fontSize: 14, color: MUTED, fontWeight: 400 }}>/7</span></div>
+                    <div style={{ fontSize: 28, fontWeight: 700, color: DARK }}>{savedSet.size}<span style={{ fontSize: 14, color: MUTED, fontWeight: 400 }}>/7</span></div>
                     <div style={{ fontSize: 12, color: MUTED, marginTop: 4 }}>{t("profileSaved")}</div>
+                  </div>
+
+                  {/* Keys unlocked */}
+                  <div style={{ background: CARD_BG, border: `1px solid ${LIGHT_BORDER}`, borderRadius: 14, padding: "20px 16px", textAlign: "center" }}>
+                    <div style={{ fontSize: 28, marginBottom: 6 }}>🔑</div>
+                    <div style={{ fontSize: 28, fontWeight: 700, color: DARK }}>{unlockedSet.size}<span style={{ fontSize: 14, color: MUTED, fontWeight: 400 }}>/7</span></div>
+                    <div style={{ fontSize: 12, color: MUTED, marginTop: 4 }}>{isZh ? "鑰匙" : "Keys"}</div>
+                  </div>
+
+                  {/* Escaped */}
+                  <div style={{ background: CARD_BG, border: `1px solid ${LIGHT_BORDER}`, borderRadius: 14, padding: "20px 16px", textAlign: "center" }}>
+                    <div style={{ fontSize: 28, marginBottom: 6 }}>🚪</div>
+                    <div style={{ fontSize: 28, fontWeight: 700, color: DARK }}>{escapedSet.size}<span style={{ fontSize: 14, color: MUTED, fontWeight: 400 }}>/7</span></div>
+                    <div style={{ fontSize: 12, color: MUTED, marginTop: 4 }}>{isZh ? "逃脫" : "Escaped"}</div>
                   </div>
                 </div>
 
@@ -173,10 +196,12 @@ export default function ProfilePage({ onNavigate, user, onLogin, onLogout }) {
 
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 12, marginBottom: 32 }}>
                   {DINO_NAMES_EN.map((name, i) => {
-                    const isHatched = hatchedSpecies.has(name);
-                    const isFed = fedSpecies.has(name);
-                    const isSaved = savedSpecies.has(name);
-                    const hasAny = isHatched || isFed || isSaved;
+                    const isHatched = hatchedSet.has(i);
+                    const isRescued = rescuedSet.has(i);
+                    const isSaved = savedSet.has(i);
+                    const isUnlocked = unlockedSet.has(i);
+                    const isEscaped = escapedSet.has(i);
+                    const hasAny = isHatched || isRescued || isSaved || isUnlocked || isEscaped;
                     const isHovered = hoveredDino === i;
 
                     return (
@@ -209,8 +234,10 @@ export default function ProfilePage({ onNavigate, user, onLogin, onLogout }) {
                         </div>
                         <div style={{ display: "flex", justifyContent: "center", gap: 4, marginBottom: 4 }}>
                           <span title={isZh ? "孵化" : "Hatched"} style={{ fontSize: 14, opacity: isHatched ? 1 : 0.2 }}>🐣</span>
-                          <span title={isZh ? "餵食" : "Fed"} style={{ fontSize: 14, opacity: isFed ? 1 : 0.2 }}>🍖</span>
+                          <span title={isZh ? "餵食" : "Rescued"} style={{ fontSize: 14, opacity: isRescued ? 1 : 0.2 }}>🍖</span>
                           <span title={isZh ? "拯救" : "Saved"} style={{ fontSize: 14, opacity: isSaved ? 1 : 0.2 }}>🏠</span>
+                          <span title={isZh ? "鑰匙" : "Key"} style={{ fontSize: 14, opacity: isUnlocked ? 1 : 0.2 }}>🔑</span>
+                          <span title={isZh ? "逃脫" : "Escaped"} style={{ fontSize: 14, opacity: isEscaped ? 1 : 0.2 }}>🚪</span>
                         </div>
                         {/* Tap to view hint */}
                         <div style={{
@@ -233,8 +260,8 @@ export default function ProfilePage({ onNavigate, user, onLogin, onLogout }) {
                     </h2>
                     <div style={{ background: CARD_BG, border: `1px solid ${LIGHT_BORDER}`, borderRadius: 14, overflow: "hidden", marginBottom: 32 }}>
                       {GAME_TYPES.map((g) => {
-                        const score = bestScores[g.key];
-                        if (score === undefined) return null;
+                        const bs = bestScores[g.key];
+                        if (!bs) return null;
                         return (
                           <div key={g.key} style={{
                             display: "flex", alignItems: "center", gap: 12, padding: "14px 18px",
@@ -248,7 +275,7 @@ export default function ProfilePage({ onNavigate, user, onLogin, onLogout }) {
                             <div style={{
                               background: `${g.color}0D`, color: g.color, padding: "4px 12px",
                               borderRadius: 8, fontSize: 14, fontWeight: 700,
-                            }}>{score}/7</div>
+                            }}>{bs.score}/{bs.maxScore}</div>
                           </div>
                         );
                       })}
