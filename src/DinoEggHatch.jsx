@@ -148,7 +148,7 @@ export default function DinoEggHatch({ t, lang, onNext }) {
     return (
       <div style={{ background: CARD_BG, borderRadius: 20, border: `1px solid ${LIGHT_BORDER}`, padding: "48px 32px", textAlign: "center", boxShadow: "0 2px 20px rgba(0,0,0,0.04)" }}>
         <h3 style={{ fontSize: 26, fontWeight: 700, color: DARK, marginBottom: 10 }}>{t("c1gameTitle")}</h3>
-        <p style={{ fontSize: 15, color: MUTED, marginBottom: 12, maxWidth: 460, margin: "0 auto 12px" }}>{t("c1gameDesc")}</p>
+        <p style={{ fontSize: 15, color: MUTED, marginBottom: 12, maxWidth: 560, margin: "0 auto 12px" }}>{t("c1gameDesc")}</p>
         <p style={{ fontSize: 14, color: TEAL, fontWeight: 600, marginBottom: 28 }}>{lang === "zh" ? "選擇一顆龍蛋開始孵化！" : "Pick a dragon egg to hatch!"}</p>
         <div style={{ display: "flex", justifyContent: "center", gap: 16, flexWrap: "wrap", marginBottom: 12 }}>
           {DINO_COLORS.map((c, i) => (
