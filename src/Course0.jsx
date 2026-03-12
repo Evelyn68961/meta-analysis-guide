@@ -183,7 +183,7 @@ function ForestPlotExplainer() {
           <div key={i} style={{ display: "flex", alignItems: "center", height: 40, padding: "0 4px" }}>
             <div style={{ width: 116, fontSize: 13, color: MUTED, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>{s.name}</div>
             <div style={{ flex: 1, position: "relative", height: "100%" }}>
-              <div onClick={() => setActiveTooltip(activeTooltip === "center" ? null : "center")} style={{ position: "absolute", left: `${toX(0)}%`, top: 0, bottom: 0, width: activeTooltip === "center" ? 3 : 1, background: activeTooltip === "center" ? CORAL : "#DDD", cursor: "pointer", zIndex: 5, padding: "0 6px", backgroundClip: "content-box", transition: "all 0.3s" }} />
+              <div onClick={() => setActiveTooltip(activeTooltip === "center" ? null : "center")} style={{ position: "absolute", left: `${toX(0)}%`, top: 0, bottom: 0, width: 0, borderLeft: activeTooltip === "center" ? `2px solid ${CORAL}` : "1px dashed #CCC", cursor: "pointer", zIndex: 5, padding: "0 5px", transition: "all 0.3s" }} />
               <div onClick={() => setActiveTooltip(activeTooltip === "line" ? null : "line")} style={{ position: "absolute", left: `${toX(s.ci[0])}%`, width: `${toX(s.ci[1]) - toX(s.ci[0])}%`, top: "50%", height: activeTooltip === "line" ? 3 : 2, background: activeTooltip === "line" ? CORAL : TEAL, transform: "translateY(-50%)", cursor: "pointer", transition: "all 0.3s", borderRadius: 1 }} />
               <div onClick={() => setActiveTooltip(activeTooltip === "square" ? null : "square")} style={{ position: "absolute", left: `${toX(s.effect)}%`, top: "50%", width: Math.max(10, s.weight * 0.6), height: Math.max(10, s.weight * 0.6), background: activeTooltip === "square" ? CORAL : TEAL, borderRadius: 3, transform: "translate(-50%, -50%)", cursor: "pointer", transition: "all 0.3s", boxShadow: activeTooltip === "square" ? `0 0 0 3px ${CORAL}33` : "none" }} />
             </div>
@@ -192,7 +192,7 @@ function ForestPlotExplainer() {
         <div style={{ display: "flex", alignItems: "center", height: 44, marginTop: 4, borderTop: `1px solid ${LIGHT_BORDER}`, paddingTop: 8 }}>
           <div style={{ width: 116, fontSize: 13, fontWeight: 700, color: TEAL, fontFamily: "'Noto Sans TC', 'Outfit', sans-serif" }}>{t("forestOverall")}</div>
           <div style={{ flex: 1, position: "relative", height: "100%" }}>
-            <div style={{ position: "absolute", left: `${toX(0)}%`, top: 0, bottom: 0, width: 1, background: "#DDD" }} />
+            <div style={{ position: "absolute", left: `${toX(0)}%`, top: 0, bottom: 0, width: 0, borderLeft: "1px dashed #CCC" }} />
             <svg onClick={() => setActiveTooltip(activeTooltip === "diamond" ? null : "diamond")} style={{ position: "absolute", left: `${toX(pooled.ci[0])}%`, top: "50%", width: `${toX(pooled.ci[1]) - toX(pooled.ci[0])}%`, height: 22, transform: "translateY(-50%)", overflow: "visible", cursor: "pointer" }} viewBox="0 0 100 22" preserveAspectRatio="none">
               <polygon points="0,11 50,1 100,11 50,21" fill={activeTooltip === "diamond" ? CORAL : TEAL} style={{ transition: "fill 0.3s" }} />
             </svg>
