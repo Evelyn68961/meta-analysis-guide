@@ -47,7 +47,7 @@ const btnPrimary = (bg) => ({
 });
 
 // ═══ TREASURE MAP — 3×3 SVG GRID ═══
-// Path route: [0,0]→[1,0]→[2,0]→[2,1]→[2,2] = door 2
+// Path route is randomly generated each game.
 // Each tile is 80×80. Revealed tiles show the path; hidden tiles show fog.
 const TILE = 80;
 const PATH_COLOR = "#D4A843";
@@ -56,12 +56,99 @@ const LAND_COLOR = "#E8D5B0";
 const LAND_DARK = "#D6C49E";
 const FOG_COLOR = "#2A1B3E";
 
-// Each tile's SVG content: path segments + decorations
-// Grid positions: row 0-2, col 0-2
-function MapTile({ row, col, state }) {
-  // state: "found" | "missed" | "hidden"
-  const key = `${row}-${col}`;
+// ═══ RANDOM PATH GENERATOR ═══
+// Generates a path through the 3×3 grid from a random top-row cell
+// to a random bottom-row cell. Returns { cells: Set of "r-c" strings, correctDoor: 0|1|2 }
+// The path always visits exactly one cell per row and can move left, right, or straight down.
+// Additionally, one random decoy branch is added to make the map harder to read.
+function generateMapRoute() {
+  // Pick random start column (row 0) and random end column (row 2 = door)
+  const startCol = Math.floor(Math.random() * 3);
+  const endCol = Math.floor(Math.random() * 3);
 
+  // Build path row by row, stepping toward endCol but with some randomness
+  const path = [{ r: 0, c: startCol }];
+  let col = startCol;
+
+  // Row 1: step toward endCol, but allow a random detour
+  if (col < endCol) col = col + 1;
+  else if (col > endCol) col = col - 1;
+  else {
+    // Already aligned — randomly stay or wiggle
+    const wiggle = [-1, 0, 1].filter(d => col + d >= 0 && col + d <= 2);
+    col = col + wiggle[Math.floor(Math.random() * wiggle.length)];
+  }
+  path.push({ r: 1, c: col });
+
+  // Row 2: must reach endCol
+  path.push({ r: 2, c: endCol });
+
+  const cells = new Set(path.map(p => `${p.r}-${p.c}`));
+
+  // Add a decoy branch: pick a non-path cell adjacent to the path
+  // that could mislead the player into thinking the path goes elsewhere
+  const decoyOptions = [];
+  for (const p of path) {
+    for (const dc of [-1, 1]) {
+      const nc = p.c + dc;
+      const key = `${p.r}-${nc}`;
+      if (nc >= 0 && nc <= 2 && !cells.has(key)) {
+        decoyOptions.push(key);
+      }
+    }
+  }
+  // Also try adding a cell below a non-end path cell to fake another door
+  for (const p of path) {
+    if (p.r < 2) {
+      const below = `${p.r + 1}-${p.c}`;
+      if (!cells.has(below)) decoyOptions.push(below);
+    }
+  }
+  // Pick 1-2 unique decoys
+  const shuffled = decoyOptions.sort(() => Math.random() - 0.5);
+  const decoys = new Set();
+  for (let i = 0; i < Math.min(2, shuffled.length); i++) decoys.add(shuffled[i]);
+
+  // Build edge connections for path drawing
+  // edges: for each cell, which directions connect (up/down/left/right)
+  const allCells = new Set([...cells, ...decoys]);
+  const edges = {};
+  const addEdge = (key, dir) => { if (!edges[key]) edges[key] = new Set(); edges[key].add(dir); };
+
+  // True path edges
+  for (let i = 0; i < path.length - 1; i++) {
+    const a = path[i], b = path[i + 1];
+    const ka = `${a.r}-${a.c}`, kb = `${b.r}-${b.c}`;
+    if (b.r > a.r) { addEdge(ka, "down"); addEdge(kb, "up"); }
+    if (b.c > a.c) { addEdge(ka, "right"); addEdge(kb, "left"); }
+    if (b.c < a.c) { addEdge(ka, "left"); addEdge(kb, "right"); }
+    // diagonal = right/left + down/up
+    if (b.r > a.r && b.c !== a.c) { addEdge(ka, "down"); addEdge(kb, "up"); }
+  }
+
+  // Decoy edges: connect each decoy to its nearest path neighbor
+  for (const dk of decoys) {
+    const [dr, dc] = dk.split("-").map(Number);
+    // Find which path cell it's adjacent to
+    for (const p of path) {
+      if (p.r === dr && Math.abs(p.c - dc) === 1) {
+        const pk = `${p.r}-${p.c}`;
+        if (dc > p.c) { addEdge(pk, "right"); addEdge(dk, "left"); }
+        else { addEdge(pk, "left"); addEdge(dk, "right"); }
+      }
+      if (p.c === dc && Math.abs(p.r - dr) === 1) {
+        const pk = `${p.r}-${p.c}`;
+        if (dr > p.r) { addEdge(pk, "down"); addEdge(dk, "up"); }
+        else { addEdge(pk, "up"); addEdge(dk, "down"); }
+      }
+    }
+  }
+
+  return { pathCells: cells, decoyCells: decoys, allCells, edges, correctDoor: endCol, startCol };
+}
+
+// ═══ DYNAMIC MAP TILE ═══
+function MapTile({ row, col, state, route }) {
   if (state !== "found") {
     return (
       <g>
@@ -76,86 +163,79 @@ function MapTile({ row, col, state }) {
     );
   }
 
-  // ── Revealed tile content ──
-  // Path route: (0,0)→(1,0)→(2,0)↓(2,1)↓(2,2)
-  const isPath = (row===0&&col<=2) || (col===2&&row>=0);
-  const mid = TILE/2;
+  const key = `${row}-${col}`;
+  const mid = TILE / 2;
+  const isOnPath = route.pathCells.has(key) || route.decoyCells.has(key);
+  const dirs = route.edges[key] || new Set();
+  const isDoor = row === 2;
+  const isStart = row === 0 && col === route.startCol;
+  const isCorrectDoor = row === 2 && col === route.correctDoor;
+
+  // Deterministic decoration based on position (no randomness at render time)
+  const seed = row * 7 + col * 13;
+  const decoType = seed % 3; // 0=tree, 1=rocks, 2=bush
 
   return (
     <g>
-      {/* Parchment background */}
       <rect width={TILE} height={TILE} fill={LAND_COLOR} />
-      {/* Subtle texture lines */}
       <line x1="0" y1={20+row*7} x2={TILE} y2={22+row*5} stroke={LAND_DARK} strokeWidth="0.5" opacity="0.5"/>
       <line x1="0" y1={50+col*5} x2={TILE} y2={48+col*7} stroke={LAND_DARK} strokeWidth="0.5" opacity="0.4"/>
 
       {/* Path segments */}
-      {/* (0,0): dino start → path goes right */}
-      {row===0 && col===0 && <>
-        <path d={`M${mid} ${mid} L${TILE} ${mid}`} stroke={PATH_COLOR} strokeWidth={PATH_W} fill="none" strokeLinecap="round"/>
-        <circle cx={mid-8} cy={mid} r="3" fill="#2ECC71"/>
-        <text x={mid-8} y={mid-10} fontSize="16" textAnchor="middle">🦕</text>
+      {isOnPath && <>
+        {dirs.has("right") && <path d={`M${mid} ${mid} L${TILE} ${mid}`} stroke={PATH_COLOR} strokeWidth={PATH_W} fill="none" strokeLinecap="round"/>}
+        {dirs.has("left") && <path d={`M0 ${mid} L${mid} ${mid}`} stroke={PATH_COLOR} strokeWidth={PATH_W} fill="none" strokeLinecap="round"/>}
+        {dirs.has("down") && <path d={`M${mid} ${mid} L${mid} ${TILE}`} stroke={PATH_COLOR} strokeWidth={PATH_W} fill="none" strokeLinecap="round"/>}
+        {dirs.has("up") && <path d={`M${mid} 0 L${mid} ${mid}`} stroke={PATH_COLOR} strokeWidth={PATH_W} fill="none" strokeLinecap="round"/>}
+        {/* Junction dot */}
+        <circle cx={mid} cy={mid} r={PATH_W/2+1} fill={PATH_COLOR} opacity="0.6"/>
       </>}
-      {/* (0,1): path goes left→right */}
-      {row===0 && col===1 && <>
-        <path d={`M0 ${mid} L${TILE} ${mid}`} stroke={PATH_COLOR} strokeWidth={PATH_W} fill="none" strokeLinecap="round"/>
-        {/* tree decoration */}
-        <circle cx={mid} cy={18} r="8" fill="#5B8C5A" opacity="0.6"/>
-        <rect x={mid-1.5} y={22} width={3} height={8} fill="#8B6914" opacity="0.5" rx="1"/>
+
+      {/* Start marker */}
+      {isStart && <>
+        <circle cx={mid} cy={mid-16} r="3" fill="#2ECC71"/>
+        <text x={mid} y={mid-22} fontSize="16" textAnchor="middle">🦕</text>
       </>}
-      {/* (0,2): path comes from left, turns down */}
-      {row===0 && col===2 && <>
-        <path d={`M0 ${mid} Q${mid} ${mid} ${mid} ${TILE}`} stroke={PATH_COLOR} strokeWidth={PATH_W} fill="none" strokeLinecap="round"/>
-        <circle cx={TILE-15} cy={18} r="6" fill="#5B8C5A" opacity="0.5"/>
+
+      {/* Door tiles (bottom row) */}
+      {isDoor && <>
+        {isCorrectDoor && isOnPath && <>
+          <path d={`M${mid} 0 L${mid} 10`} stroke={PATH_COLOR} strokeWidth={PATH_W} fill="none" strokeLinecap="round"/>
+          <rect x={mid-14} y={12} width={28} height={38} rx="3" fill="#DAA520" opacity="0.3"/>
+        </>}
+        <rect x={mid-12} y={isDoor&&isCorrectDoor&&isOnPath?14:10} width={24} height={isDoor&&isCorrectDoor&&isOnPath?34:36} rx="3" fill="#8B4513"/>
+        <rect x={mid-10} y={isDoor&&isCorrectDoor&&isOnPath?16:12} width={20} height={isDoor&&isCorrectDoor&&isOnPath?30:32} rx="2" fill={isCorrectDoor&&isOnPath?"#6B4423":"#6B3410"}/>
+        <circle cx={mid+6} cy={isDoor&&isCorrectDoor&&isOnPath?32:30} r="2.5" fill={isCorrectDoor&&isOnPath?GOLD:"#DAA520"}/>
+        <text x={mid} y={isDoor&&isCorrectDoor&&isOnPath?66:62} fontSize="10" fill={isCorrectDoor&&isOnPath?GOLD_DARK:"#8B6914"} textAnchor="middle" fontWeight={isCorrectDoor&&isOnPath?"900":"700"}>{col+1}</text>
+        {isCorrectDoor && isOnPath && (
+          <rect x={mid-14} y={12} width={28} height={38} rx="3" fill={GOLD} opacity="0.12">
+            <animate attributeName="opacity" values="0.06;0.18;0.06" dur="2s" repeatCount="indefinite"/>
+          </rect>
+        )}
       </>}
-      {/* (1,0): empty land with trees */}
-      {row===1 && col===0 && <>
-        <circle cx={25} cy={35} r="10" fill="#5B8C5A" opacity="0.5"/>
-        <rect x={23.5} y={41} width={3} height={10} fill="#8B6914" opacity="0.4" rx="1"/>
-        <circle cx={60} cy={55} r="7" fill="#4A7A49" opacity="0.4"/>
-      </>}
-      {/* (1,1): empty land with rocks */}
-      {row===1 && col===1 && <>
-        <ellipse cx={30} cy={45} rx="12" ry="8" fill="#B8A88A" opacity="0.5"/>
-        <ellipse cx={55} cy={30} rx="8" ry="6" fill="#C4B494" opacity="0.4"/>
-      </>}
-      {/* (1,2): path goes top→bottom */}
-      {row===1 && col===2 && <>
-        <path d={`M${mid} 0 L${mid} ${TILE}`} stroke={PATH_COLOR} strokeWidth={PATH_W} fill="none" strokeLinecap="round"/>
-        <circle cx={18} cy={mid} r="6" fill="#5B8C5A" opacity="0.4"/>
-      </>}
-      {/* (2,0): door 1 (wrong) */}
-      {row===2 && col===0 && <>
-        <rect x={mid-12} y={10} width={24} height={36} rx="3" fill="#8B4513"/>
-        <rect x={mid-10} y={12} width={20} height={32} rx="2" fill="#6B3410"/>
-        <circle cx={mid+6} cy={30} r="2.5" fill="#DAA520"/>
-        <text x={mid} y={62} fontSize="10" fill="#8B6914" textAnchor="middle" fontWeight="700">1</text>
-      </>}
-      {/* (2,1): door 2 (wrong) */}
-      {row===2 && col===1 && <>
-        <rect x={mid-12} y={10} width={24} height={36} rx="3" fill="#8B4513"/>
-        <rect x={mid-10} y={12} width={20} height={32} rx="2" fill="#7B3F00"/>
-        <circle cx={mid+6} cy={30} r="2.5" fill="#DAA520"/>
-        <text x={mid} y={62} fontSize="10" fill="#8B6914" textAnchor="middle" fontWeight="700">2</text>
-      </>}
-      {/* (2,2): door 3 (CORRECT — path leads here) */}
-      {row===2 && col===2 && <>
-        <path d={`M${mid} 0 L${mid} 10`} stroke={PATH_COLOR} strokeWidth={PATH_W} fill="none" strokeLinecap="round"/>
-        <rect x={mid-14} y={12} width={28} height={38} rx="3" fill="#DAA520" opacity="0.3"/>
-        <rect x={mid-12} y={14} width={24} height={34} rx="3" fill="#8B4513"/>
-        <rect x={mid-10} y={16} width={20} height={30} rx="2" fill="#6B4423"/>
-        <circle cx={mid+6} cy={32} r="2.5" fill={GOLD}/>
-        <text x={mid} y={66} fontSize="10" fill={GOLD_DARK} textAnchor="middle" fontWeight="900">3</text>
-        {/* glow */}
-        <rect x={mid-14} y={12} width={28} height={38} rx="3" fill={GOLD} opacity="0.12">
-          <animate attributeName="opacity" values="0.06;0.18;0.06" dur="2s" repeatCount="indefinite"/>
-        </rect>
+
+      {/* Decorations for non-path, non-door tiles */}
+      {!isOnPath && !isDoor && <>
+        {decoType===0 && <>
+          <circle cx={25} cy={35} r="10" fill="#5B8C5A" opacity="0.5"/>
+          <rect x={23.5} y={41} width={3} height={10} fill="#8B6914" opacity="0.4" rx="1"/>
+          <circle cx={60} cy={55} r="7" fill="#4A7A49" opacity="0.4"/>
+        </>}
+        {decoType===1 && <>
+          <ellipse cx={30} cy={45} rx="12" ry="8" fill="#B8A88A" opacity="0.5"/>
+          <ellipse cx={55} cy={30} rx="8" ry="6" fill="#C4B494" opacity="0.4"/>
+        </>}
+        {decoType===2 && <>
+          <circle cx={20} cy={28} r="6" fill="#5B8C5A" opacity="0.4"/>
+          <circle cx={55} cy={50} r="9" fill="#4A7A49" opacity="0.45"/>
+          <circle cx={38} cy={60} r="5" fill="#6B9F6A" opacity="0.35"/>
+        </>}
       </>}
     </g>
   );
 }
 
-function TreasureMap({ pieces, lang, compact = false }) {
+function TreasureMap({ pieces, lang, compact = false, route }) {
   const foundCount = pieces.filter(p => p === "found").length;
   const total = pieces.length;
   const scale = compact ? 0.65 : 1;
@@ -199,7 +279,7 @@ function TreasureMap({ pieces, lang, compact = false }) {
               return (
                 <g key={`${row}-${col}`} transform={`translate(${x},${y}) scale(${scale})`}>
                   <rect width={TILE} height={TILE} rx="4" fill={state === "found" ? LAND_COLOR : FOG_COLOR} />
-                  <MapTile row={row} col={col} state={state} />
+                  <MapTile row={row} col={col} state={state} route={route} />
                 </g>
               );
             })
@@ -390,9 +470,9 @@ function SERenderer({ q, lang, onAnswer, answered, sel }) {
 }
 
 // ═══ DOOR CHOICE SCENE ═══
-function DoorChoiceScene({ pieces, selectedDino, lang, onChoose }) {
+function DoorChoiceScene({ pieces, selectedDino, lang, onChoose, route }) {
   const foundCount = pieces.filter(p => p === "found").length;
-  const correctDoor = 2; // Door 3 (index 2) — path leads to bottom-right
+  const correctDoor = route.correctDoor;
   const [hoveredDoor, setHoveredDoor] = useState(null);
 
   return (
@@ -411,7 +491,7 @@ function DoorChoiceScene({ pieces, selectedDino, lang, onChoose }) {
 
       {/* Show the assembled map */}
       <div style={{ marginBottom: 24 }}>
-        <TreasureMap pieces={pieces} lang={lang} />
+        <TreasureMap pieces={pieces} lang={lang} route={route} />
       </div>
 
       {/* 3 doors to choose */}
@@ -472,6 +552,7 @@ export default function DinoDoorEscape({ lang: langProp, user }) {
   const [mapPieces, setMapPieces] = useState(Array(9).fill("hidden")); // hidden|found|missed
   const [shake, setShake] = useState(false);
   const [doorChoice, setDoorChoice] = useState(null); // null | { door, correct }
+  const [route, setRoute] = useState(() => generateMapRoute());
   const [availableDinos, setAvailableDinos] = useState([0,1,2,3,4,5,6]);
 
   useEffect(() => {
@@ -491,7 +572,7 @@ export default function DinoDoorEscape({ lang: langProp, user }) {
     setQuestions([...foundation, ...advanced]);
     setPhase("foundation"); setQi(0); setScore(0); setFoundScore(0);
     setAnswered(false); setSel(null); setMapPieces(Array(9).fill("hidden"));
-    setDoorChoice(null);
+    setDoorChoice(null); setRoute(generateMapRoute());
   }, []);
 
   const handleAnswer = useCallback((answer, isCorrect) => {
@@ -580,7 +661,7 @@ export default function DinoDoorEscape({ lang: langProp, user }) {
             {lang==="zh"?`基礎題通過 (${foundScore}/3)！前方有 6 張更珍貴的地圖碎片等你收集。`:`Foundation passed (${foundScore}/3)! 6 more precious map pieces await.`}
           </p>
           <div style={{ marginTop: 20 }}>
-            <TreasureMap pieces={mapPieces} lang={lang} />
+            <TreasureMap pieces={mapPieces} lang={lang} route={route} />
           </div>
         </div>
       </CorridorBackground>
@@ -593,7 +674,7 @@ export default function DinoDoorEscape({ lang: langProp, user }) {
       <CorridorBackground phase="choose">
         {/* Show completed map */}
         <div style={{ marginBottom: 16 }}>
-          <TreasureMap pieces={mapPieces} lang={lang} />
+          <TreasureMap pieces={mapPieces} lang={lang} route={route} />
         </div>
         {doorChoice ? (
           <div style={{ textAlign: "center", padding: "30px 16px" }}>
@@ -605,7 +686,7 @@ export default function DinoDoorEscape({ lang: langProp, user }) {
             </h3>
           </div>
         ) : (
-          <DoorChoiceScene pieces={mapPieces} selectedDino={selectedDino} lang={lang} onChoose={handleDoorChoice} />
+          <DoorChoiceScene pieces={mapPieces} selectedDino={selectedDino} lang={lang} onChoose={handleDoorChoice} route={route} />
         )}
       </CorridorBackground>
     );
@@ -635,7 +716,7 @@ export default function DinoDoorEscape({ lang: langProp, user }) {
         <div style={{ textAlign:"center", padding:"24px 16px" }}>
           {/* Final map display */}
           <div style={{ maxWidth: 320, margin: "0 auto 20px" }}>
-            <TreasureMap pieces={mapPieces} lang={lang} />
+            <TreasureMap pieces={mapPieces} lang={lang} route={route} />
           </div>
           <div style={{ marginBottom:16 }}><CuteDino index={selectedDino} size={100} color={DINO_COLORS[selectedDino]}/></div>
           <h2 style={{ color:info.c, fontSize:24, fontFamily:FONT, marginBottom:8 }}>{info[lang].t}</h2>
@@ -670,7 +751,7 @@ export default function DinoDoorEscape({ lang: langProp, user }) {
 
       {/* Mini map display */}
       <div style={{ marginBottom: 16 }}>
-        <TreasureMap pieces={mapPieces.map((s, i) => i <= qi ? s : "hidden")} lang={lang} compact />
+        <TreasureMap pieces={mapPieces.map((s, i) => i <= qi ? s : "hidden")} lang={lang} compact route={route} />
       </div>
 
       {/* Question */}
