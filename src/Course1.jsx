@@ -53,20 +53,25 @@ const btnPrimary = { background: TEAL, border: "none", color: "#FFF", padding: "
 
 // ═══ PICO CARD ═══
 function PicoCard({ letter, color, title, desc, example, tip, delay = 0 }) {
-  const [hovered, setHovered] = useState(false);
+  const [open, setOpen] = useState(false);
   return (
     <FadeIn delay={delay}>
-      <div onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
-        style={{ background: CARD_BG, border: `1.5px solid ${hovered ? color + "55" : LIGHT_BORDER}`, borderRadius: 16, padding: "28px 24px", transition: "all 0.3s", boxShadow: hovered ? `0 8px 28px ${color}15` : "none", transform: hovered ? "translateY(-3px)" : "translateY(0)", height: "100%" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
+      <div onClick={() => setOpen(!open)}
+        style={{ background: CARD_BG, border: `1.5px solid ${open ? color + "55" : LIGHT_BORDER}`, borderRadius: 16, padding: "28px 24px", transition: "all 0.3s", boxShadow: open ? `0 8px 28px ${color}15` : "none", cursor: "pointer", height: "100%" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <div style={{ width: 48, height: 48, borderRadius: 14, background: `${color}15`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, fontWeight: 800, color, flexShrink: 0 }}>{letter}</div>
-          <h3 style={{ fontSize: 17, fontWeight: 700, color: DARK, lineHeight: 1.3 }}>{title}</h3>
+          <h3 style={{ fontSize: 17, fontWeight: 700, color: DARK, lineHeight: 1.3, flex: 1 }}>{title}</h3>
+          <span style={{ fontSize: 18, color: open ? color : "#C0BFB9", transform: open ? "rotate(45deg)" : "rotate(0)", transition: "transform 0.3s", fontWeight: 300 }}>+</span>
         </div>
-        <p style={{ fontSize: 14, lineHeight: 1.7, color: MUTED, marginBottom: 14 }}>{desc}</p>
-        <div style={{ background: `${color}08`, border: `1px solid ${color}18`, borderRadius: 10, padding: "10px 14px", marginBottom: 10 }}>
-          <span style={{ fontSize: 13, color, fontWeight: 600 }}>{example}</span>
-        </div>
-        <p style={{ fontSize: 12.5, color: `${MUTED}BB`, fontStyle: "italic", lineHeight: 1.6 }}>💡 {tip}</p>
+        {open && (
+          <div style={{ marginTop: 16 }}>
+            <p style={{ fontSize: 14, lineHeight: 1.7, color: MUTED, marginBottom: 14 }}>{desc}</p>
+            <div style={{ background: `${color}08`, border: `1px solid ${color}18`, borderRadius: 10, padding: "10px 14px", marginBottom: 10 }}>
+              <span style={{ fontSize: 13, color, fontWeight: 600 }}>{example}</span>
+            </div>
+            <p style={{ fontSize: 12.5, color: `${MUTED}BB`, fontStyle: "italic", lineHeight: 1.6 }}>💡 {tip}</p>
+          </div>
+        )}
       </div>
     </FadeIn>
   );
@@ -74,15 +79,21 @@ function PicoCard({ letter, color, title, desc, example, tip, delay = 0 }) {
 
 // ═══ TRAP CARD ═══
 function TrapCard({ number, title, bad, good, delay = 0 }) {
+  const [open, setOpen] = useState(false);
   return (
     <FadeIn delay={delay}>
-      <div style={{ background: CARD_BG, border: `1px solid ${LIGHT_BORDER}`, borderRadius: 14, padding: "22px 20px", height: "100%" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+      <div onClick={() => setOpen(!open)} style={{ background: CARD_BG, border: `1px solid ${open ? `${CORAL}44` : LIGHT_BORDER}`, borderRadius: 14, padding: "22px 20px", height: "100%", cursor: "pointer", transition: "all 0.3s", boxShadow: open ? `0 4px 20px ${CORAL}0D` : "none" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{ width: 28, height: 28, borderRadius: 8, background: `${CORAL}15`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: CORAL, flexShrink: 0 }}>{number}</div>
-          <h4 style={{ fontSize: 15, fontWeight: 600, color: DARK }}>{title}</h4>
+          <h4 style={{ fontSize: 15, fontWeight: 600, color: DARK, flex: 1 }}>{title}</h4>
+          <span style={{ fontSize: 16, color: open ? CORAL : "#C0BFB9", transform: open ? "rotate(45deg)" : "rotate(0)", transition: "transform 0.3s", fontWeight: 300 }}>+</span>
         </div>
-        <div style={{ background: "#FDF2F0", borderRadius: 8, padding: "8px 12px", marginBottom: 8, fontSize: 13, color: "#B83A20", lineHeight: 1.6 }}>✗ {bad}</div>
-        <div style={{ background: "#E6F5F0", borderRadius: 8, padding: "8px 12px", fontSize: 13, color: "#2A7A5A", lineHeight: 1.6 }}>✓ {good}</div>
+        {open && (
+          <div style={{ marginTop: 14 }}>
+            <div style={{ background: "#FDF2F0", borderRadius: 8, padding: "8px 12px", marginBottom: 8, fontSize: 13, color: "#B83A20", lineHeight: 1.6 }}>✗ {bad}</div>
+            <div style={{ background: "#E6F5F0", borderRadius: 8, padding: "8px 12px", fontSize: 13, color: "#2A7A5A", lineHeight: 1.6 }}>✓ {good}</div>
+          </div>
+        )}
       </div>
     </FadeIn>
   );
@@ -819,6 +830,7 @@ Don't use Markdown formatting.`;
 export default function Course1PICO({ onNavigate, user, onLogin, onLogout }) {
   const { t, lang, toggleLang } = useI18n();
   const [activeSection, setActiveSection] = useState("hero");
+  const [sCardOpen, setSCardOpen] = useState(false);
 
   const scrollTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
 
@@ -845,7 +857,7 @@ export default function Course1PICO({ onNavigate, user, onLogin, onLogout }) {
     { id: "s3", num: 3, label: lang === "zh" ? "PICOS 延伸" : "PICOS Extension" },
     { id: "s4", num: 4, label: lang === "zh" ? "常見錯誤" : "Common Mistakes" },
     { id: "s5", num: 5, label: lang === "zh" ? "互動練習" : "PICO Builder" },
-    { id: "game", num: 6, label: lang === "zh" ? "恐龍孵蛋" : "Dino Egg Hatch" },
+    { id: "game", num: 6, label: lang === "zh" ? "恐龍孵化挑戰" : "Dino Egg Hatch" },
     { id: "ai-workshop", num: 7, label: lang === "zh" ? "AI 工作坊" : "AI Workshop" },
     { id: "ai-freestyle", num: 8, label: lang === "zh" ? "自由練習" : "My Own PICO" },
   ];
@@ -993,16 +1005,22 @@ export default function Course1PICO({ onNavigate, user, onLogin, onLogout }) {
           <FadeIn><SectionLabel text={t("c1s3Label")} /><SectionTitle>{t("c1s3Title")}</SectionTitle></FadeIn>
           <FadeIn delay={0.1}><Paragraph style={{ marginBottom: 28 }}>{t("c1s3Intro")}</Paragraph></FadeIn>
           <FadeIn delay={0.15}>
-            <div style={{ background: CARD_BG, border: `1px solid ${LIGHT_BORDER}`, borderRadius: 16, padding: "28px 24px", marginBottom: 20 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
+            <div onClick={() => setSCardOpen(!sCardOpen)}
+              style={{ background: CARD_BG, border: `1px solid ${sCardOpen ? `${TEAL}55` : LIGHT_BORDER}`, borderRadius: 16, padding: "28px 24px", marginBottom: 20, cursor: "pointer", transition: "all 0.3s", boxShadow: sCardOpen ? `0 4px 20px ${TEAL}0D` : "none" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
                 <div style={{ width: 48, height: 48, borderRadius: 14, background: `${TEAL}15`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, fontWeight: 800, color: TEAL }}>S</div>
-                <h3 style={{ fontSize: 18, fontWeight: 700, color: DARK }}>{t("c1sTitle")}</h3>
+                <h3 style={{ fontSize: 18, fontWeight: 700, color: DARK, flex: 1 }}>{t("c1sTitle")}</h3>
+                <span style={{ fontSize: 18, color: sCardOpen ? TEAL : "#C0BFB9", transform: sCardOpen ? "rotate(45deg)" : "rotate(0)", transition: "transform 0.3s", fontWeight: 300 }}>+</span>
               </div>
-              <p style={{ fontSize: 14.5, lineHeight: 1.7, color: MUTED, marginBottom: 16 }}>{t("c1sDesc")}</p>
-              <p style={{ fontSize: 13, fontWeight: 600, color: DARK, marginBottom: 10 }}>{t("c1sOptions")}</p>
-              {[{ text: t("c1sRCT"), color: "#2A7A5A", bg: "#E6F5F0" }, { text: t("c1sCohort"), color: "#7B68C8", bg: "#F0EDF8" }, { text: t("c1sCaseControl"), color: "#D4A843", bg: "#FDF8EC" }, { text: t("c1sAny"), color: MUTED, bg: "#F5F5F3" }].map((item, i) => (
-                <div key={i} style={{ background: item.bg, borderRadius: 8, padding: "8px 14px", marginBottom: 6, fontSize: 13.5, color: item.color, fontWeight: 500, lineHeight: 1.5 }}>{item.text}</div>
-              ))}
+              {sCardOpen && (
+                <div style={{ marginTop: 16 }}>
+                  <p style={{ fontSize: 14.5, lineHeight: 1.7, color: MUTED, marginBottom: 16 }}>{t("c1sDesc")}</p>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: DARK, marginBottom: 10 }}>{t("c1sOptions")}</p>
+                  {[{ text: t("c1sRCT"), color: "#2A7A5A", bg: "#E6F5F0" }, { text: t("c1sCohort"), color: "#7B68C8", bg: "#F0EDF8" }, { text: t("c1sCaseControl"), color: "#D4A843", bg: "#FDF8EC" }, { text: t("c1sAny"), color: MUTED, bg: "#F5F5F3" }].map((item, i) => (
+                    <div key={i} style={{ background: item.bg, borderRadius: 8, padding: "8px 14px", marginBottom: 6, fontSize: 13.5, color: item.color, fontWeight: 500, lineHeight: 1.5 }}>{item.text}</div>
+                  ))}
+                </div>
+              )}
             </div>
           </FadeIn>
           <FadeIn delay={0.2}>
