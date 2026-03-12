@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useI18n } from "./i18n";
 import { supabase } from "./supabaseClient";
 import SiteNav from "./SiteNav";
+import CuteDino from "./CuteDino";
+import { DragonEgg } from "./DinoEggHatch";
 
 const TEAL = "#0E7C86";
 const CORAL = "#E8734A";
@@ -51,7 +53,8 @@ export default function ProfilePage({ onNavigate, user, onLogin, onLogout }) {
   }, [user]);
 
   // Derive stats from progress data (using dino_index, not species name)
-  const eggsCollected = new Set(progress.filter(p => p.course === 0 && p.result === "collected").map(p => p.dino_index)).size;
+  const collectedSet = new Set(progress.filter(p => p.course === 0 && p.result === "collected").map(p => p.dino_index));
+  const eggsCollected = collectedSet.size;
   const hatchedSet = new Set(progress.filter(p => p.course === 1 && p.result === "hatched").map(p => p.dino_index));
   const rescuedSet = new Set(progress.filter(p => p.course === 2 && p.result === "rescued").map(p => p.dino_index));
   const savedSet = new Set(progress.filter(p => p.course === 3 && p.result === "saved").map(p => p.dino_index));
@@ -169,14 +172,14 @@ export default function ProfilePage({ onNavigate, user, onLogin, onLogout }) {
                   <div style={{ background: CARD_BG, border: `1px solid ${LIGHT_BORDER}`, borderRadius: 14, padding: "20px 16px", textAlign: "center" }}>
                     <div style={{ fontSize: 28, marginBottom: 6 }}>🔑</div>
                     <div style={{ fontSize: 28, fontWeight: 700, color: DARK }}>{unlockedSet.size}<span style={{ fontSize: 14, color: MUTED, fontWeight: 400 }}>/7</span></div>
-                    <div style={{ fontSize: 12, color: MUTED, marginTop: 4 }}>{isZh ? "鑰匙" : "Keys"}</div>
+                    <div style={{ fontSize: 12, color: MUTED, marginTop: 4 }}>{t("profileKeys")}</div>
                   </div>
 
                   {/* Escaped */}
                   <div style={{ background: CARD_BG, border: `1px solid ${LIGHT_BORDER}`, borderRadius: 14, padding: "20px 16px", textAlign: "center" }}>
                     <div style={{ fontSize: 28, marginBottom: 6 }}>🚪</div>
                     <div style={{ fontSize: 28, fontWeight: 700, color: DARK }}>{escapedSet.size}<span style={{ fontSize: 14, color: MUTED, fontWeight: 400 }}>/7</span></div>
-                    <div style={{ fontSize: 12, color: MUTED, marginTop: 4 }}>{isZh ? "逃脫" : "Escaped"}</div>
+                    <div style={{ fontSize: 12, color: MUTED, marginTop: 4 }}>{t("profileEscaped")}</div>
                   </div>
                 </div>
 
@@ -196,12 +199,13 @@ export default function ProfilePage({ onNavigate, user, onLogin, onLogout }) {
 
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 12, marginBottom: 32 }}>
                   {DINO_NAMES_EN.map((name, i) => {
+                    const isCollected = collectedSet.has(i);
                     const isHatched = hatchedSet.has(i);
                     const isRescued = rescuedSet.has(i);
                     const isSaved = savedSet.has(i);
                     const isUnlocked = unlockedSet.has(i);
                     const isEscaped = escapedSet.has(i);
-                    const hasAny = isHatched || isRescued || isSaved || isUnlocked || isEscaped;
+                    const hasAny = isCollected || isHatched || isRescued || isSaved || isUnlocked || isEscaped;
                     const isHovered = hoveredDino === i;
 
                     return (
@@ -227,10 +231,10 @@ export default function ProfilePage({ onNavigate, user, onLogin, onLogout }) {
                           display: "flex", alignItems: "center", justifyContent: "center",
                           fontSize: 24,
                         }}>
-                          {hasAny ? "🦕" : "❓"}
+                          {!hasAny ? "❓" : isHatched ? <CuteDino index={i} size={40} color={DINO_COLORS[i]} /> : <DragonEgg color={DINO_COLORS[i]} size={36} state="idle" delay={0} />}
                         </div>
                         <div style={{ fontSize: 13, fontWeight: 600, color: hasAny ? DARK : MUTED, marginBottom: 4 }}>
-                          {hasAny ? dinoNames[i] : "???"}
+                          {isHatched ? dinoNames[i] : isCollected ? "???" : "???"}
                         </div>
                         <div style={{ display: "flex", justifyContent: "center", gap: 4, marginBottom: 4 }}>
                           <span title={isZh ? "孵化" : "Hatched"} style={{ fontSize: 14, opacity: isHatched ? 1 : 0.2 }}>🐣</span>
