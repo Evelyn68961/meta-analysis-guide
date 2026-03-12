@@ -14,7 +14,7 @@
 import { useState } from "react";
 import { pickBalanced } from "./questionHelpers";
 import { course0Questions } from "./course0Questions";
-import { supabase } from "./supabaseClient";
+import { supabase, saveProgress } from "./supabaseClient";
 
 // ═══ DESIGN TOKENS ═══
 const TEAL = "#0E7C86";
@@ -218,15 +218,7 @@ export default function DinoEggHunt({ t, lang, user }) {
     setResults(prev => [...prev, { category: catId, correct: isCorrect }]);
     // Save collected egg to Supabase (if logged in + correct)
     if (isCorrect && user) {
-      supabase.from("progress").insert({
-        user_id: user.id,
-        course: 0,
-        game_type: "egg_hunt",
-        dino_index: questions[current].category,
-        score: 1,
-        max_score: 1,
-        result: "collected",
-      }).then();
+      saveProgress(user, { course: 0, game_type: "egg_hunt", dino_index: questions[current].category, score: 1, max_score: 1, result: "collected" });
     }
   };
 
@@ -272,7 +264,6 @@ export default function DinoEggHunt({ t, lang, user }) {
   if (phase === "results") {
     const tierEmoji = score >= 7 ? "\uD83C\uDFC6" : score >= 5 ? "\uD83E\uDD48" : score >= 3 ? "\uD83E\uDD49" : "\uD83D\uDD0D";
     const tierLabel = score >= 7 ? t("eggHuntMaster") : score >= 5 ? t("eggHuntExplorer") : score >= 3 ? t("eggHuntApprentice") : t("eggHuntKeepTrying");
-    const unlockAll = score >= 5;
 
     return (
       <div style={{ background: CARD_BG, borderRadius: 20, border: `1px solid ${LIGHT_BORDER}`, padding: "40px 28px", boxShadow: "0 2px 20px rgba(0,0,0,0.04)" }}>
@@ -308,7 +299,7 @@ export default function DinoEggHunt({ t, lang, user }) {
               {results.map((r, i) => {
                 const cat = catObj(r.category);
                 const color = EGG_COLORS[r.category];
-                const canDownload = unlockAll || r.correct;
+                const canDownload = r.correct;
                 return (
                   <a key={i} href={cat.sheetLink} download target="_blank" rel="noopener noreferrer" style={{
                     display: "flex", alignItems: "center", gap: 10, padding: "10px 14px",
@@ -330,11 +321,13 @@ export default function DinoEggHunt({ t, lang, user }) {
               {score >= 7 && (
                 <a href="#" onClick={(e) => {
                     e.preventDefault();
-                    EGG_CATEGORIES.forEach((c, idx) => {
+                    const hunted = results.filter(r => r.correct);
+                    hunted.forEach((r, idx) => {
+                      const cat = catObj(r.category);
                       setTimeout(() => {
                         const a = document.createElement("a");
-                        a.href = c.sheetLink;
-                        a.download = c.sheetLink.split("/").pop();
+                        a.href = cat.sheetLink;
+                        a.download = cat.sheetLink.split("/").pop();
                         document.body.appendChild(a);
                         a.click();
                         document.body.removeChild(a);

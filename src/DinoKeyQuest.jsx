@@ -16,7 +16,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import CuteDino from "./CuteDino";
 import { pickBalanced, pickAdvancedMix } from "./questionHelpers";
 import { course4Questions } from "./course4Questions";
-import { supabase } from "./supabaseClient";
+import { supabase, saveProgress } from "./supabaseClient";
 
 // ═══ DESIGN TOKENS ═══
 const BLUE = "#2E86C1";
@@ -341,14 +341,14 @@ export default function DinoKeyQuest({ lang: langProp, user }) {
         setPhase("gate");
         setTimeout(() => { setPhase("advanced"); setQi(next); setAnswered(false); setSel(null); }, 2500);
       } else {
-        if (user) { supabase.from("progress").insert({ user_id: user.id, course: 4, game_type: "key_quest", dino_index: selectedDino, score, max_score: 9, result: "locked" }).then(); }
+        if (user) { saveProgress(user, { course: 4, game_type: "key_quest", dino_index: selectedDino, score, max_score: 9, result: "locked" }); }
         setPhase("result");
       }
       return;
     }
     if (next >= questions.length) {
       const didUnlock = foundScore >= 2 && score >= 6;
-      if (user) { supabase.from("progress").insert({ user_id: user.id, course: 4, game_type: "key_quest", dino_index: selectedDino, score, max_score: 9, result: didUnlock ? "unlocked" : "locked" }).then(); }
+      if (user) { saveProgress(user, { course: 4, game_type: "key_quest", dino_index: selectedDino, score, max_score: 9, result: didUnlock ? "unlocked" : "locked" }); }
       setPhase("result");
       return;
     }

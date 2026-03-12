@@ -17,7 +17,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import CuteDino from "./CuteDino";
 import { pickBalanced, pickAdvancedMix } from "./questionHelpers";
 import { course5Questions } from "./course5Questions";
-import { supabase } from "./supabaseClient";
+import { supabase, saveProgress } from "./supabaseClient";
 
 // ═══ DESIGN TOKENS ═══
 const CRIMSON = "#C0392B";
@@ -595,7 +595,7 @@ export default function DinoDoorEscape({ lang: langProp, user }) {
         setPhase("gate");
         setTimeout(() => { setPhase("advanced"); setQi(next); setAnswered(false); setSel(null); }, 2500);
       } else {
-        if (user) { supabase.from("progress").insert({ user_id: user.id, course: 5, game_type: "door_escape", dino_index: selectedDino, score, max_score: 9, result: "trapped" }).then(); }
+        if (user) { saveProgress(user, { course: 5, game_type: "door_escape", dino_index: selectedDino, score, max_score: 9, result: "trapped" }); }
         setPhase("result");
       }
       return;
@@ -611,7 +611,7 @@ export default function DinoDoorEscape({ lang: langProp, user }) {
   const handleDoorChoice = (doorIdx, isCorrect) => {
     setDoorChoice({ door: doorIdx, correct: isCorrect });
     const didEscape = foundScore >= 2 && isCorrect && score >= 6;
-    if (user) { supabase.from("progress").insert({ user_id: user.id, course: 5, game_type: "door_escape", dino_index: selectedDino, score, max_score: 9, result: didEscape ? "escaped" : "trapped" }).then(); }
+    if (user) { saveProgress(user, { course: 5, game_type: "door_escape", dino_index: selectedDino, score, max_score: 9, result: didEscape ? "escaped" : "trapped" }); }
     setTimeout(() => setPhase("result"), 1500);
   };
 
