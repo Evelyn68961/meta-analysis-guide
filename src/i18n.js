@@ -269,7 +269,7 @@ const translations = {
     hubC0Game: "彩蛋蒐集遊戲",
     hubC1Title: "打造研究問題 (PICO)",
     hubC1Desc: "學會用 PICO/PICOS 架構把模糊的想法變成精準的研究問題。",
-    hubC1Game: "龍蛋孵化遊戲",
+    hubC1Game: "恐龍孵化挑戰",
     hubC2Title: "文獻搜尋與篩選 (PRISMA)",
     hubC2Desc: "系統性地搜尋文獻庫，用 PRISMA 流程圖記錄篩選過程。",
     hubC2Game: "恐龍食物救援",
@@ -286,7 +286,7 @@ const translations = {
     hubFooter: "統合分析 101 — 從基礎到進階的完整學習路徑",
 
     // ═══ COURSE 1: PICO ═══
-    c1Label: "進階課程 1",
+    c1Label: "課程 1",
     c1Title: "打造你的研究問題",
     c1Subtitle: "PICO / PICOS 架構",
     c1Desc: "好的統合分析始於好的問題。學會用 PICO 架構把模糊的想法變成精準、可搜尋、可回答的研究問題。",
@@ -411,7 +411,7 @@ const translations = {
 
     // ═══ COURSE 2: Literature Search & PRISMA ═══
     // Nav / Meta
-    c2Label: "Course 2",
+    c2Label: "課程 2",
     c2Subtitle: "文獻搜尋與篩選",
     c2Title: "文獻搜尋與篩選 (PRISMA)",
     c2Desc: "系統性地搜尋文獻庫，學會布林邏輯搜尋策略，並用 PRISMA 流程圖記錄你的篩選過程。",
@@ -564,7 +564,7 @@ const translations = {
     c2correct: "正確",
 
     // ═══ COURSE 3: Data Extraction & Risk of Bias ═══
-    c3Label: "進階課程 3",
+    c3Label: "課程 3",
     c3Title: "數據萃取與偏倚風險評估",
     c3Subtitle: "數據萃取與 RoB",
     c3Desc: "從納入的研究中精確地萃取數據，並評估每項研究的品質。就像烹飪前精確量測食材、檢查新鮮度一樣——這是確保統合分析結果可靠的關鍵步驟。",
@@ -611,7 +611,7 @@ const translations = {
     c3aiNoResult: "無法取得回饋",
 
     // ── Course 4: Effect Sizes & Forest Plots ──
-    c4Label: "進階課程 4",
+    c4Label: "課程 4",
     c4Title: "效應量與森林圖",
     c4Subtitle: "效應量與森林圖",
     c4Desc: "一個研究說藥物「有效」——但效果有多大？學習如何量化效果大小、理解加權方法，以及閱讀和製作森林圖。",
@@ -644,7 +644,7 @@ const translations = {
     c4gameLabel: "恐龍小遊戲 🎮",
 
     // ── Course 5: Heterogeneity & Publication Bias ──
-    c5Label: "進階課程 5",
+    c5Label: "課程 5",
     c5Title: "異質性與發表偏倚",
     c5Subtitle: "異質性與發表偏倚",
     c5Desc: "你合併了 10 個研究，但它們的結果差異很大——能信任這個平均值嗎？學習評估研究間差異、檢測發表偏倚，以及正確報告你的統合分析。",
@@ -965,7 +965,7 @@ const translations = {
     hubFooter: "Meta-Analysis 101 — A complete learning path from basics to advanced",
 
     // ═══ COURSE 1: PICO ═══
-    c1Label: "Advanced Course 1",
+    c1Label: "Course 1",
     c1Title: "Crafting Your Research Question",
     c1Subtitle: "PICO / PICOS Framework",
     c1Desc: "A great meta-analysis starts with a great question. Learn to turn vague ideas into precise, searchable, answerable research questions using the PICO framework.",
