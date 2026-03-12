@@ -383,7 +383,7 @@ const translations = {
     c1gameHatchedDesc: "你的小恐龍誕生了！牠們每一隻都代表你對 PICO 的精熟掌握。",
     c1gameFrozen: "龍蛋被凍住了… ❄️",
     c1gameFrozenDesc: "別灰心！回去複習 PICO 的內容，再來挑戰一次吧！",
-    c1gameScore: (s) => `☀️ ${s} / 7 陽光`,
+    c1gameScore: (s) => `☀️ 蒐集到 ${s} 個陽光`,
     c1gameRetry: "再挑戰一次 🔄",
     c1gameContinue: "前往 AI 工作坊 →",
 
@@ -1021,7 +1021,7 @@ const translations = {
     c1gameNext: "Next →", c1gameResults: "See Results →",
     c1gameHatched: "The Eggs Hatched! 🎉", c1gameHatchedDesc: "Your baby dinosaurs are born! Each one represents your mastery of PICO.",
     c1gameFrozen: "The Eggs Froze… ❄️", c1gameFrozenDesc: "Don't worry! Review the PICO content and try again!",
-    c1gameScore: (s) => `☀️ ${s} / 7 sunshine`,
+    c1gameScore: (s) => `☀️ Collected ${s} sunshine`,
     c1gameRetry: "Try Again 🔄", c1gameContinue: "Continue to AI Workshop →",
 
     c1dinoNames: ["Rex", "Azure", "Zephyr", "Blaze", "Thistle", "Velo", "Dome"],

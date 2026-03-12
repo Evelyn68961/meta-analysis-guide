@@ -185,7 +185,7 @@ export default function DinoEggHatch({ t, lang, onNext, user }) {
             <h3 style={{ fontSize: 28, fontWeight: 700, color: DARK, marginBottom: 8 }}>{t("c1gameHatched")}</h3>
             <p style={{ fontSize: 15, color: MUTED, marginBottom: 8 }}>{t("c1gameHatchedDesc")}</p>
             <p style={{ fontSize: 17, color: TEAL, fontWeight: 600, marginBottom: 28 }}>{t("c1gameScore", correctCount)}</p>
-            <div style={{ marginBottom: 32 }}>
+            <div style={{ marginBottom: 32, animation: "dinoBounce 1s ease-in-out infinite" }}>
               <CuteDino color={eggColor} size={140} name={Array.isArray(dinoNames) ? dinoNames[chosenEgg] : ""} delay={0.2} index={chosenEgg} />
             </div>
           </>
