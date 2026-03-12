@@ -318,14 +318,22 @@ export default function App() {
     return () => window.removeEventListener("hashchange", onHashChange);
   }, []);
 
-  // Listen for auth state changes
-  useEffect(() => {
+// Listen for auth state changes
+useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
+      const u = session?.user ?? null;
+      setUser(u);
+      if (u) {
+        supabase.from("profiles").update({ last_login_at: new Date().toISOString() }).eq("id", u.id).then();
+      }
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
-        setUser(session?.user ?? null);
+        const u = session?.user ?? null;
+        setUser(u);
+        if (u) {
+          supabase.from("profiles").update({ last_login_at: new Date().toISOString() }).eq("id", u.id).then();
+        }
       }
     );
     return () => subscription.unsubscribe();
