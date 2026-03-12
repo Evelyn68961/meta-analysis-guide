@@ -301,6 +301,16 @@ export default function DinoKeyQuest({ lang: langProp, user }) {
   const [correct, setCorrect] = useState(false);
   const [fragments, setFragments] = useState(Array(9).fill(false));
   const [shake, setShake] = useState(false);
+  const [availableDinos, setAvailableDinos] = useState([0,1,2,3,4,5,6]);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchAvailable = async () => {
+      const { data } = await supabase.from("progress").select("dino_index").eq("user_id", user.id).eq("course", 3).eq("result", "saved");
+      if (data && data.length > 0) setAvailableDinos([...new Set(data.map(r => r.dino_index))]);
+    };
+    fetchAvailable();
+  }, [user]);
 
   const startGame = useCallback((dinoIdx) => {
     setSelectedDino(dinoIdx);
@@ -363,10 +373,11 @@ export default function DinoKeyQuest({ lang: langProp, user }) {
           </p>
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(110px, 1fr))", gap:14, maxWidth:600, margin:"0 auto" }}>
             {DINO_NAMES_EN.map((_,i) => (
-              <button key={i} onClick={()=>startGame(i)} style={{
+              <button key={i} onClick={()=> availableDinos.includes(i) && startGame(i)} disabled={!availableDinos.includes(i)} style={{
                 background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.12)",
-                borderRadius:14, padding:"18px 10px", cursor:"pointer",
+                borderRadius:14, padding:"18px 10px", cursor: availableDinos.includes(i) ? "pointer" : "not-allowed",
                 display:"flex", flexDirection:"column", alignItems:"center", gap:8, transition:"all 0.2s",
+                opacity: availableDinos.includes(i) ? 1 : 0.25,
               }} onMouseEnter={e=>{e.currentTarget.style.background="rgba(46,134,193,0.2)";e.currentTarget.style.borderColor=BLUE;}}
                  onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.06)";e.currentTarget.style.borderColor="rgba(255,255,255,0.12)";}}>
                 <div style={{ transform:"scale(0.7)", transformOrigin:"center" }}><CuteDino index={i} size={80} color={DINO_COLORS[i]}/></div>

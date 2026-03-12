@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import CuteDino from "./CuteDino";
 import { pickBalanced } from "./questionHelpers";
 import { course1Questions } from "./course1Questions";
@@ -63,6 +63,16 @@ export default function DinoEggHatch({ t, lang, onNext, user }) {
   const [iceStage, setIceStage] = useState(0); // 0-3 freeze stages
   const [gameOver, setGameOver] = useState(false);
   const [particles, setParticles] = useState([]); // { id, type: "sun"|"snow", x, delay }
+  const [availableDinos, setAvailableDinos] = useState([0,1,2,3,4,5,6]);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchAvailable = async () => {
+      const { data } = await supabase.from("progress").select("dino_index").eq("user_id", user.id).eq("course", 0).eq("result", "collected");
+      if (data && data.length > 0) setAvailableDinos([...new Set(data.map(r => r.dino_index))]);
+    };
+    fetchAvailable();
+  }, [user]);
 
   const spawnParticles = (type) => {
     const newParticles = Array.from({ length: type === "sun" ? 8 : 12 }, (_, i) => ({
@@ -155,7 +165,7 @@ export default function DinoEggHatch({ t, lang, onNext, user }) {
         <p style={{ fontSize: 14, color: TEAL, fontWeight: 600, marginBottom: 28 }}>{lang === "zh" ? "選擇一顆龍蛋開始孵化！" : "Pick a dragon egg to hatch!"}</p>
         <div style={{ display: "flex", justifyContent: "center", gap: 16, flexWrap: "wrap", marginBottom: 12 }}>
           {DINO_COLORS.map((c, i) => (
-            <div key={i} onClick={() => pickEgg(i)} style={{ cursor: "pointer", textAlign: "center", transition: "transform 0.2s" }}
+            <div key={i} onClick={() => availableDinos.includes(i) && pickEgg(i)} style={{ cursor: availableDinos.includes(i) ? "pointer" : "not-allowed", textAlign: "center", transition: "transform 0.2s", opacity: availableDinos.includes(i) ? 1 : 0.25 }}
               onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-6px)"}
               onMouseLeave={(e) => e.currentTarget.style.transform = "translateY(0)"}>
               <DragonEgg color={c} size={64} state="idle" delay={i * 0.3} />

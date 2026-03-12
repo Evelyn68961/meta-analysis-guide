@@ -208,6 +208,16 @@ export default function DinoFoodRescue({ t, lang, user }) {
   const [axeState, setAxeState] = useState("idle"); // idle | swinging | bouncing
   const [dinoMood, setDinoMood] = useState("neutral"); // neutral | happy | sad | eating
   const [showExplanation, setShowExplanation] = useState(false);
+  const [availableDinos, setAvailableDinos] = useState([0,1,2,3,4,5,6]);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchAvailable = async () => {
+      const { data } = await supabase.from("progress").select("dino_index").eq("user_id", user.id).eq("course", 1).eq("result", "hatched");
+      if (data && data.length > 0) setAvailableDinos([...new Set(data.map(r => r.dino_index))]);
+    };
+    fetchAvailable();
+  }, [user]);
 
   // Build localized question set from question bank
   const buildQuestions = () => {
@@ -350,7 +360,7 @@ export default function DinoFoodRescue({ t, lang, user }) {
         </p>
         <div style={{ display: "flex", justifyContent: "center", gap: 10, flexWrap: "wrap" }}>
           {DINO_COLORS.map((c, i) => (
-            <div key={i} onClick={() => startGame(i)} style={{ cursor: "pointer", textAlign: "center", transition: "all 0.2s", padding: "8px 6px", borderRadius: 12 }}
+            <div key={i} onClick={() => availableDinos.includes(i) && startGame(i)} style={{ cursor: availableDinos.includes(i) ? "pointer" : "not-allowed", textAlign: "center", transition: "all 0.2s", padding: "8px 6px", borderRadius: 12, opacity: availableDinos.includes(i) ? 1 : 0.25 }}
               onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-8px)"; e.currentTarget.style.background = `${c}10`; }}
               onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.background = "transparent"; }}>
               <CuteDino color={c} size={56} index={i} />
