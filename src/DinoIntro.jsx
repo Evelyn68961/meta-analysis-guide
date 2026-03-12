@@ -5,8 +5,10 @@
 
 import { useState, useEffect, useRef } from "react";
 import CuteDino from "./CuteDino";
+import { DragonEgg } from "./DinoEggHatch";
 import SiteNav from "./SiteNav";
 import { useI18n } from "./i18n";
+import { supabase } from "./supabaseClient";
 
 const TEAL = "#0E7C86";
 const DARK = "#1D2B3A";
@@ -126,6 +128,21 @@ export default function DinoIntro({ onNavigate, user, onLogin, onLogout, initial
   const [selected, setSelected] = useState(initialDino ?? 0);
   const [fadeKey, setFadeKey] = useState(0);
   const detailRef = useRef(null);
+  const [collectedSet, setCollectedSet] = useState(null); // null = not logged in (show all)
+  const [hatchedSet, setHatchedSet] = useState(new Set());
+
+  // Fetch collected & hatched dinos for gating
+  useEffect(() => {
+    if (!user) { setCollectedSet(null); return; }
+    const fetchProgress = async () => {
+      const { data } = await supabase.from("progress").select("course, dino_index, result").eq("user_id", user.id).in("course", [0, 1]);
+      if (data) {
+        setCollectedSet(new Set(data.filter(r => r.course === 0 && r.result === "collected").map(r => r.dino_index)));
+        setHatchedSet(new Set(data.filter(r => r.course === 1 && r.result === "hatched").map(r => r.dino_index)));
+      }
+    };
+    fetchProgress();
+  }, [user]);
 
   // Parse URL param ?dino=3
   useEffect(() => {
@@ -196,27 +213,33 @@ export default function DinoIntro({ onNavigate, user, onLogin, onLogout, initial
         }}>
           {DINOS.map((d, i) => {
             const isActive = selected === i;
+            const isCollected = !collectedSet || collectedSet.has(i); // null = logged out, show all
+            const isHatched = !collectedSet || hatchedSet.has(i);
+            const isLocked = collectedSet && !collectedSet.has(i);
             return (
-              <button key={i} onClick={() => handleSelect(i)} style={{
-                background: isActive ? `${d.color}15` : CARD_BG,
-                border: `2px solid ${isActive ? d.color : LIGHT_BORDER}`,
-                borderRadius: 14, padding: "10px 8px 8px", cursor: "pointer",
+              <button key={i} onClick={() => !isLocked && handleSelect(i)} style={{
+                background: isLocked ? "#F1F0EC" : (isActive ? `${d.color}15` : CARD_BG),
+                border: `2px solid ${isLocked ? LIGHT_BORDER : (isActive ? d.color : LIGHT_BORDER)}`,
+                borderRadius: 14, padding: "10px 8px 8px", cursor: isLocked ? "not-allowed" : "pointer",
                 width: 90, textAlign: "center",
                 transition: "all 0.25s ease",
-                transform: isActive ? "scale(1.05)" : "scale(1)",
-                boxShadow: isActive ? `0 4px 16px ${d.color}22` : "0 1px 4px #0001",
+                transform: isActive && !isLocked ? "scale(1.05)" : "scale(1)",
+                boxShadow: isActive && !isLocked ? `0 4px 16px ${d.color}22` : "0 1px 4px #0001",
                 outline: "none",
+                opacity: isLocked ? 0.4 : 1,
               }}>
                 <div style={{
-                  animation: isActive ? "breathe 2.5s ease-in-out infinite" : "none",
+                  animation: isActive && !isLocked ? "breathe 2.5s ease-in-out infinite" : "none",
                 }}>
-                  <CuteDino color={d.color} size={52} index={i} />
+                  {isLocked ? <div style={{ fontSize: 24, lineHeight: "52px" }}>❓</div>
+                    : isHatched ? <CuteDino color={d.color} size={52} index={i} />
+                    : <DragonEgg color={d.color} size={52} state="idle" delay={0} />}
                 </div>
                 <div style={{
-                  fontSize: 11, fontWeight: 700, color: isActive ? d.color : MUTED,
+                  fontSize: 11, fontWeight: 700, color: isLocked ? MUTED : (isActive ? d.color : MUTED),
                   marginTop: 4, transition: "color 0.2s",
                 }}>
-                  {isZh ? d.nameZh : d.nameEn}
+                  {isLocked ? "???" : isHatched ? (isZh ? d.nameZh : d.nameEn) : "???"}
                 </div>
               </button>
             );
@@ -224,93 +247,143 @@ export default function DinoIntro({ onNavigate, user, onLogin, onLogout, initial
         </div>
 
         {/* ─── Detail card ─── */}
-        <div ref={detailRef} key={fadeKey} style={{
-          background: CARD_BG,
-          border: `1.5px solid ${dino.color}33`,
-          borderRadius: 20,
-          overflow: "hidden",
-          boxShadow: `0 8px 32px ${dino.color}11`,
-          animation: "fadeSlideIn 0.45s ease-out",
-          marginBottom: 32,
-        }}>
-          {/* Top banner with gradient */}
-          <div style={{
-            background: `linear-gradient(135deg, ${dino.color}18 0%, ${dino.color}08 100%)`,
-            padding: "32px 24px 20px",
-            display: "flex", flexDirection: "column", alignItems: "center",
-            position: "relative",
-          }}>
-            {/* Element badge */}
-            <div style={{
-              position: "absolute", top: 16, right: 16,
-              background: CARD_BG, border: `1px solid ${LIGHT_BORDER}`,
-              borderRadius: 8, padding: "4px 10px", fontSize: 11, fontWeight: 600, color: MUTED,
-            }}>
-              {isZh ? dino.element.zh : dino.element.en}
-            </div>
+        {(() => {
+          const selIsLocked = collectedSet && !collectedSet.has(selected);
+          const selIsEgg = collectedSet && collectedSet.has(selected) && !hatchedSet.has(selected);
+          const selIsHatched = !collectedSet || hatchedSet.has(selected);
 
-            {/* Dino illustration */}
-            <div style={{ animation: "breathe 3s ease-in-out infinite" }}>
-              <CuteDino color={dino.color} size={160} index={selected} />
-            </div>
-
-            {/* Name & species */}
-            <h2 style={{
-              fontFamily: SERIF, fontSize: 26, fontWeight: 800, color: DARK, marginTop: 12,
-            }}>
-              {isZh ? dino.nameZh : dino.nameEn}
-              <span style={{ fontSize: 15, fontWeight: 400, color: MUTED, marginLeft: 8 }}>
-                {isZh ? dino.speciesZh : dino.speciesEn}
-              </span>
-            </h2>
-
-            {/* Personality tag */}
-            <div style={{
-              marginTop: 8, display: "inline-block",
-              background: `${dino.color}15`, color: dino.color,
-              padding: "4px 14px", borderRadius: 20, fontSize: 12, fontWeight: 600,
-            }}>
-              {isZh ? dino.personality.zh : dino.personality.en}
-            </div>
-          </div>
-
-          {/* Body content */}
-          <div style={{ padding: "24px 28px 28px" }}>
-            {/* Skill badge */}
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
-              <div style={{
-                background: `${dino.color}0A`, border: `1px solid ${dino.color}22`,
-                borderRadius: 8, padding: "6px 12px", fontSize: 12, fontWeight: 600, color: DARK,
+          if (selIsLocked) {
+            return (
+              <div ref={detailRef} key={fadeKey} style={{
+                background: CARD_BG, border: `1.5px solid ${LIGHT_BORDER}`, borderRadius: 20,
+                padding: "60px 28px", textAlign: "center", marginBottom: 32,
+                animation: "fadeSlideIn 0.45s ease-out",
               }}>
-                🎯 {isZh ? `技能：${dino.skill.zh}` : `Skill: ${dino.skill.en}`}
+                <div style={{ fontSize: 48, marginBottom: 16 }}>🔒</div>
+                <h3 style={{ fontFamily: SERIF, fontSize: 20, color: MUTED, marginBottom: 8 }}>
+                  {isZh ? "尚未發現" : "Not Yet Discovered"}
+                </h3>
+                <p style={{ fontSize: 14, color: MUTED, maxWidth: 360, margin: "0 auto" }}>
+                  {isZh ? "在課程 0 的彩蛋蒐集中找到這顆蛋吧！" : "Find this egg in the Course 0 Egg Hunt!"}
+                </p>
+              </div>
+            );
+          }
+
+          if (selIsEgg) {
+            return (
+              <div ref={detailRef} key={fadeKey} style={{
+                background: CARD_BG, border: `1.5px solid ${dino.color}33`, borderRadius: 20,
+                padding: "48px 28px", textAlign: "center", marginBottom: 32,
+                animation: "fadeSlideIn 0.45s ease-out",
+                boxShadow: `0 8px 32px ${dino.color}11`,
+              }}>
+                <div style={{ animation: "breathe 3s ease-in-out infinite", marginBottom: 16 }}>
+                  <DragonEgg color={dino.color} size={120} state="idle" delay={0} />
+                </div>
+                <h3 style={{ fontFamily: SERIF, fontSize: 22, color: DARK, marginBottom: 8 }}>
+                  ???
+                  <span style={{ fontSize: 14, fontWeight: 400, color: MUTED, marginLeft: 8 }}>
+                    {isZh ? "未孵化" : "Unhatched"}
+                  </span>
+                </h3>
+                <p style={{ fontSize: 14, color: MUTED, maxWidth: 400, margin: "0 auto" }}>
+                  {isZh ? "在課程 1 的龍蛋孵化遊戲中孵化這顆蛋，解鎖完整資料！" : "Hatch this egg in the Course 1 Egg Hatch game to unlock the full profile!"}
+                </p>
+              </div>
+            );
+          }
+
+          // Full hatched detail card
+          return (
+            <div ref={detailRef} key={fadeKey} style={{
+              background: CARD_BG,
+              border: `1.5px solid ${dino.color}33`,
+              borderRadius: 20,
+              overflow: "hidden",
+              boxShadow: `0 8px 32px ${dino.color}11`,
+              animation: "fadeSlideIn 0.45s ease-out",
+              marginBottom: 32,
+            }}>
+              {/* Top banner with gradient */}
+              <div style={{
+                background: `linear-gradient(135deg, ${dino.color}18 0%, ${dino.color}08 100%)`,
+                padding: "32px 24px 20px",
+                display: "flex", flexDirection: "column", alignItems: "center",
+                position: "relative",
+              }}>
+                {/* Element badge */}
+                <div style={{
+                  position: "absolute", top: 16, right: 16,
+                  background: CARD_BG, border: `1px solid ${LIGHT_BORDER}`,
+                  borderRadius: 8, padding: "4px 10px", fontSize: 11, fontWeight: 600, color: MUTED,
+                }}>
+                  {isZh ? dino.element.zh : dino.element.en}
+                </div>
+
+                {/* Dino illustration */}
+                <div style={{ animation: "breathe 3s ease-in-out infinite" }}>
+                  <CuteDino color={dino.color} size={160} index={selected} />
+                </div>
+
+                {/* Name & species */}
+                <h2 style={{
+                  fontFamily: SERIF, fontSize: 26, fontWeight: 800, color: DARK, marginTop: 12,
+                }}>
+                  {isZh ? dino.nameZh : dino.nameEn}
+                  <span style={{ fontSize: 15, fontWeight: 400, color: MUTED, marginLeft: 8 }}>
+                    {isZh ? dino.speciesZh : dino.speciesEn}
+                  </span>
+                </h2>
+
+                {/* Personality tag */}
+                <div style={{
+                  marginTop: 8, display: "inline-block",
+                  background: `${dino.color}15`, color: dino.color,
+                  padding: "4px 14px", borderRadius: 20, fontSize: 12, fontWeight: 600,
+                }}>
+                  {isZh ? dino.personality.zh : dino.personality.en}
+                </div>
+              </div>
+
+              {/* Body content */}
+              <div style={{ padding: "24px 28px 28px" }}>
+                {/* Skill badge */}
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
+                  <div style={{
+                    background: `${dino.color}0A`, border: `1px solid ${dino.color}22`,
+                    borderRadius: 8, padding: "6px 12px", fontSize: 12, fontWeight: 600, color: DARK,
+                  }}>
+                    🎯 {isZh ? `技能：${dino.skill.zh}` : `Skill: ${dino.skill.en}`}
+                  </div>
+                </div>
+
+                {/* Lore / backstory */}
+                <div style={{
+                  fontSize: 14, lineHeight: 1.75, color: DARK,
+                  padding: "16px 20px", borderRadius: 12,
+                  background: "#FAFAF8", border: `1px solid ${LIGHT_BORDER}`,
+                  marginBottom: 24,
+                  fontStyle: "italic",
+                }}>
+                  "{isZh ? dino.loreZh : dino.loreEn}"
+                </div>
+
+                {/* Stats */}
+                <div style={{
+                  fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
+                  color: TEAL, marginBottom: 12,
+                }}>
+                  {isZh ? "能力值" : "Stats"}
+                </div>
+                <StatBar label={isZh ? "力量" : "PWR"} value={dino.stats.power} color={dino.color} />
+                <StatBar label={isZh ? "智慧" : "WIS"} value={dino.stats.wisdom} color={dino.color} />
+                <StatBar label={isZh ? "速度" : "SPD"} value={dino.stats.speed} color={dino.color} />
+                <StatBar label={isZh ? "魅力" : "CHR"} value={dino.stats.charm} color={dino.color} />
               </div>
             </div>
-
-            {/* Lore / backstory */}
-            <div style={{
-              fontSize: 14, lineHeight: 1.75, color: DARK,
-              padding: "16px 20px", borderRadius: 12,
-              background: "#FAFAF8", border: `1px solid ${LIGHT_BORDER}`,
-              marginBottom: 24,
-              fontStyle: "italic",
-            }}>
-              "{isZh ? dino.loreZh : dino.loreEn}"
-            </div>
-
-            {/* Stats */}
-            <div style={{
-              fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
-              color: TEAL, marginBottom: 12,
-            }}>
-              {isZh ? "能力值" : "Stats"}
-            </div>
-            <StatBar label={isZh ? "力量" : "PWR"} value={dino.stats.power} color={dino.color} />
-            <StatBar label={isZh ? "智慧" : "WIS"} value={dino.stats.wisdom} color={dino.color} />
-            <StatBar label={isZh ? "速度" : "SPD"} value={dino.stats.speed} color={dino.color} />
-            <StatBar label={isZh ? "魅力" : "CHR"} value={dino.stats.charm} color={dino.color} />
-
-          </div>
-        </div>
+          );
+        })()}
 
         {/* ─── Back to profile ─── */}
         {onNavigate && (
