@@ -119,6 +119,8 @@ Tracks per-user game achievements across all 6 courses. One row = one game sessi
 | result | TEXT | See result values below |
 | completed_at | TIMESTAMPTZ | Auto (`now()` default) |
 
+**Unique constraint:** `UNIQUE (user_id, course, dino_index)` — one row per dino per course per user. Enforced at database level; upsert logic in `saveProgress()` helper ensures wins overwrite losses.
+
 ### Result values by course
 
 | Course | Game | Possible `result` values | Meaning |
@@ -195,7 +197,7 @@ SELECT DISTINCT dino_index FROM progress
 WHERE user_id = ? AND course = 4 AND result = 'unlocked';
 ```
 
-**Replay semantics:** Replaying a game inserts a new row (accumulates history). Gating queries use `SELECT DISTINCT` so duplicates don't cause problems. Players can retry until they succeed.
+**Replay semantics:** A unique constraint on `(user_id, course, dino_index)` ensures one row per dino per course. A shared `saveProgress()` helper in `supabaseClient.js` handles upsert logic: wins always overwrite (replacing failures or updating scores), losses only insert if no row exists (never overwrite a previous win). Players can retry until they succeed — the database always reflects their best result.
 
 ### AI Workshop Gating
 
@@ -237,7 +239,7 @@ AI workshop features (Midterm/Final AI check buttons) are **only available to lo
     - Trigger: `on_auth_user_created` fires after insert on `auth.users`
 11. ✅ Enable Row-Level Security (RLS) on both tables
 12. ✅ Write RLS policies: users can only SELECT/INSERT/UPDATE their own rows
-- ⬅️ **Schema migration needed:** Drop `egg_index` + `dino_species`, add `dino_index` + `max_score`, add `last_login_at` to profiles. See WIRING_GUIDE.md Steps 1–2 for exact SQL.
+- ✅ **Schema migration done:** Dropped `egg_index` + `dino_species`, added `dino_index` + `max_score`, added `last_login_at` to profiles, added `UNIQUE (user_id, course, dino_index)` constraint.
 
 ### Phase 2 — Authentication (Google OAuth) ✅ COMPLETE
 13. ✅ Create a Google Cloud project at console.cloud.google.com (project name: `meta-analysis-101`)
@@ -263,7 +265,7 @@ AI workshop features (Midterm/Final AI check buttons) are **only available to lo
 - ✅ Updated all Course files (0–5) to use SiteNav and accept user props
 - ✅ Updated `i18n.js` with nav, About, Profile keys
 
-### Phase 3 — Wire Up Progress Saving ⬅️ CURRENT
+### Phase 3 — Wire Up Progress Saving ✅ COMPLETE
 See **`WIRING_GUIDE.md`** for step-by-step instructions. Summary:
 
 1. Run schema migration SQL (drop old columns, add new ones, add `last_login_at`)
@@ -276,7 +278,8 @@ See **`WIRING_GUIDE.md`** for step-by-step instructions. Summary:
 
 | File | What changes |
 |------|-------------|
-| Supabase SQL | ALTER `progress` table + add `last_login_at` to profiles |
+| Supabase SQL | ALTER `progress` table + add `last_login_at` to profiles + add `UNIQUE (user_id, course, dino_index)` constraint |
+| `supabaseClient.js` | Added `saveProgress()` helper: upsert with "keep best" logic (wins overwrite losses) |
 | `App.jsx` | Update `last_login_at` on auth state change |
 | `DinoEggHunt.jsx` | Save `collected` rows per correct answer (if logged in) |
 | `DinoEggHatch.jsx` | Accept `user` prop, query available eggs from C0, save `hatched`/`frozen` result |
@@ -285,13 +288,15 @@ See **`WIRING_GUIDE.md`** for step-by-step instructions. Summary:
 | `DinoKeyQuest.jsx` | Accept `user` prop, query available dinos from C3, save `unlocked`/`locked` result |
 | `DinoDoorEscape.jsx` | Accept `user` prop, query available dinos from C4, save `escaped`/`trapped` result |
 | `Course0.jsx` – `Course5.jsx` | Pass `user` prop to game components |
-| `ProfilePage.jsx` | Fix stats derivation, use `max_score`, fix dino collection logic, add C4/C5 game types |
+| `ProfilePage.jsx` | Fixed stats derivation (`dino_index` not `dino_species`), correct `max_score` denominators, 6 overview cards, 3-state dino collection (locked/egg/hatched with CuteDino + DragonEgg), C4/C5 game types |
+| `DinoIntro.jsx` | 3-state codex: locked (not collected), egg (collected not hatched), full card (hatched). Gated via Supabase query. |
+| `i18n.js` | Added `profileKeys`, `profileEscaped`, `profileGame4`, `profileGame5` keys |
 | `Midterm.jsx` | Gate AI check buttons behind login + C3 completion |
 | `Final.jsx` | Gate AI check buttons behind login + C5 completion |
 
 ### Phase 4 — Progress Dashboard ✅ COMPLETE (UI only — awaiting Phase 3 data)
 - ✅ Built `ProfilePage.jsx` — stat cards, dino collection grid, best scores, empty state
-- ⬅️ **Needs Phase 3 fixes:** Old column references (`egg_index`, `dino_species`, `result === "found"`, hardcoded `/7` denominators)
+- ✅ **Phase 3 fixes done:** Uses `dino_index`, `collectedSet`/`hatchedSet`, correct `max_score` denominators, C4/C5 game types added, `CuteDino` SVG + `DragonEgg` for 3-state dino collection (locked/egg/hatched)
 
 ### Phase 5 — Bonus / Polish (Future)
 31. **Leaderboard:** Anonymous aggregate stats (e.g., "78% of pharmacists hatched their first dino")
@@ -394,15 +399,17 @@ useEffect(() => {
 
 ### Save progress (example: C1 EggHatch)
 ```javascript
-const { error } = await supabase.from('progress').insert({
-  user_id: user.id,
+import { saveProgress } from './supabaseClient';
+
+// Wins overwrite losses; losses never overwrite wins
+saveProgress(user, {
   course: 1,
   game_type: 'dino_hatch',
   dino_index: 3,          // chosenEgg (0-6)
   score: 5,               // correctCount
   max_score: 5,           // win threshold for C1
   result: 'hatched'       // or 'frozen'
-})
+});
 ```
 
 ### Load progress
@@ -450,5 +457,5 @@ const available = [...new Set(data.map(r => r.dino_index))];
 ---
 
 *Document created: March 8, 2026*
-*Last updated: March 12, 2026*
-*Status: Phases 0–2.5 complete. Phase 3 (wiring) in progress. Schema migration needed before wiring.*
+*Last updated: March 13, 2026*
+*Status: Phases 0–4 complete. Phase 3 wiring done (save, gating, upsert, ProfilePage, DinoIntro). Steps 7–8 (AI workshop gating, pg_cron cleanup) remaining.*
