@@ -44,7 +44,7 @@ function SectionTitle({ children }) {
 }
 
 function Paragraph({ children, style = {} }) {
-  return <p style={{ fontSize: 16, lineHeight: 1.75, color: MUTED, maxWidth: 640, ...style }}>{children}</p>;
+  return <p style={{ fontSize: 16, lineHeight: 1.75, color: MUTED, maxWidth: 880, ...style }}>{children}</p>;
 }
 
 const btnPrimary = { background: TEAL, border: "none", color: "#FFF", padding: "12px 28px", borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: "pointer", transition: "all 0.2s" };
