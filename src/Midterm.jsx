@@ -79,7 +79,12 @@ const T = {
     nGroup: "人數",
     txGroup: "介入組",
     ctrlGroup: "對照組",
-    effectAuto: "效果量將自動計算",
+    effectAuto: "效果量將自動計算。如需進行次群組分析或統合迴歸，可新增調節變項欄位。",
+    addModerator: "＋ 新增調節變項",
+    moderatorName: "變項名稱",
+    moderatorNamePh: "例如：研究地區、劑量 (mg)、追蹤時間 (週)",
+    removeModerator: "移除此欄位",
+    moderatorHint: "調節變項可用於分析篇的次群組分析和統合迴歸。",
     // Step 5
     robDomains: ["隨機化", "盲化", "流失", "選擇性報告", "其他"],
     robLow: "低",
@@ -164,7 +169,12 @@ const T = {
     nGroup: "N",
     txGroup: "Intervention",
     ctrlGroup: "Control",
-    effectAuto: "Effect size will be computed automatically",
+    effectAuto: "Effect size will be computed automatically. Add moderator columns if you plan to run subgroup analysis or meta-regression.",
+    addModerator: "+ Add Moderator Column",
+    moderatorName: "Column Name",
+    moderatorNamePh: "e.g., Region, Dosage (mg), Follow-up (weeks)",
+    removeModerator: "Remove column",
+    moderatorHint: "Moderator variables enable subgroup analysis and meta-regression in the Analysis workshop.",
     // Step 5
     robDomains: ["Randomization", "Blinding", "Attrition", "Selective Reporting", "Other"],
     robLow: "Low",
@@ -199,12 +209,13 @@ const DEMO_PROJECT = {
     o: "Composite kidney outcome: ≥40% sustained eGFR decline, ESKD, or renal death",
   },
   studies: [
-    { id: "s1", citation: "Perkovic et al., 2019, NEJM (CREDENCE)", design: "RCT", n: 4401, population: "T2DM + CKD, eGFR 30-90", intervention: "Canagliflozin 100mg", comparator: "Placebo", outcome: "Composite kidney outcome", included: true, excludeReason: "", outcomeType: "binary", tx: { events: 245, total: 2202 }, ctrl: { events: 340, total: 2199 }, rob: { randomization: "low", blinding: "low", attrition: "low", reporting: "low", other: "some", overall: "low" } },
-    { id: "s2", citation: "Heerspink et al., 2020, NEJM (DAPA-CKD)", design: "RCT", n: 4304, population: "CKD ± T2DM, eGFR 25-75", intervention: "Dapagliflozin 10mg", comparator: "Placebo", outcome: "Composite kidney outcome", included: true, excludeReason: "", outcomeType: "binary", tx: { events: 197, total: 2152 }, ctrl: { events: 312, total: 2152 }, rob: { randomization: "low", blinding: "low", attrition: "low", reporting: "low", other: "low", overall: "low" } },
-    { id: "s3", citation: "EMPA-KIDNEY Collaborative, 2023, NEJM", design: "RCT", n: 6609, population: "CKD ± T2DM, eGFR 20-45 or 45-90+ACR", intervention: "Empagliflozin 10mg", comparator: "Placebo", outcome: "Composite kidney outcome", included: true, excludeReason: "", outcomeType: "binary", tx: { events: 432, total: 3304 }, ctrl: { events: 558, total: 3305 }, rob: { randomization: "low", blinding: "low", attrition: "low", reporting: "low", other: "low", overall: "low" } },
-    { id: "s4", citation: "Zinman et al., 2015, NEJM (EMPA-REG OUTCOME)", design: "RCT", n: 7020, population: "T2DM + high CV risk", intervention: "Empagliflozin 10/25mg", comparator: "Placebo", outcome: "Incident/worsening nephropathy", included: true, excludeReason: "", outcomeType: "binary", tx: { events: 525, total: 4687 }, ctrl: { events: 388, total: 2333 }, rob: { randomization: "low", blinding: "low", attrition: "some", reporting: "low", other: "low", overall: "low" } },
-    { id: "s5", citation: "Neal et al., 2017, NEJM (CANVAS)", design: "RCT", n: 10142, population: "T2DM + high CV risk", intervention: "Canagliflozin 100/300mg", comparator: "Placebo", outcome: "Renal composite", included: true, excludeReason: "", outcomeType: "binary", tx: { events: 245, total: 5795 }, ctrl: { events: 186, total: 4347 }, rob: { randomization: "low", blinding: "low", attrition: "some", reporting: "low", other: "some", overall: "some" } },
+    { id: "s1", citation: "Perkovic et al., 2019, NEJM (CREDENCE)", design: "RCT", n: 4401, population: "T2DM + CKD, eGFR 30-90", intervention: "Canagliflozin 100mg", comparator: "Placebo", outcome: "Composite kidney outcome", included: true, excludeReason: "", outcomeType: "binary", tx: { events: 245, total: 2202 }, ctrl: { events: 340, total: 2199 }, rob: { randomization: "low", blinding: "low", attrition: "low", reporting: "low", other: "some", overall: "low" }, moderators: { "Population Focus": "CKD-specific", "Drug": "Canagliflozin" } },
+    { id: "s2", citation: "Heerspink et al., 2020, NEJM (DAPA-CKD)", design: "RCT", n: 4304, population: "CKD ± T2DM, eGFR 25-75", intervention: "Dapagliflozin 10mg", comparator: "Placebo", outcome: "Composite kidney outcome", included: true, excludeReason: "", outcomeType: "binary", tx: { events: 197, total: 2152 }, ctrl: { events: 312, total: 2152 }, rob: { randomization: "low", blinding: "low", attrition: "low", reporting: "low", other: "low", overall: "low" }, moderators: { "Population Focus": "CKD-specific", "Drug": "Dapagliflozin" } },
+    { id: "s3", citation: "EMPA-KIDNEY Collaborative, 2023, NEJM", design: "RCT", n: 6609, population: "CKD ± T2DM, eGFR 20-45 or 45-90+ACR", intervention: "Empagliflozin 10mg", comparator: "Placebo", outcome: "Composite kidney outcome", included: true, excludeReason: "", outcomeType: "binary", tx: { events: 432, total: 3304 }, ctrl: { events: 558, total: 3305 }, rob: { randomization: "low", blinding: "low", attrition: "low", reporting: "low", other: "low", overall: "low" }, moderators: { "Population Focus": "CKD-specific", "Drug": "Empagliflozin" } },
+    { id: "s4", citation: "Zinman et al., 2015, NEJM (EMPA-REG OUTCOME)", design: "RCT", n: 7020, population: "T2DM + high CV risk", intervention: "Empagliflozin 10/25mg", comparator: "Placebo", outcome: "Incident/worsening nephropathy", included: true, excludeReason: "", outcomeType: "binary", tx: { events: 525, total: 4687 }, ctrl: { events: 388, total: 2333 }, rob: { randomization: "low", blinding: "low", attrition: "some", reporting: "low", other: "low", overall: "low" }, moderators: { "Population Focus": "High CV risk", "Drug": "Empagliflozin" } },
+    { id: "s5", citation: "Neal et al., 2017, NEJM (CANVAS)", design: "RCT", n: 10142, population: "T2DM + high CV risk", intervention: "Canagliflozin 100/300mg", comparator: "Placebo", outcome: "Renal composite", included: true, excludeReason: "", outcomeType: "binary", tx: { events: 245, total: 5795 }, ctrl: { events: 186, total: 4347 }, rob: { randomization: "low", blinding: "low", attrition: "some", reporting: "low", other: "some", overall: "some" }, moderators: { "Population Focus": "High CV risk", "Drug": "Canagliflozin" } },
   ],
+  moderatorColumns: ["Population Focus", "Drug"],
 };
 
 // ═══ HELPER: Empty study template ═══
@@ -218,6 +229,7 @@ function newStudy(id) {
     txCont: { mean: "", sd: "", n: "" },
     ctrlCont: { mean: "", sd: "", n: "" },
     rob: { randomization: "", blinding: "", attrition: "", reporting: "", other: "", overall: "" },
+    moderators: {},
   };
 }
 
@@ -691,6 +703,10 @@ function Step4Extraction({ project, setProject, lang }) {
   const tx = T[lang];
   const included = (project.studies || []).filter(s => s.included);
   const [expandedId, setExpandedId] = useState(included[0]?.id || null);
+  const [newModName, setNewModName] = useState("");
+  const [showModInput, setShowModInput] = useState(false);
+
+  const modColumns = project.moderatorColumns || [];
 
   const updateStudy = (id, field, val) => {
     setProject(prev => ({
@@ -703,6 +719,37 @@ function Step4Extraction({ project, setProject, lang }) {
     setProject(prev => ({
       ...prev,
       studies: prev.studies.map(s => s.id === id ? { ...s, [group]: { ...s[group], [field]: val } } : s),
+    }));
+  };
+
+  const updateModerator = (id, colName, val) => {
+    setProject(prev => ({
+      ...prev,
+      studies: prev.studies.map(s => s.id === id ? { ...s, moderators: { ...(s.moderators || {}), [colName]: val } } : s),
+    }));
+  };
+
+  const addModeratorColumn = () => {
+    const name = newModName.trim();
+    if (!name || modColumns.includes(name)) return;
+    setProject(prev => ({
+      ...prev,
+      moderatorColumns: [...(prev.moderatorColumns || []), name],
+      studies: prev.studies.map(s => ({ ...s, moderators: { ...(s.moderators || {}), [name]: "" } })),
+    }));
+    setNewModName("");
+    setShowModInput(false);
+  };
+
+  const removeModeratorColumn = (colName) => {
+    setProject(prev => ({
+      ...prev,
+      moderatorColumns: (prev.moderatorColumns || []).filter(c => c !== colName),
+      studies: prev.studies.map(s => {
+        const mods = { ...(s.moderators || {}) };
+        delete mods[colName];
+        return { ...s, moderators: mods };
+      }),
     }));
   };
 
@@ -780,12 +827,63 @@ function Step4Extraction({ project, setProject, lang }) {
                       </div>
                     </div>
                   )}
+
+                  {/* Moderator columns */}
+                  {modColumns.length > 0 && (
+                    <div style={{ marginTop: 16, paddingTop: 16, borderTop: `1px dashed ${LIGHT_BORDER}` }}>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: GOLD, marginBottom: 8, textTransform: "uppercase", letterSpacing: 1 }}>
+                        {lang === "zh" ? "調節變項" : "Moderators"}
+                      </div>
+                      <div style={{ display: "grid", gridTemplateColumns: modColumns.length > 2 ? "1fr 1fr 1fr" : modColumns.length === 2 ? "1fr 1fr" : "1fr", gap: 8 }}>
+                        {modColumns.map(col => (
+                          <InputField key={col} label={col} value={(study.moderators || {})[col] || ""} onChange={v => updateModerator(study.id, col, v)} placeholder="" />
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
           </Card>
         );
       })}
+
+      {/* Moderator column management */}
+      <div style={{ marginTop: 20, padding: 16, background: `${GOLD}06`, borderRadius: 12, border: `1px solid ${GOLD}20` }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: modColumns.length > 0 ? 12 : 0 }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: DARK }}>
+            {lang === "zh" ? "調節變項欄位" : "Moderator Columns"}
+          </span>
+          <Btn small onClick={() => setShowModInput(true)} style={{ fontSize: 12 }}>{tx.addModerator}</Btn>
+        </div>
+
+        {modColumns.length > 0 && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: showModInput ? 12 : 0 }}>
+            {modColumns.map(col => (
+              <div key={col} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 10px 4px 12px", borderRadius: 20, background: `${GOLD}14`, border: `1px solid ${GOLD}30`, fontSize: 13, color: DARK }}>
+                {col}
+                <button onClick={() => removeModeratorColumn(col)} style={{ background: "none", border: "none", cursor: "pointer", color: MUTED, fontSize: 14, padding: 0, lineHeight: 1 }} title={tx.removeModerator}>×</button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {showModInput && (
+          <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
+            <div style={{ flex: 1 }}>
+              <InputField label={tx.moderatorName} value={newModName} onChange={setNewModName} placeholder={tx.moderatorNamePh} />
+            </div>
+            <div style={{ display: "flex", gap: 6, paddingBottom: 16 }}>
+              <Btn small primary onClick={addModeratorColumn} disabled={!newModName.trim()}>{lang === "zh" ? "新增" : "Add"}</Btn>
+              <Btn small onClick={() => { setShowModInput(false); setNewModName(""); }}>{lang === "zh" ? "取消" : "Cancel"}</Btn>
+            </div>
+          </div>
+        )}
+
+        {modColumns.length === 0 && !showModInput && (
+          <div style={{ fontSize: 12, color: MUTED, marginTop: 4 }}>{tx.moderatorHint}</div>
+        )}
+      </div>
     </div>
   );
 }
