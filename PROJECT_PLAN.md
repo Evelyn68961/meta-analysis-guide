@@ -50,7 +50,7 @@ src/
 ├── SiteNav.jsx          ← Unified site-wide navbar (course dropdown, about, profile, login, lang toggle)
 ├── AboutPage.jsx        ← About page with project info, audience, structure, sources
 ├── ProfilePage.jsx      ← User progress dashboard (stats, clickable dino collection → links to DinoIntro codex, best scores)
-├── supabaseClient.js    ← Supabase client initialization (imports URL + anon key from .env)
+├── supabaseClient.js    ← Supabase client + saveProgress() helper (upsert with "keep best" logic: wins overwrite losses, losses never overwrite wins)
 │
 ├── Course0.jsx          ← Precourse: What is Meta-Analysis? (teaching sections; game extracted to DinoEggHunt)
 ├── Course1.jsx          ← Course 1: PICO (teaching sections + AI workshop + AI freestyle PICO; game extracted to DinoEggHatch)
@@ -235,10 +235,11 @@ Project docs:
 - **Auth:** Google OAuth configured and working (login/logout tested locally)
 - **Database:** `profiles` table (with `last_login_at` for 3-month cleanup) + `progress` table (with `dino_index`, `max_score`) — RLS policies + auto-profile trigger active
 - **Schema:** `dino_index` (INT 0–6) replaces old `egg_index` + `dino_species`. `max_score` column added for correct score denominators. See BACKEND_UPGRADE_PLAN.md for full schema.
-- **Frontend wiring:** `supabaseClient.js` created, `App.jsx` updated with auth state, user props passed to all courses
+- **Frontend wiring:** `supabaseClient.js` with `saveProgress()` helper, `App.jsx` updated with auth state + `last_login_at` update on login, user props passed to all courses
+- **Progress saving (Phase 3) ✅ COMPLETE:** All 6 game components wired to save results on win/loss (if logged in). Dino gating queries previous course results. ProfilePage reads new schema columns. DinoIntro shows 3-state codex (locked/egg/hatched).
 - **Unified navbar:** `SiteNav.jsx` — site-wide nav with login/profile UI, replaces per-course inline navs
 - **About page:** `AboutPage.jsx` — standalone page at `#about`
-- **Profile dashboard:** `ProfilePage.jsx` — progress dashboard at `#profile` (reads from `progress` table; clickable dino cards link to DinoIntro codex; UI built, needs Phase 3 fixes for new column names)
+- **Profile dashboard:** `ProfilePage.jsx` — progress dashboard at `#profile` (reads from `progress` table using `dino_index`; 6 overview stat cards; 3-state dino collection grid; clickable dino cards link to DinoIntro codex)
 - **3-month data retention:** pg_cron auto-deletes progress for users inactive >3 months (based on `last_login_at`). Silent cleanup, not user-facing.
-- **AI workshop gating:** AI check buttons in Midterm/Final disabled unless user is logged in + completed required courses. Controls API cost.
-- **Next:** Run schema migration SQL, then wire progress saving into game components (Phase 3)
+- **AI workshop gating (Phase 3 remaining):** AI check buttons in Midterm/Final to be gated behind login + course completion. Controls API cost.
+- **Next:** Wire AI workshop gating in Midterm/Final, set up pg_cron cleanup job
