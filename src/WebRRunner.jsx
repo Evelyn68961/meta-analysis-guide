@@ -9,6 +9,7 @@ const LIGHT_BORDER = "#E8E6E1";
 const GREEN = "#3DA87A";
 const AMBER = "#D4A843";
 const BLUE = "#2E86C1";
+const PURPLE = "#8E44AD";
 const FONT = "'Noto Sans TC', 'Outfit', sans-serif";
 
 // ═══ BILINGUAL TEXT ═══
@@ -39,6 +40,42 @@ const TX = {
     stepEngine: "R 引擎",
     stepPackage: "安裝套件",
     stepReady: "就緒",
+
+    // Layer 2: Advanced Analysis
+    advTitle: "進階分析",
+    advSubtitle: "根據基本分析結果，選擇進一步的統計檢測。AI 會根據你的資料推薦適合的分析。",
+    advRecommend: "🤖 AI 推薦分析",
+    advRecommending: "AI 評估中...",
+    advRecommendTitle: "AI 推薦",
+    advRun: "▶ 執行進階分析",
+    advRunning: "正在執行進階分析...",
+    advInterpret: "🤖 AI 解讀進階結果",
+    advInterpretTitle: "AI 進階解讀",
+    advOutputTitle: "進階分析 R 輸出",
+    advPlotTitle: "進階分析圖表",
+    advDownloadPlot: "下載圖表",
+    advSelectType: "選擇分析類型",
+    advSelectMod: "選擇調節變項",
+    advNoMod: "請在規劃篇新增調節變項以啟用此分析",
+    advRecommendBadge: "AI 推薦",
+    advHistory: "已執行的分析",
+    advRunAnother: "執行另一項分析",
+    advShowCode: "顯示 R 程式碼",
+    advHideCode: "隱藏 R 程式碼",
+
+    // Analysis type names
+    leaveOneOut: "逐一排除敏感性分析",
+    leaveOneOutDesc: "逐一排除每篇研究，觀察整體結果的穩定性。",
+    trimFill: "Trim-and-Fill 法",
+    trimFillDesc: "估計並校正可能的發表偏差。",
+    eggers: "Egger's 迴歸檢定",
+    eggersDesc: "以統計方法檢測漏斗圖不對稱（發表偏差指標）。",
+    influence: "影響力診斷",
+    influenceDesc: "辨識對整體結果有不成比例影響的研究。",
+    subgroup: "次群組分析",
+    subgroupDesc: "依調節變項分組，比較各組效果差異。",
+    metareg: "統合迴歸分析",
+    metaregDesc: "檢驗調節變項是否能解釋研究間異質性。",
   },
   en: {
     initTitle: "Loading R Statistical Engine",
@@ -66,6 +103,42 @@ const TX = {
     stepEngine: "R Engine",
     stepPackage: "Packages",
     stepReady: "Ready",
+
+    // Layer 2: Advanced Analysis
+    advTitle: "Advanced Analysis",
+    advSubtitle: "Based on your basic results, select further statistical tests. AI can recommend analyses suited to your data.",
+    advRecommend: "🤖 AI Recommend Analyses",
+    advRecommending: "AI evaluating...",
+    advRecommendTitle: "AI Recommendations",
+    advRun: "▶ Run Advanced Analysis",
+    advRunning: "Running advanced analysis...",
+    advInterpret: "🤖 AI Interpret Advanced Results",
+    advInterpretTitle: "AI Advanced Interpretation",
+    advOutputTitle: "Advanced Analysis R Output",
+    advPlotTitle: "Advanced Analysis Plot",
+    advDownloadPlot: "Download Plot",
+    advSelectType: "Select analysis type",
+    advSelectMod: "Select moderator variable",
+    advNoMod: "Add moderator columns in the Planning workshop to enable this analysis",
+    advRecommendBadge: "AI Recommended",
+    advHistory: "Completed Analyses",
+    advRunAnother: "Run Another Analysis",
+    advShowCode: "Show R Code",
+    advHideCode: "Hide R Code",
+
+    // Analysis type names
+    leaveOneOut: "Leave-One-Out Sensitivity",
+    leaveOneOutDesc: "Remove each study one at a time to check result stability.",
+    trimFill: "Trim-and-Fill",
+    trimFillDesc: "Estimate and adjust for potential publication bias.",
+    eggers: "Egger's Regression Test",
+    eggersDesc: "Statistically test for funnel plot asymmetry (publication bias indicator).",
+    influence: "Influence Diagnostics",
+    influenceDesc: "Identify studies with disproportionate influence on overall results.",
+    subgroup: "Subgroup Analysis",
+    subgroupDesc: "Compare effect sizes across subgroups defined by a moderator variable.",
+    metareg: "Meta-Regression",
+    metaregDesc: "Test whether a moderator variable explains between-study heterogeneity.",
   },
 };
 
@@ -80,10 +153,238 @@ const STATUS = {
   ERROR: "error",
 };
 
+// ═══ ANALYSIS TYPES ═══
+const ANALYSIS_TYPES = [
+  { key: "leaveOneOut", icon: "🔍", needsMod: false },
+  { key: "trimFill", icon: "📐", needsMod: false },
+  { key: "eggers", icon: "📏", needsMod: false },
+  { key: "influence", icon: "⚖️", needsMod: false },
+  { key: "subgroup", icon: "📊", needsMod: true },
+  { key: "metareg", icon: "📈", needsMod: true },
+];
+
+// ═══ LAYER 2: STATIC R TEMPLATE BLOCKS ═══
+// AI never writes R code. These are pre-tested templates.
+// JS validates analysis type against whitelist, slots moderator name if needed.
+
+function buildAdvancedRCode(analysisType, moderator, model, studies) {
+  const method = model === "fixed" ? 'method="FE"' : 'method="REML"';
+
+  switch (analysisType) {
+    case "leaveOneOut":
+      return `# ── Leave-One-Out Sensitivity Analysis ──
+l1o <- leave1out(res)
+print(l1o)`;
+
+    case "trimFill":
+      return `# ── Trim-and-Fill Analysis ──
+tf <- trimfill(res)
+print(tf)
+funnel(tf, main = "Funnel Plot (Trim-and-Fill)")`;
+
+    case "eggers":
+      return `# ── Egger's Regression Test ──
+reg_test <- regtest(res)
+print(reg_test)`;
+
+    case "influence":
+      return `# ── Influence Diagnostics ──
+inf <- influence(res)
+print(inf)
+plot(inf)`;
+
+    case "subgroup": {
+      if (!moderator) return null;
+      // Get unique values of the moderator to build per-subgroup rma() calls
+      const safemod = moderator.replace(/[^a-zA-Z0-9_.]/g, ".");
+      const vals = [...new Set(studies.map(s => s.moderators?.[moderator]).filter(Boolean))];
+      if (vals.length === 0) return null;
+
+      let code = `# ── Subgroup Analysis by "${moderator}" ──\n`;
+      code += `cat("\\n=== Subgroup Analysis by ${moderator} ===\\n\\n")\n`;
+      vals.forEach((val) => {
+        const safeVal = val.replace(/"/g, '\\"');
+        code += `\ncat("--- Subgroup: ${moderator} = ${safeVal} ---\\n")\n`;
+        code += `res_sub_${val.replace(/[^a-zA-Z0-9]/g, "_")} <- rma(yi, vi, data = dat, subset = (${safemod} == "${safeVal}"), ${method}, slab = dat$study)\n`;
+        code += `print(res_sub_${val.replace(/[^a-zA-Z0-9]/g, "_")})\n`;
+      });
+      // Test for between-group differences
+      code += `\ncat("\\n--- Between-Group Test ---\\n")\n`;
+      code += `res_mod <- rma(yi, vi, mods = ~ factor(${safemod}), data = dat, ${method})\n`;
+      code += `cat("QM (test of moderators):", res_mod$QM, "df =", res_mod$m, "p =", res_mod$QMp, "\\n")\n`;
+      return code;
+    }
+
+    case "metareg": {
+      if (!moderator) return null;
+      const safemod = moderator.replace(/[^a-zA-Z0-9_.]/g, ".");
+      return `# ── Meta-Regression: ${moderator} ──
+res_reg <- rma(yi, vi, mods = ~ ${safemod}, data = dat, ${method})
+print(res_reg)`;
+    }
+
+    default:
+      return null;
+  }
+}
+
+// ═══ AI PROMPTS FOR LAYER 2 ═══
+
+function getAdvancedInterpretPrompt(analysisType, moderator, lang, pico, effectType, model) {
+  const isZh = lang === "zh";
+  const picoStr = `P: ${pico?.p || "?"} | I: ${pico?.i || "?"} | C: ${pico?.c || "?"} | O: ${pico?.o || "?"}`;
+  const modelStr = isZh ? (model === "random" ? "隨機效果" : "固定效果") : (model === "random" ? "Random-Effects" : "Fixed-Effect");
+
+  const prompts = {
+    leaveOneOut: {
+      zh: `你是統合分析專家。以下是逐一排除敏感性分析結果。
+研究主題 — ${picoStr}　效果量：${effectType}　模型：${modelStr}
+請解讀：
+1. 排除哪篇研究後效果量變化最大？
+2. 整體結論是否穩健？
+3. 是否有任何研究對結果有不成比例的影響？
+3-5 句繁體中文。不用 Markdown。`,
+      en: `You are a meta-analysis expert. These are leave-one-out sensitivity results.
+Study topic — ${picoStr} | Effect: ${effectType} | Model: ${modelStr}
+Interpret:
+1. Which study's removal most changes the effect?
+2. Is the overall conclusion robust?
+3. Does any study have disproportionate influence?
+3-5 sentences. No Markdown.`,
+    },
+    trimFill: {
+      zh: `你是統合分析專家。以下是 Trim-and-Fill 分析結果。
+研究主題 — ${picoStr}　效果量：${effectType}　模型：${modelStr}
+請解讀：
+1. 估計了多少篇缺失研究？
+2. 校正後的效果量與原始結果差異大嗎？
+3. 是否有發表偏差的證據？
+3-5 句繁體中文。不用 Markdown。`,
+      en: `You are a meta-analysis expert. These are trim-and-fill results.
+Study topic — ${picoStr} | Effect: ${effectType} | Model: ${modelStr}
+Interpret:
+1. How many missing studies were estimated?
+2. Does the adjusted effect differ substantially from the original?
+3. Is there evidence of publication bias?
+3-5 sentences. No Markdown.`,
+    },
+    eggers: {
+      zh: `你是統合分析專家。以下是 Egger's 迴歸檢定結果。
+研究主題 — ${picoStr}　效果量：${effectType}　模型：${modelStr}
+請解讀：
+1. 檢定結果是否顯著（p 值）？
+2. 這對發表偏差意味著什麼？
+3. 結合研究數量，你對此結果的信心如何？
+3-5 句繁體中文。不用 Markdown。`,
+      en: `You are a meta-analysis expert. These are Egger's regression test results.
+Study topic — ${picoStr} | Effect: ${effectType} | Model: ${modelStr}
+Interpret:
+1. Is the test significant (p-value)?
+2. What does this imply about publication bias?
+3. Given the number of studies, how confident are you in this result?
+3-5 sentences. No Markdown.`,
+    },
+    influence: {
+      zh: `你是統合分析專家。以下是影響力診斷結果。
+研究主題 — ${picoStr}　效果量：${effectType}　模型：${modelStr}
+請解讀：
+1. 哪些研究的影響力指標（如 Cook's distance、DFFITS）最高？
+2. 是否有研究需要特別注意或考慮排除？
+3. 移除高影響力研究後，結論是否可能改變？
+3-5 句繁體中文。不用 Markdown。`,
+      en: `You are a meta-analysis expert. These are influence diagnostics results.
+Study topic — ${picoStr} | Effect: ${effectType} | Model: ${modelStr}
+Interpret:
+1. Which studies have the highest influence metrics (e.g., Cook's distance, DFFITS)?
+2. Do any studies warrant special attention or potential exclusion?
+3. Could removing high-influence studies change the conclusions?
+3-5 sentences. No Markdown.`,
+    },
+    subgroup: {
+      zh: `你是統合分析專家。以下是依「${moderator}」分組的次群組分析結果。
+研究主題 — ${picoStr}　效果量：${effectType}　模型：${modelStr}
+請解讀：
+1. 各組效果量及方向
+2. 組間差異是否有統計意義（QM 檢定）
+3. 可能的臨床解釋
+3-5 句繁體中文。不用 Markdown。`,
+      en: `You are a meta-analysis expert. These are subgroup analysis results by "${moderator}".
+Study topic — ${picoStr} | Effect: ${effectType} | Model: ${modelStr}
+Interpret:
+1. Effect size and direction per subgroup
+2. Whether between-group differences are statistically significant (QM test)
+3. Possible clinical explanations
+3-5 sentences. No Markdown.`,
+    },
+    metareg: {
+      zh: `你是統合分析專家。以下是以「${moderator}」為調節變項的統合迴歸結果。
+研究主題 — ${picoStr}　效果量：${effectType}　模型：${modelStr}
+請解讀：
+1. 調節變項的係數及顯著性
+2. 是否能解釋研究間異質性
+3. 臨床意義
+3-5 句繁體中文。不用 Markdown。`,
+      en: `You are a meta-analysis expert. These are meta-regression results with "${moderator}" as moderator.
+Study topic — ${picoStr} | Effect: ${effectType} | Model: ${modelStr}
+Interpret:
+1. Moderator coefficient and significance
+2. Whether it explains between-study heterogeneity
+3. Clinical significance
+3-5 sentences. No Markdown.`,
+    },
+  };
+
+  return prompts[analysisType]?.[lang] || prompts[analysisType]?.en || "";
+}
+
+function getRecommendPrompt(lang, pico, effectType, model, moderatorColumns, studyCount) {
+  const picoStr = `P: ${pico?.p || "?"} | I: ${pico?.i || "?"} | C: ${pico?.c || "?"} | O: ${pico?.o || "?"}`;
+  const modList = moderatorColumns.length > 0 ? moderatorColumns.join(", ") : "none";
+
+  if (lang === "zh") {
+    return `你是統合分析方法學專家。根據基本分析的 R 輸出結果，為研究者推薦 2-3 項最適合的進階分析。
+
+研究主題 — ${picoStr}
+效果量：${effectType}　模型：${model === "random" ? "隨機效果" : "固定效果"}
+納入研究數：${studyCount}
+可用調節變項：${modList}
+
+可選分析類型：
+- leaveOneOut：逐一排除敏感性分析
+- trimFill：Trim-and-Fill 法
+- eggers：Egger's 迴歸檢定
+- influence：影響力診斷
+- subgroup：次群組分析（需要調節變項）
+- metareg：統合迴歸（需要調節變項）
+
+根據 I²、Q 檢定、研究數量、和可用的調節變項，回答以下格式（純 JSON，不要 Markdown）：
+[{"type":"分析類型key","moderator":"調節變項名稱或null","reason":"1句推薦理由"}]`;
+  }
+
+  return `You are a meta-analysis methodology expert. Based on the basic analysis R output, recommend 2-3 advanced analyses most appropriate for this dataset.
+
+Study topic — ${picoStr}
+Effect: ${effectType} | Model: ${model === "random" ? "Random-Effects" : "Fixed-Effect"}
+Studies: ${studyCount}
+Available moderators: ${modList}
+
+Available analysis types:
+- leaveOneOut: Leave-one-out sensitivity analysis
+- trimFill: Trim-and-fill
+- eggers: Egger's regression test
+- influence: Influence diagnostics
+- subgroup: Subgroup analysis (requires moderator)
+- metareg: Meta-regression (requires moderator)
+
+Based on I², Q-test, number of studies, and available moderators, respond in this format (pure JSON, no Markdown):
+[{"type":"analysisTypeKey","moderator":"moderatorName or null","reason":"1 sentence rationale"}]`;
+}
+
 // ═══ MAIN COMPONENT ═══
-export default function WebRRunner({ rCode, lang = "zh", pico, effectType, model, onAiInterpret }) {
+export default function WebRRunner({ rCode, lang = "zh", pico, effectType, model, moderatorColumns = [], studies = [], onAiInterpret }) {
   const tx = TX[lang] || TX.en;
 
+  // Layer 1 state
   const [status, setStatus] = useState(STATUS.IDLE);
   const [errorMsg, setErrorMsg] = useState(null);
   const [rOutput, setROutput] = useState(null);
@@ -93,10 +394,29 @@ export default function WebRRunner({ rCode, lang = "zh", pico, effectType, model
   const [aiResult, setAiResult] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
 
+  // Layer 2 state
+  const [advSelectedType, setAdvSelectedType] = useState(null);
+  const [advSelectedMod, setAdvSelectedMod] = useState(moderatorColumns[0] || "");
+  const [advRunning, setAdvRunning] = useState(false);
+  const [advOutput, setAdvOutput] = useState(null);
+  const [advPlotImg, setAdvPlotImg] = useState(null);
+  const [advAiResult, setAdvAiResult] = useState(null);
+  const [advAiLoading, setAdvAiLoading] = useState(false);
+  const [advShowCode, setAdvShowCode] = useState(false);
+  const [advRCode, setAdvRCode] = useState(null);
+  const [advError, setAdvError] = useState(null);
+  const [advHistory, setAdvHistory] = useState([]); // completed analyses
+  const [advRecommendations, setAdvRecommendations] = useState(null);
+  const [advRecommendLoading, setAdvRecommendLoading] = useState(false);
+  const [showAdvPanel, setShowAdvPanel] = useState(false);
+
   const webRRef = useRef(null);
   const forestCanvasRef = useRef(null);
   const funnelCanvasRef = useRef(null);
+  const advPlotCanvasRef = useRef(null);
   const initAttemptedRef = useRef(false);
+
+  const hasModerators = moderatorColumns.length > 0;
 
   // ── Initialize WebR ──
   const initWebR = useCallback(async () => {
@@ -135,7 +455,7 @@ export default function WebRRunner({ rCode, lang = "zh", pico, effectType, model
     }
   }, [initWebR]);
 
-  // ── Run R Code ──
+  // ── Run R Code (Layer 1) ──
   const handleRun = async () => {
     if (!webRRef.current || !rCode) return;
     const webR = webRRef.current;
@@ -146,72 +466,62 @@ export default function WebRRunner({ rCode, lang = "zh", pico, effectType, model
     setFunnelImg(null);
     setAiResult(null);
     setErrorMsg(null);
+    // Reset Layer 2
+    setShowAdvPanel(false);
+    setAdvOutput(null);
+    setAdvPlotImg(null);
+    setAdvAiResult(null);
+    setAdvHistory([]);
+    setAdvRecommendations(null);
+    setAdvSelectedType(null);
 
     try {
       const shelter = await new webR.Shelter();
 
-      // Split code: run data + model first (no plots), capture text output
-      // Then run forest and funnel separately to capture each plot
       const codeLines = rCode.split("\n");
       const plotIdx = codeLines.findIndex(l => l.trim().startsWith("forest("));
       const funnelIdx = codeLines.findIndex(l => l.trim().startsWith("funnel("));
 
-      // Everything before forest() is the analysis code
       const analysisEnd = Math.min(
         plotIdx >= 0 ? plotIdx : codeLines.length,
         funnelIdx >= 0 ? funnelIdx : codeLines.length
       );
       const analysisCode = codeLines.slice(0, analysisEnd).join("\n");
 
-      // Extract forest and funnel lines (may span multiple lines)
       let forestCode = "";
       let funnelCode = "";
       if (plotIdx >= 0) {
-        // Grab from forest( until the next blank line or funnel( or end
         let end = plotIdx + 1;
-        while (end < codeLines.length && codeLines[end].trim() !== "" && !codeLines[end].trim().startsWith("funnel(") && !codeLines[end].trim().startsWith("#")) {
-          end++;
-        }
+        while (end < codeLines.length && codeLines[end].trim() !== "" && !codeLines[end].trim().startsWith("funnel(") && !codeLines[end].trim().startsWith("#")) end++;
         forestCode = codeLines.slice(plotIdx, end).join("\n");
       }
       if (funnelIdx >= 0) {
         let end = funnelIdx + 1;
-        while (end < codeLines.length && codeLines[end].trim() !== "" && !codeLines[end].trim().startsWith("#")) {
-          end++;
-        }
+        while (end < codeLines.length && codeLines[end].trim() !== "" && !codeLines[end].trim().startsWith("#")) end++;
         funnelCode = codeLines.slice(funnelIdx, end).join("\n");
       }
 
-      // 1. Run analysis code and capture text output
+      // 1. Run analysis code
       const analysisResult = await shelter.captureR(analysisCode, {
-        withAutoprint: true,
-        captureStreams: true,
-        captureConditions: false,
+        withAutoprint: true, captureStreams: true, captureConditions: false,
       });
-
-      const outputText = [
-        ...analysisResult.output.map(o => o.data),
-      ].join("\n");
+      const outputText = analysisResult.output.map(o => o.data).join("\n");
       setROutput(outputText);
 
-      // 2. Run forest plot and capture image
+      // 2. Forest plot
       if (forestCode) {
         const forestResult = await shelter.captureR(forestCode, {
-          withAutoprint: true,
-          captureStreams: true,
-          captureConditions: false,
+          withAutoprint: true, captureStreams: true, captureConditions: false,
         });
         if (forestResult.images && forestResult.images.length > 0) {
           setForestImg(forestResult.images[forestResult.images.length - 1]);
         }
       }
 
-      // 3. Run funnel plot and capture image
+      // 3. Funnel plot
       if (funnelCode) {
         const funnelResult = await shelter.captureR(funnelCode, {
-          withAutoprint: true,
-          captureStreams: true,
-          captureConditions: false,
+          withAutoprint: true, captureStreams: true, captureConditions: false,
         });
         if (funnelResult.images && funnelResult.images.length > 0) {
           setFunnelImg(funnelResult.images[funnelResult.images.length - 1]);
@@ -239,6 +549,7 @@ export default function WebRRunner({ rCode, lang = "zh", pico, effectType, model
 
   useEffect(() => { drawToCanvas(forestCanvasRef, forestImg); }, [forestImg, drawToCanvas]);
   useEffect(() => { drawToCanvas(funnelCanvasRef, funnelImg); }, [funnelImg, drawToCanvas]);
+  useEffect(() => { drawToCanvas(advPlotCanvasRef, advPlotImg); }, [advPlotImg, drawToCanvas]);
 
   // ── Download plot as PNG ──
   const downloadCanvas = (canvasRef, filename) => {
@@ -249,7 +560,7 @@ export default function WebRRunner({ rCode, lang = "zh", pico, effectType, model
     link.click();
   };
 
-  // ── AI Interpretation ──
+  // ── AI Interpretation (Layer 1) ──
   const handleAiInterpret = async () => {
     if (!rOutput || aiLoading) return;
     setAiLoading(true);
@@ -300,10 +611,146 @@ Structure your response as:
     if (aiResult && onAiInterpret) onAiInterpret(aiResult);
   }, [aiResult, onAiInterpret]);
 
+  // ══════════════════════════════════════════════
+  // LAYER 2: Advanced Analysis
+  // ══════════════════════════════════════════════
+
+  // ── AI Recommend ──
+  const handleAiRecommend = async () => {
+    if (!rOutput || advRecommendLoading) return;
+    setAdvRecommendLoading(true);
+    setAdvRecommendations(null);
+
+    const systemPrompt = getRecommendPrompt(lang, pico, effectType, model, moderatorColumns, studies.length);
+
+    try {
+      const resp = await fetch("/api/ai-feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ system: systemPrompt, userMessage: rOutput }),
+      });
+      const data = await resp.json();
+      const text = data.content?.map(i => i.text || "").join("") || "";
+
+      // Parse JSON from AI response
+      try {
+        const cleaned = text.replace(/```json|```/g, "").trim();
+        const recs = JSON.parse(cleaned);
+        // Validate: each must have type in the allowed list
+        const validTypes = ANALYSIS_TYPES.map(a => a.key);
+        const validated = recs.filter(r => validTypes.includes(r.type)).slice(0, 3);
+        setAdvRecommendations(validated);
+
+        // Auto-select the first recommendation
+        if (validated.length > 0) {
+          setAdvSelectedType(validated[0].type);
+          if (validated[0].moderator) setAdvSelectedMod(validated[0].moderator);
+        }
+      } catch {
+        // If AI didn't return valid JSON, show as text
+        setAdvRecommendations([]);
+      }
+    } catch {
+      setAdvRecommendations([]);
+    }
+    setAdvRecommendLoading(false);
+  };
+
+  // ── Run Advanced Analysis (Layer 2) ──
+  const handleAdvRun = async () => {
+    if (!webRRef.current || !advSelectedType) return;
+
+    const needsMod = ANALYSIS_TYPES.find(a => a.key === advSelectedType)?.needsMod;
+    const mod = needsMod ? advSelectedMod : null;
+
+    // Whitelist validation
+    const validTypes = ANALYSIS_TYPES.map(a => a.key);
+    if (!validTypes.includes(advSelectedType)) return;
+    if (needsMod && (!mod || !moderatorColumns.includes(mod))) return;
+
+    const code = buildAdvancedRCode(advSelectedType, mod, model, studies);
+    if (!code) return;
+
+    setAdvRunning(true);
+    setAdvOutput(null);
+    setAdvPlotImg(null);
+    setAdvAiResult(null);
+    setAdvError(null);
+    setAdvRCode(code);
+    setAdvShowCode(false);
+
+    try {
+      const webR = webRRef.current;
+      const shelter = await new webR.Shelter();
+
+      const result = await shelter.captureR(code, {
+        withAutoprint: true, captureStreams: true, captureConditions: false,
+      });
+
+      const outputText = result.output.map(o => o.data).join("\n");
+      setAdvOutput(outputText);
+
+      // Capture any plots
+      if (result.images && result.images.length > 0) {
+        setAdvPlotImg(result.images[result.images.length - 1]);
+      }
+
+      shelter.purge();
+    } catch (err) {
+      console.error("Advanced analysis error:", err);
+      setAdvError(err.message || "Advanced analysis failed");
+    }
+    setAdvRunning(false);
+  };
+
+  // ── AI Interpret Advanced (Layer 2) ──
+  const handleAdvAiInterpret = async () => {
+    if (!advOutput || advAiLoading) return;
+    setAdvAiLoading(true);
+    setAdvAiResult(null);
+
+    const needsMod = ANALYSIS_TYPES.find(a => a.key === advSelectedType)?.needsMod;
+    const mod = needsMod ? advSelectedMod : null;
+    const systemPrompt = getAdvancedInterpretPrompt(advSelectedType, mod, lang, pico, effectType, model);
+
+    try {
+      const resp = await fetch("/api/ai-feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ system: systemPrompt, userMessage: advOutput }),
+      });
+      const data = await resp.json();
+      const text = data.content?.map(i => i.text || "").join("") || (lang === "zh" ? "無法取得回饋" : "Could not get feedback");
+      setAdvAiResult(text);
+    } catch {
+      setAdvAiResult(lang === "zh" ? "連線錯誤" : "Connection error");
+    }
+    setAdvAiLoading(false);
+  };
+
+  // ── Save to history and reset for another analysis ──
+  const handleRunAnother = () => {
+    if (advOutput) {
+      setAdvHistory(h => [...h, {
+        type: advSelectedType,
+        moderator: advSelectedMod,
+        output: advOutput,
+        aiResult: advAiResult,
+        code: advRCode,
+      }]);
+    }
+    setAdvOutput(null);
+    setAdvPlotImg(null);
+    setAdvAiResult(null);
+    setAdvError(null);
+    setAdvRCode(null);
+    setAdvSelectedType(null);
+    setAdvShowCode(false);
+  };
+
   // ═══ RENDER ═══
 
   const isLoading = status === STATUS.LOADING_ENGINE || status === STATUS.LOADING_PACKAGES;
-  const isReady = status === STATUS.READY || status === STATUS.DONE;
 
   return (
     <div style={{ fontFamily: FONT }}>
@@ -329,8 +776,7 @@ Structure your response as:
                     background: s.done ? GREEN : s.active ? CRIMSON : LIGHT_BORDER,
                     color: (s.done || s.active) ? "#FFF" : MUTED,
                     display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: 12, fontWeight: 700,
-                    transition: "all 0.3s",
+                    fontSize: 12, fontWeight: 700, transition: "all 0.3s",
                   }}>
                     {s.done ? "✓" : i + 1}
                   </div>
@@ -347,7 +793,6 @@ Structure your response as:
             {status === STATUS.LOADING_ENGINE ? tx.initEngine : tx.initPackage}
           </div>
 
-          {/* Animated loading bar */}
           <div style={{ width: 200, height: 4, background: LIGHT_BORDER, borderRadius: 2, margin: "0 auto", overflow: "hidden" }}>
             <div style={{
               width: "40%", height: "100%", background: CRIMSON, borderRadius: 2,
@@ -412,7 +857,9 @@ Structure your response as:
         </div>
       )}
 
-      {/* ── Results ── */}
+      {/* ══════════════════════════════════════════════ */}
+      {/* LAYER 1 RESULTS                               */}
+      {/* ══════════════════════════════════════════════ */}
       {status === STATUS.DONE && (
         <div>
 
@@ -488,7 +935,7 @@ Structure your response as:
             </div>
           )}
 
-          {/* AI Interpret Button */}
+          {/* AI Interpret Button (Layer 1) */}
           <div style={{ marginBottom: 16 }}>
             <button onClick={handleAiInterpret} disabled={aiLoading || !rOutput}
               style={{
@@ -503,7 +950,7 @@ Structure your response as:
             </button>
           </div>
 
-          {/* AI Result */}
+          {/* AI Result (Layer 1) */}
           {(aiResult || aiLoading) && (
             <div style={{
               background: aiResult ? `${BLUE}08` : `${CRIMSON}08`,
@@ -527,11 +974,366 @@ Structure your response as:
             </div>
           )}
 
-          {/* Execution error during run (but we still have partial output) */}
+          {/* Execution error during run */}
           {errorMsg && (
             <div style={{ background: `${AMBER}10`, border: `1px solid ${AMBER}30`, borderRadius: 10, padding: "10px 14px", fontSize: 13, color: DARK, marginTop: 12 }}>
               ⚠️ {tx.errorTitle}: <span style={{ fontFamily: "monospace", fontSize: 12 }}>{errorMsg}</span>
               <div style={{ fontSize: 12, color: MUTED, marginTop: 6 }}>{tx.errorHint}</div>
+            </div>
+          )}
+
+          {/* ══════════════════════════════════════════════ */}
+          {/* LAYER 2: ADVANCED ANALYSIS                    */}
+          {/* ══════════════════════════════════════════════ */}
+          {aiResult && (
+            <div style={{ marginTop: 32 }}>
+
+              {/* Divider */}
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
+                <div style={{ flex: 1, height: 1, background: LIGHT_BORDER }} />
+                <button
+                  onClick={() => setShowAdvPanel(!showAdvPanel)}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 8,
+                    padding: "8px 20px", borderRadius: 10,
+                    fontSize: 14, fontWeight: 700, fontFamily: FONT,
+                    cursor: "pointer",
+                    border: `2px solid ${PURPLE}40`,
+                    background: showAdvPanel ? `${PURPLE}10` : CARD_BG,
+                    color: PURPLE,
+                    transition: "all 0.2s",
+                  }}>
+                  🔬 {tx.advTitle}
+                  <span style={{ fontSize: 11, transform: showAdvPanel ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }}>▼</span>
+                </button>
+                <div style={{ flex: 1, height: 1, background: LIGHT_BORDER }} />
+              </div>
+
+              {showAdvPanel && (
+                <div style={{
+                  background: `${PURPLE}04`,
+                  border: `1px solid ${PURPLE}15`,
+                  borderRadius: 16, padding: 24,
+                }}>
+                  <p style={{ fontSize: 13, color: MUTED, marginBottom: 20, lineHeight: 1.7 }}>
+                    {tx.advSubtitle}
+                  </p>
+
+                  {/* AI Recommend Button */}
+                  {!advRecommendations && (
+                    <div style={{ marginBottom: 20 }}>
+                      <button onClick={handleAiRecommend} disabled={advRecommendLoading}
+                        style={{
+                          padding: "10px 20px", borderRadius: 10, fontSize: 13, fontWeight: 600, fontFamily: FONT,
+                          cursor: advRecommendLoading ? "not-allowed" : "pointer",
+                          border: `1.5px solid ${PURPLE}`,
+                          background: advRecommendLoading ? `${PURPLE}10` : CARD_BG,
+                          color: PURPLE, transition: "all 0.2s",
+                          opacity: advRecommendLoading ? 0.7 : 1,
+                        }}>
+                        {advRecommendLoading ? tx.advRecommending : tx.advRecommend}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* AI Recommendations display */}
+                  {advRecommendations && advRecommendations.length > 0 && (
+                    <div style={{
+                      background: `${PURPLE}08`, border: `1px solid ${PURPLE}20`,
+                      borderRadius: 12, padding: 16, marginBottom: 20,
+                    }}>
+                      <h5 style={{ fontSize: 13, fontWeight: 700, color: PURPLE, marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>
+                        🤖 {tx.advRecommendTitle}
+                      </h5>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                        {advRecommendations.map((rec, i) => {
+                          const aType = ANALYSIS_TYPES.find(a => a.key === rec.type);
+                          if (!aType) return null;
+                          return (
+                            <div key={i}
+                              onClick={() => {
+                                setAdvSelectedType(rec.type);
+                                if (rec.moderator) setAdvSelectedMod(rec.moderator);
+                              }}
+                              style={{
+                                display: "flex", alignItems: "flex-start", gap: 10,
+                                padding: "10px 14px", borderRadius: 10, cursor: "pointer",
+                                background: advSelectedType === rec.type ? `${PURPLE}12` : CARD_BG,
+                                border: `1.5px solid ${advSelectedType === rec.type ? PURPLE : LIGHT_BORDER}`,
+                                transition: "all 0.15s",
+                              }}>
+                              <span style={{ fontSize: 18, flexShrink: 0 }}>{aType.icon}</span>
+                              <div style={{ flex: 1 }}>
+                                <div style={{ fontSize: 13, fontWeight: 600, color: advSelectedType === rec.type ? PURPLE : DARK }}>
+                                  {tx[rec.type]}
+                                  {rec.moderator && <span style={{ fontWeight: 400, color: MUTED }}> → {rec.moderator}</span>}
+                                </div>
+                                <div style={{ fontSize: 12, color: MUTED, marginTop: 2, lineHeight: 1.5 }}>{rec.reason}</div>
+                              </div>
+                              <div style={{
+                                flexShrink: 0, fontSize: 10, fontWeight: 700,
+                                padding: "2px 8px", borderRadius: 6,
+                                background: `${PURPLE}15`, color: PURPLE,
+                              }}>
+                                {tx.advRecommendBadge}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Manual selection — only show if no current advanced output */}
+                  {!advOutput && !advRunning && (
+                    <div>
+                      <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: DARK, marginBottom: 10 }}>
+                        {tx.advSelectType}
+                      </label>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 8, marginBottom: 20 }}>
+                        {ANALYSIS_TYPES.map(a => {
+                          const disabled = a.needsMod && !hasModerators;
+                          const selected = advSelectedType === a.key;
+                          const isRecommended = advRecommendations?.some(r => r.type === a.key);
+                          return (
+                            <div key={a.key}
+                              onClick={() => { if (!disabled) { setAdvSelectedType(a.key); if (a.needsMod && moderatorColumns[0]) setAdvSelectedMod(moderatorColumns[0]); } }}
+                              style={{
+                                padding: "12px 14px", borderRadius: 12, cursor: disabled ? "not-allowed" : "pointer",
+                                border: `1.5px solid ${selected ? PURPLE : LIGHT_BORDER}`,
+                                background: disabled ? "#F8F7F4" : selected ? `${PURPLE}08` : CARD_BG,
+                                opacity: disabled ? 0.5 : 1,
+                                transition: "all 0.15s",
+                                position: "relative",
+                              }}>
+                              {isRecommended && !selected && (
+                                <div style={{
+                                  position: "absolute", top: -6, right: 8,
+                                  fontSize: 9, fontWeight: 700, padding: "1px 6px", borderRadius: 4,
+                                  background: PURPLE, color: "#FFF",
+                                }}>★</div>
+                              )}
+                              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                <span style={{ fontSize: 16 }}>{a.icon}</span>
+                                <span style={{ fontSize: 13, fontWeight: 600, color: selected ? PURPLE : disabled ? MUTED : DARK }}>
+                                  {tx[a.key]}
+                                </span>
+                              </div>
+                              <div style={{ fontSize: 11, color: MUTED, marginTop: 4, lineHeight: 1.5 }}>
+                                {disabled ? tx.advNoMod : tx[`${a.key}Desc`]}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Moderator dropdown (for subgroup / metareg) */}
+                      {advSelectedType && ANALYSIS_TYPES.find(a => a.key === advSelectedType)?.needsMod && hasModerators && (
+                        <div style={{ marginBottom: 20 }}>
+                          <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: DARK, marginBottom: 6 }}>
+                            {tx.advSelectMod}
+                          </label>
+                          <select
+                            value={advSelectedMod}
+                            onChange={e => setAdvSelectedMod(e.target.value)}
+                            style={{
+                              padding: "10px 14px", borderRadius: 10, fontSize: 13, fontFamily: FONT,
+                              border: `1.5px solid ${LIGHT_BORDER}`, background: CARD_BG, color: DARK,
+                              cursor: "pointer", minWidth: 200,
+                            }}>
+                            {moderatorColumns.map(m => <option key={m} value={m}>{m}</option>)}
+                          </select>
+                        </div>
+                      )}
+
+                      {/* Run button */}
+                      <button onClick={handleAdvRun}
+                        disabled={!advSelectedType || advRunning}
+                        style={{
+                          padding: "10px 28px", borderRadius: 10, fontSize: 14, fontWeight: 700, fontFamily: FONT,
+                          cursor: (!advSelectedType || advRunning) ? "not-allowed" : "pointer",
+                          border: "none",
+                          background: (!advSelectedType || advRunning) ? "#DDD" : PURPLE,
+                          color: "#FFF", transition: "all 0.2s",
+                          boxShadow: advSelectedType ? `0 4px 16px ${PURPLE}30` : "none",
+                        }}>
+                        {advRunning ? tx.advRunning : tx.advRun}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Running state */}
+                  {advRunning && (
+                    <div style={{ textAlign: "center", padding: "24px 0" }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: PURPLE }}>
+                        {tx.advRunning} <span style={{ display: "inline-block", animation: "pulse 1.2s infinite" }}>⏳</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ── Advanced Results ── */}
+                  {advOutput && (
+                    <div style={{ marginTop: 16 }}>
+
+                      {/* Advanced Plot */}
+                      {advPlotImg && (
+                        <div style={{ marginBottom: 20 }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                            <h4 style={{ fontSize: 14, fontWeight: 700, color: DARK, margin: 0, display: "flex", alignItems: "center", gap: 8 }}>
+                              📊 {tx.advPlotTitle}
+                            </h4>
+                            <button onClick={() => downloadCanvas(advPlotCanvasRef, `${advSelectedType}_plot.png`)}
+                              style={{ padding: "4px 12px", borderRadius: 8, fontSize: 11, fontWeight: 600, fontFamily: FONT, cursor: "pointer", border: `1px solid ${LIGHT_BORDER}`, background: CARD_BG, color: MUTED }}>
+                              📥 {tx.advDownloadPlot}
+                            </button>
+                          </div>
+                          <div style={{ background: "#FFF", borderRadius: 12, border: `1px solid ${LIGHT_BORDER}`, padding: 12, overflow: "auto" }}>
+                            <canvas ref={advPlotCanvasRef} style={{ maxWidth: "100%", height: "auto", display: "block" }} />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Advanced R Output */}
+                      <div style={{ marginBottom: 20 }}>
+                        <h4 style={{ fontSize: 14, fontWeight: 700, color: DARK, marginBottom: 10, display: "flex", alignItems: "center", gap: 8 }}>
+                          📋 {tx.advOutputTitle}
+                        </h4>
+                        <pre style={{
+                          background: "#1E1E2E", color: "#CDD6F4", borderRadius: 12, padding: 20,
+                          fontSize: 12, lineHeight: 1.6, overflowX: "auto",
+                          fontFamily: "'Courier New', Courier, monospace", maxHeight: 360,
+                          whiteSpace: "pre-wrap", wordBreak: "break-word",
+                        }}>
+                          {advOutput}
+                        </pre>
+                      </div>
+
+                      {/* Advanced R Code (collapsible) */}
+                      {advRCode && (
+                        <div style={{ marginBottom: 20 }}>
+                          <button onClick={() => setAdvShowCode(!advShowCode)}
+                            style={{ padding: "6px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600, fontFamily: FONT, cursor: "pointer", border: `1px solid ${LIGHT_BORDER}`, background: CARD_BG, color: MUTED, marginBottom: advShowCode ? 10 : 0 }}>
+                            💻 {advShowCode ? tx.advHideCode : tx.advShowCode}
+                          </button>
+                          {advShowCode && (
+                            <pre style={{
+                              background: "#1E1E2E", color: "#CDD6F4", borderRadius: 12, padding: 20,
+                              fontSize: 13, lineHeight: 1.7, overflowX: "auto",
+                              fontFamily: "'Courier New', Courier, monospace", maxHeight: 300, tabSize: 2,
+                            }}>
+                              {advRCode}
+                            </pre>
+                          )}
+                        </div>
+                      )}
+
+                      {/* AI Interpret Advanced */}
+                      <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 16 }}>
+                        <button onClick={handleAdvAiInterpret} disabled={advAiLoading || !advOutput}
+                          style={{
+                            padding: "10px 24px", borderRadius: 10, fontSize: 13, fontWeight: 600, fontFamily: FONT,
+                            cursor: (advAiLoading || !advOutput) ? "not-allowed" : "pointer",
+                            border: "none",
+                            background: (advAiLoading || !advOutput) ? "#DDD" : BLUE,
+                            color: "#FFF", transition: "all 0.2s",
+                            opacity: (advAiLoading || !advOutput) ? 0.5 : 1,
+                          }}>
+                          {advAiLoading ? tx.aiInterpreting : tx.advInterpret}
+                        </button>
+                        <button onClick={handleRunAnother}
+                          style={{
+                            padding: "10px 20px", borderRadius: 10, fontSize: 13, fontWeight: 600, fontFamily: FONT,
+                            cursor: "pointer",
+                            border: `1.5px solid ${PURPLE}40`,
+                            background: CARD_BG, color: PURPLE, transition: "all 0.2s",
+                          }}>
+                          {tx.advRunAnother}
+                        </button>
+                      </div>
+
+                      {/* Advanced AI Result */}
+                      {(advAiResult || advAiLoading) && (
+                        <div style={{
+                          background: advAiResult ? `${BLUE}08` : `${CRIMSON}08`,
+                          border: `1px solid ${advAiResult ? BLUE : CRIMSON}20`,
+                          borderRadius: 12, padding: 20, marginBottom: 16,
+                        }}>
+                          {advAiLoading ? (
+                            <div style={{ textAlign: "center", fontSize: 13, color: CRIMSON }}>
+                              {tx.aiInterpreting} <span style={{ display: "inline-block", animation: "pulse 1.2s infinite" }}>⏳</span>
+                            </div>
+                          ) : (
+                            <div>
+                              <h4 style={{ fontSize: 14, fontWeight: 700, color: DARK, marginBottom: 10, display: "flex", alignItems: "center", gap: 8 }}>
+                                🤖 {tx.advInterpretTitle}
+                              </h4>
+                              <div style={{ fontSize: 13, color: DARK, lineHeight: 1.8, whiteSpace: "pre-wrap" }}>
+                                {advAiResult}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Advanced error */}
+                      {advError && (
+                        <div style={{ background: `${AMBER}10`, border: `1px solid ${AMBER}30`, borderRadius: 10, padding: "10px 14px", fontSize: 13, color: DARK, marginTop: 8 }}>
+                          ⚠️ {tx.errorTitle}: <span style={{ fontFamily: "monospace", fontSize: 12 }}>{advError}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* ── History of completed analyses ── */}
+                  {advHistory.length > 0 && (
+                    <div style={{ marginTop: 24, borderTop: `1px solid ${PURPLE}15`, paddingTop: 20 }}>
+                      <h5 style={{ fontSize: 13, fontWeight: 700, color: DARK, marginBottom: 12 }}>
+                        📝 {tx.advHistory} ({advHistory.length})
+                      </h5>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                        {advHistory.map((h, i) => {
+                          const aType = ANALYSIS_TYPES.find(a => a.key === h.type);
+                          return (
+                            <details key={i} style={{
+                              background: CARD_BG, border: `1px solid ${LIGHT_BORDER}`,
+                              borderRadius: 10, overflow: "hidden",
+                            }}>
+                              <summary style={{
+                                padding: "10px 14px", cursor: "pointer", fontSize: 13, fontWeight: 600, color: DARK,
+                                display: "flex", alignItems: "center", gap: 8,
+                              }}>
+                                <span>{aType?.icon}</span>
+                                <span>{tx[h.type]}</span>
+                                {h.moderator && <span style={{ fontWeight: 400, color: MUTED }}>→ {h.moderator}</span>}
+                                {h.aiResult && <span style={{ marginLeft: "auto", fontSize: 10, color: BLUE, fontWeight: 600 }}>✓ AI</span>}
+                              </summary>
+                              <div style={{ padding: "0 14px 14px" }}>
+                                <pre style={{
+                                  background: "#1E1E2E", color: "#CDD6F4", borderRadius: 8, padding: 12,
+                                  fontSize: 11, lineHeight: 1.5, overflowX: "auto", maxHeight: 200,
+                                  fontFamily: "'Courier New', Courier, monospace",
+                                  whiteSpace: "pre-wrap", wordBreak: "break-word",
+                                }}>
+                                  {h.output}
+                                </pre>
+                                {h.aiResult && (
+                                  <div style={{
+                                    background: `${BLUE}08`, border: `1px solid ${BLUE}15`,
+                                    borderRadius: 8, padding: 12, marginTop: 8,
+                                    fontSize: 12, color: DARK, lineHeight: 1.7,
+                                  }}>
+                                    {h.aiResult}
+                                  </div>
+                                )}
+                              </div>
+                            </details>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
