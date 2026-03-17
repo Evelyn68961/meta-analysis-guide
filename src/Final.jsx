@@ -789,6 +789,31 @@ export default function Final({ onNavigate, user, onLogin, onLogout }) {
           <div style={{ fontSize: 48, marginBottom: 16 }}>📋</div>
           <h2 style={{ fontSize: 22, fontWeight: 700, color: DARK, marginBottom: 8 }}>{tx.noData}</h2>
           <Btn primary onClick={() => onNavigate("midterm")} style={{ marginTop: 16 }}>{tx.goToMidterm}</Btn>
+          <div style={{ marginTop: 24, paddingTop: 20, borderTop: `1px dashed ${LIGHT_BORDER}` }}>
+            <p style={{ fontSize: 13, color: MUTED, marginBottom: 12 }}>
+              {lang === "zh" ? "或上傳先前下載的專案檔" : "Or upload a previously downloaded project file"}
+            </p>
+            <label style={{
+              display: "inline-block", padding: "8px 20px", borderRadius: 10, fontSize: 13, fontWeight: 600,
+              fontFamily: FONT, cursor: "pointer",
+              border: `1.5px solid ${LIGHT_BORDER}`, background: CARD_BG, color: MUTED,
+            }}>
+              📂 {lang === "zh" ? "上傳專案檔 (.json)" : "Upload Project File (.json)"}
+              <input type="file" accept=".json" style={{ display: "none" }} onChange={e => {
+                const file = e.target.files?.[0]; if (!file) return;
+                const reader = new FileReader();
+                reader.onload = () => {
+                  try {
+                    const data = JSON.parse(reader.result);
+                    if (!data.pico || !data.studies?.length) { alert(lang === "zh" ? "檔案格式不正確" : "Invalid project file"); return; }
+                    sessionStorage.setItem("ma_project_midterm", JSON.stringify(data));
+                    window.location.reload();
+                  } catch { alert(lang === "zh" ? "檔案讀取失敗" : "Failed to read file"); }
+                };
+                reader.readAsText(file);
+              }} />
+            </label>
+          </div>
         </div>
       </div>
     );
