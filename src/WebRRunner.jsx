@@ -432,10 +432,7 @@ export default function WebRRunner({ rCode, lang = "zh", pico, effectType, model
 
       setStatus(STATUS.LOADING_PACKAGES);
       await webR.evalRVoid(`
-        webr::install("metafor", repos = c(
-          "https://repo.r-wasm.org",
-          "https://wviechtb.r-universe.dev"
-        ))
+        webr::install("metafor")
         library(metafor)
       `);
 
@@ -478,30 +475,22 @@ export default function WebRRunner({ rCode, lang = "zh", pico, effectType, model
     try {
       const shelter = await new webR.Shelter();
 
+      // Split code into analysis (text) and plots
       const codeLines = rCode.split("\n");
       const plotIdx = codeLines.findIndex(l => l.trim().startsWith("forest("));
       const funnelIdx = codeLines.findIndex(l => l.trim().startsWith("funnel("));
 
-      const analysisEnd = Math.min(
+      // Everything before the first plot command is analysis code
+      const firstPlotLine = Math.min(
         plotIdx >= 0 ? plotIdx : codeLines.length,
         funnelIdx >= 0 ? funnelIdx : codeLines.length
       );
+      // Walk back to skip the comment line before forest()
+      let analysisEnd = firstPlotLine;
+      while (analysisEnd > 0 && codeLines[analysisEnd - 1].trim().startsWith("#")) analysisEnd--;
       const analysisCode = codeLines.slice(0, analysisEnd).join("\n");
 
-      let forestCode = "";
-      let funnelCode = "";
-      if (plotIdx >= 0) {
-        let end = plotIdx + 1;
-        while (end < codeLines.length && codeLines[end].trim() !== "" && !codeLines[end].trim().startsWith("funnel(") && !codeLines[end].trim().startsWith("#")) end++;
-        forestCode = codeLines.slice(plotIdx, end).join("\n");
-      }
-      if (funnelIdx >= 0) {
-        let end = funnelIdx + 1;
-        while (end < codeLines.length && codeLines[end].trim() !== "" && !codeLines[end].trim().startsWith("#")) end++;
-        funnelCode = codeLines.slice(funnelIdx, end).join("\n");
-      }
-
-      // 1. Run analysis code
+      // 1. Run analysis code and capture text output
       const analysisResult = await shelter.captureR(analysisCode, {
         withAutoprint: true, captureStreams: true, captureConditions: false,
       });
@@ -509,23 +498,46 @@ export default function WebRRunner({ rCode, lang = "zh", pico, effectType, model
       setROutput(outputText);
 
       // 2. Forest plot
-      if (forestCode) {
-        const forestResult = await shelter.captureR(forestCode, {
-          withAutoprint: true, captureStreams: true, captureConditions: false,
-        });
-        if (forestResult.images && forestResult.images.length > 0) {
-          setForestImg(forestResult.images[forestResult.images.length - 1]);
-        }
+      if (plotIdx >= 0) {
+        // Grab from forest( line to the next blank line
+        let end = plotIdx + 1;
+        while (end < codeLines.length && codeLines[end].trim() !== "" && !codeLines[end].trim().startsWith("funnel(") && !codeLines[end].trim().startsWith("# ──")) end++;
+        const forestCode = codeLines.slice(plotIdx, end).join("\n");
+        const nStudies = (rCode.match(/slab/g) || []).length > 0 ? (rCode.match(/c\(/g) || []).length : 5;
+        const plotHeight = Math.max(400, 150 + nStudies * 40);
+        try {
+          const forestResult = await shelter.captureR(`
+            webr::canvas(width = 900, height = ${plotHeight})
+            par(bg = "white")
+            ${forestCode}
+            dev.off()
+          `, {
+            withAutoprint: true, captureStreams: true, captureConditions: false,
+          });
+          if (forestResult.images && forestResult.images.length > 0) {
+            setForestImg(forestResult.images[forestResult.images.length - 1]);
+          }
+        } catch (e) { console.warn("Forest plot error:", e); }
       }
 
       // 3. Funnel plot
-      if (funnelCode) {
-        const funnelResult = await shelter.captureR(funnelCode, {
-          withAutoprint: true, captureStreams: true, captureConditions: false,
-        });
-        if (funnelResult.images && funnelResult.images.length > 0) {
-          setFunnelImg(funnelResult.images[funnelResult.images.length - 1]);
-        }
+      if (funnelIdx >= 0) {
+        let end = funnelIdx + 1;
+        while (end < codeLines.length && codeLines[end].trim() !== "" && !codeLines[end].trim().startsWith("# ──")) end++;
+        const funnelCode = codeLines.slice(funnelIdx, end).join("\n");
+        try {
+          const funnelResult = await shelter.captureR(`
+            webr::canvas(width = 600, height = 500)
+            par(bg = "white")
+            ${funnelCode}
+            dev.off()
+          `, {
+            withAutoprint: true, captureStreams: true, captureConditions: false,
+          });
+          if (funnelResult.images && funnelResult.images.length > 0) {
+            setFunnelImg(funnelResult.images[funnelResult.images.length - 1]);
+          }
+        } catch (e) { console.warn("Funnel plot error:", e); }
       }
 
       shelter.purge();
@@ -544,6 +556,8 @@ export default function WebRRunner({ rCode, lang = "zh", pico, effectType, model
     canvas.width = img.width;
     canvas.height = img.height;
     const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(img, 0, 0, img.width, img.height);
   }, []);
 
@@ -683,7 +697,15 @@ Structure your response as:
       const webR = webRRef.current;
       const shelter = await new webR.Shelter();
 
-      const result = await shelter.captureR(code, {
+      // Check if this analysis type produces plots
+      const plotTypes = ["trimFill", "influence"];
+      const hasPlot = plotTypes.includes(advSelectedType);
+
+      const wrappedCode = hasPlot
+        ? `webr::canvas(width = 700, height = 500)\npar(bg = "white")\n${code}\ndev.off()`
+        : code;
+
+      const result = await shelter.captureR(wrappedCode, {
         withAutoprint: true, captureStreams: true, captureConditions: false,
       });
 
