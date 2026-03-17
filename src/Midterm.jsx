@@ -999,6 +999,18 @@ function PhaseGate({ project, onNavigate, lang }) {
           <h3 style={{ fontSize: 22, fontWeight: 700, color: DARK, marginBottom: 8 }}>{tx.gateTitle}</h3>
           <p style={{ fontSize: 14, color: MUTED, marginBottom: 24, lineHeight: 1.6 }}>{tx.gateDesc}</p>
           <Btn primary onClick={() => onNavigate("final")} style={{ fontSize: 16, padding: "14px 32px" }}>{tx.goToFinal}</Btn>
+          <div style={{ marginTop: 16 }}>
+            <button onClick={() => {
+              const blob = new Blob([JSON.stringify(project, null, 2)], { type: "application/json" });
+              const a = document.createElement("a"); a.download = "ma_project.json"; a.href = URL.createObjectURL(blob); a.click();
+            }} style={{
+              padding: "8px 20px", borderRadius: 10, fontSize: 13, fontWeight: 600,
+              fontFamily: "'Noto Sans TC', 'Outfit', sans-serif", cursor: "pointer",
+              border: `1.5px solid ${LIGHT_BORDER}`, background: CARD_BG, color: MUTED,
+            }}>
+              📥 {lang === "zh" ? "下載專案檔" : "Download Project File"}
+            </button>
+          </div>
         </>
       ) : (
         <>
