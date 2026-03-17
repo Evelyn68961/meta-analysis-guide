@@ -399,7 +399,7 @@ function buildRCode(studies, bin, effectType, model, modColumns) {
     }
     return `  ${rName} = c(${vals.map(v => v ? `"${v.replace(/"/g, '\\"')}"` : "NA").join(", ")})`;
   });
-  const modComment = modLines.length > 0 ? `,\n  # ── Moderator Variables ──\n${modLines.join(",\n")}` : "";
+  const modComment = modLines.length > 0 ? `,\n${modLines.join(",\n")}` : "";
 
   let code = `# ══════════════════════════════════════════════════
 # Meta-Analysis with metafor
@@ -417,7 +417,7 @@ dat <- data.frame(
   ai    = c(${studies.map(s => s.tx?.events ?? "NA").join(", ")}),   # intervention events
   n1i   = c(${studies.map(s => s.tx?.total ?? "NA").join(", ")}),  # intervention total
   ci    = c(${studies.map(s => s.ctrl?.events ?? "NA").join(", ")}),   # control events
-  n2i   = c(${studies.map(s => s.ctrl?.total ?? "NA").join(", ")})   # control total${modComment}
+  n2i   = c(${studies.map(s => s.ctrl?.total ?? "NA").join(", ")})${modComment}
 )
 
 # ── Calculate Effect Sizes ──
@@ -436,7 +436,7 @@ dat <- data.frame(
   n1i   = c(${studies.map(s => s.txCont?.n ?? "NA").join(", ")}),   # intervention N
   m2i   = c(${studies.map(s => s.ctrlCont?.mean ?? "NA").join(", ")}),   # control mean
   sd2i  = c(${studies.map(s => s.ctrlCont?.sd ?? "NA").join(", ")}),  # control SD
-  n2i   = c(${studies.map(s => s.ctrlCont?.n ?? "NA").join(", ")})    # control N${modComment}
+  n2i   = c(${studies.map(s => s.ctrlCont?.n ?? "NA").join(", ")})${modComment}
 )
 
 # ── Calculate Effect Sizes ──
