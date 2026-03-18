@@ -809,11 +809,13 @@ Start with "✅" or "⚠️". 4-6 sentences. No Markdown.`;
         <Btn primary onClick={handleAiCheck} disabled={!canCheck || aiLoading}>{aiLoading ? tx.aiChecking : `🤖 ${tx.aiCheck}`}</Btn>
       </div>
       <AiFeedbackBox feedback={aiFeedback} loading={aiLoading} lang={lang} />
+
+      {/* ── Full Project Review ── */}
+      <FullReviewSection analysis={analysis} setA={setA} project={project} lang={lang} />
     </div>
   );
 }
-
-function Completion({ analysis, setA, project, lang }) {
+function FullReviewSection({ analysis, setA, project, lang }) {
   const tx = T[lang]; const [aiLoading, setAiLoading] = useState(false);
   const [aiFeedback, setAiFeedback] = useState(analysis._fullReviewFeedback || null);
 
@@ -901,6 +903,22 @@ End with 1-2 sentences of overall assessment and the single most important impro
   };
 
   return (
+    <div style={{ marginTop: 28, paddingTop: 24, borderTop: `2px dashed ${LIGHT_BORDER}` }}>
+      <h4 style={{ fontSize: 15, fontWeight: 700, color: DARK, marginBottom: 8, display: "flex", alignItems: "center", gap: 8 }}>
+        🔍 {tx.aiFullReview}
+      </h4>
+      <p style={{ fontSize: 12, color: MUTED, marginBottom: 16, lineHeight: 1.6 }}>{tx.aiFullReviewDesc}</p>
+      <Btn primary onClick={handleFullReview} disabled={aiLoading}>
+        {aiLoading ? tx.aiFullReviewing : `🤖 ${tx.aiFullReview}`}
+      </Btn>
+      <AiFeedbackBox feedback={aiFeedback} loading={aiLoading} lang={lang} />
+    </div>
+  );
+}
+
+function Completion({ analysis, project, lang }) {
+  const tx = T[lang];
+  return (
     <div style={{ textAlign: "center" }}>
       <h2 style={{ fontSize: 24, fontWeight: 700, color: DARK, marginBottom: 8 }}>{tx.congrats}</h2>
       <p style={{ fontSize: 14, color: MUTED, marginBottom: 32, lineHeight: 1.6, maxWidth: 540, margin: "0 auto 32px" }}>{tx.congratsDesc}</p>
@@ -915,18 +933,6 @@ End with 1-2 sentences of overall assessment and the single most important impro
           {analysis.certainty && <div><strong style={{ color: DARK }}>GRADE:</strong> {analysis.certainty}</div>}
           {analysis.implications && <div><strong style={{ color: DARK }}>{lang === "zh" ? "臨床意義" : "Implications"}:</strong> {analysis.implications}</div>}
         </div>
-      </Card>
-
-      {/* AI Full Review */}
-      <Card style={{ textAlign: "left", maxWidth: 600, margin: "24px auto 0" }}>
-        <h4 style={{ fontSize: 15, fontWeight: 700, color: DARK, marginBottom: 8, display: "flex", alignItems: "center", gap: 8 }}>
-          🔍 {tx.aiFullReview}
-        </h4>
-        <p style={{ fontSize: 12, color: MUTED, marginBottom: 16, lineHeight: 1.6 }}>{tx.aiFullReviewDesc}</p>
-        <Btn primary onClick={handleFullReview} disabled={aiLoading}>
-          {aiLoading ? tx.aiFullReviewing : `🤖 ${tx.aiFullReview}`}
-        </Btn>
-        <AiFeedbackBox feedback={aiFeedback} loading={aiLoading} lang={lang} />
       </Card>
     </div>
   );
@@ -1024,7 +1030,7 @@ export default function Final({ onNavigate, user, onLogin, onLogout }) {
           {step === 2 && <Step3 project={project} analysis={analysis} lang={lang} />}
           {step === 3 && <Step4 analysis={analysis} setA={setA} project={project} lang={lang} />}
           {step === 4 && <Step5 analysis={analysis} setA={setA} project={project} lang={lang} />}
-          {isDone && <Completion analysis={analysis} setA={setA} project={project} lang={lang} />}
+          {isDone && <Completion analysis={analysis} project={project} lang={lang} />}
         </Card>
 
         {!isDone ? (
