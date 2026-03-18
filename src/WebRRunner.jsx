@@ -1025,7 +1025,7 @@ Structure your response as:
           {/* ══════════════════════════════════════════════ */}
           {/* LAYER 2: ADVANCED ANALYSIS                    */}
           {/* ══════════════════════════════════════════════ */}
-          {aiResult && (
+          {rOutput && (
             <div style={{ marginTop: 32 }}>
 
               {/* Divider */}
