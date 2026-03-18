@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import ADVANCED_GUIDES from "./advancedGuides";
 
 // ═══ DESIGN TOKENS (matches Final.jsx) ═══
 const CRIMSON = "#C0392B";
@@ -62,6 +63,7 @@ const TX = {
     advRunAnother: "執行另一項分析",
     advShowCode: "顯示 R 程式碼",
     advHideCode: "隱藏 R 程式碼",
+    advLearnFirst: "📚 先了解這個分析",
 
     // Analysis type names
     leaveOneOut: "逐一排除敏感性分析",
@@ -76,14 +78,6 @@ const TX = {
     subgroupDesc: "依調節變項分組，比較各組效果差異。",
     metareg: "統合迴歸分析",
     metaregDesc: "檢驗調節變項是否能解釋研究間異質性。",
-
-    // Interpretation guides
-    guideLeaveOneOut: "看什麼：每排除一篇研究後的效果量變化。如果整體結果不因任何單篇研究的排除而大幅改變，結論具穩健性。注意效果量變化最大的那篇研究。",
-    guideTrimFill: "看什麼：左側估計的「缺失研究」數量。如果補入缺失研究後效果量大幅改變，可能存在發表偏差。漏斗圖中空心點為補入的假設性研究。",
-    guideEggers: "看什麼：p 值。若 p < 0.05，漏斗圖具統計顯著不對稱，提示可能存在發表偏差。但研究數少於 10 篇時，此檢定的統計效力較低。",
-    guideInfluence: "看什麼：Cook's distance 和 DFFITS 值。數值明顯偏大的研究對整體結果有不成比例的影響，可能需要在敏感性分析中排除。",
-    guideSubgroup: "看什麼：各組的效果量和信賴區間。QM 檢定（組間差異檢定）的 p 值告訴你各組之間是否有統計顯著差異。",
-    guideMetareg: "看什麼：調節變項的迴歸係數和 p 值。如果顯著，代表該變項可能解釋部分研究間異質性。R² 表示被解釋的異質性比例。",
   },
   en: {
     initTitle: "Loading R Statistical Engine",
@@ -133,6 +127,7 @@ const TX = {
     advRunAnother: "Run Another Analysis",
     advShowCode: "Show R Code",
     advHideCode: "Hide R Code",
+    advLearnFirst: "📚 Learn About This Analysis",
 
     // Analysis type names
     leaveOneOut: "Leave-One-Out Sensitivity",
@@ -147,14 +142,6 @@ const TX = {
     subgroupDesc: "Compare effect sizes across subgroups defined by a moderator variable.",
     metareg: "Meta-Regression",
     metaregDesc: "Test whether a moderator variable explains between-study heterogeneity.",
-
-    // Interpretation guides
-    guideLeaveOneOut: "What to look for: how much the effect size changes when each study is removed. If the overall result stays stable regardless of which study is dropped, the conclusion is robust. Note which study's removal causes the biggest shift.",
-    guideTrimFill: "What to look for: the number of 'missing studies' estimated on the left side. If the adjusted effect changes substantially after imputing missing studies, publication bias may be present. Open circles in the funnel plot represent imputed studies.",
-    guideEggers: "What to look for: the p-value. If p < 0.05, the funnel plot shows statistically significant asymmetry, suggesting possible publication bias. However, with fewer than 10 studies, this test has low statistical power.",
-    guideInfluence: "What to look for: Cook's distance and DFFITS values. Studies with notably large values have disproportionate influence on the overall result and may need to be examined in sensitivity analyses.",
-    guideSubgroup: "What to look for: the effect size and confidence interval for each subgroup. The QM test (test of moderators) p-value tells you whether there is a statistically significant difference between subgroups.",
-    guideMetareg: "What to look for: the regression coefficient and p-value of the moderator. If significant, the variable may explain some of the between-study heterogeneity. R² shows the proportion of heterogeneity explained.",
   },
 };
 
@@ -1186,6 +1173,29 @@ Structure your response as:
                         </div>
                       )}
 
+                      {/* Mini-lesson guide — shows BEFORE running, when analysis type is selected */}
+                      {advSelectedType && ADVANCED_GUIDES[lang]?.[advSelectedType] && (
+                        <details style={{
+                          background: `${PURPLE}06`, border: `1px solid ${PURPLE}20`,
+                          borderRadius: 12, marginBottom: 20, overflow: "hidden",
+                        }} open>
+                          <summary style={{
+                            padding: "12px 18px", cursor: "pointer", fontSize: 13, fontWeight: 700, color: PURPLE,
+                            display: "flex", alignItems: "center", gap: 8, listStyle: "none",
+                          }}>
+                            <span style={{ fontSize: 14 }}>💡</span>
+                            {tx.advLearnFirst}
+                            <span style={{ marginLeft: "auto", fontSize: 11, color: MUTED, fontWeight: 400 }}>▼</span>
+                          </summary>
+                          <div style={{
+                            padding: "0 18px 16px", fontSize: 13, color: DARK, lineHeight: 1.8,
+                            whiteSpace: "pre-wrap",
+                          }}>
+                            {ADVANCED_GUIDES[lang]?.[advSelectedType] || ADVANCED_GUIDES.en?.[advSelectedType]}
+                          </div>
+                        </details>
+                      )}
+
                       {/* Run button */}
                       <button onClick={handleAdvRun}
                         disabled={!advSelectedType || advRunning}
@@ -1214,20 +1224,6 @@ Structure your response as:
                   {/* ── Advanced Results ── */}
                   {advOutput && (
                     <div style={{ marginTop: 16 }}>
-
-                      {/* Interpretation guide */}
-                      {advSelectedType && tx[`guide${advSelectedType.charAt(0).toUpperCase() + advSelectedType.slice(1)}`] && (
-                        <div style={{
-                          background: `${PURPLE}06`, border: `1px solid ${PURPLE}20`,
-                          borderRadius: 12, padding: "14px 18px", marginBottom: 16,
-                          display: "flex", gap: 10, alignItems: "flex-start",
-                        }}>
-                          <span style={{ fontSize: 16, flexShrink: 0, marginTop: 1 }}>💡</span>
-                          <div style={{ fontSize: 13, color: DARK, lineHeight: 1.7 }}>
-                            {tx[`guide${advSelectedType.charAt(0).toUpperCase() + advSelectedType.slice(1)}`]}
-                          </div>
-                        </div>
-                      )}
 
                       {/* Advanced Plot */}
                       {advPlotImg && (
