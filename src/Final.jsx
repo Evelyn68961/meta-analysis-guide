@@ -916,7 +916,7 @@ End with 1-2 sentences of overall assessment and the single most important impro
   );
 }
 
-function Completion({ analysis, project, lang }) {
+function Completion({ analysis, project, lang, onNavigate, onBack }) {
   const tx = T[lang];
   return (
     <div style={{ textAlign: "center" }}>
@@ -934,6 +934,12 @@ function Completion({ analysis, project, lang }) {
           {analysis.implications && <div><strong style={{ color: DARK }}>{lang === "zh" ? "臨床意義" : "Implications"}:</strong> {analysis.implications}</div>}
         </div>
       </Card>
+      <div style={{ marginTop: 24, display: "flex", justifyContent: "center", gap: 12 }}>
+        <Btn onClick={onBack}>← {lang === "zh" ? "上一步" : "Back"}</Btn>
+        <Btn primary onClick={() => onNavigate("profile")} style={{ background: "#0E7C86", boxShadow: "0 4px 16px rgba(14,124,134,0.25)" }}>
+          🦕 {lang === "zh" ? "查看我的學習歷程" : "View My Learning Path"}
+        </Btn>
+      </div>
     </div>
   );
 }
@@ -1030,7 +1036,7 @@ export default function Final({ onNavigate, user, onLogin, onLogout }) {
           {step === 2 && <Step3 project={project} analysis={analysis} lang={lang} />}
           {step === 3 && <Step4 analysis={analysis} setA={setA} project={project} lang={lang} />}
           {step === 4 && <Step5 analysis={analysis} setA={setA} project={project} lang={lang} />}
-          {isDone && <Completion analysis={analysis} project={project} lang={lang} />}
+          {isDone && <Completion analysis={analysis} project={project} lang={lang} onNavigate={onNavigate} onBack={() => setStep(s => s - 1)} />}
         </Card>
 
         {!isDone ? (
