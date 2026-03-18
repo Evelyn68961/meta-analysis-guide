@@ -131,6 +131,8 @@ const T = {
     failsafe: "Fail-safe N",
     subgroupPlan: "次群組或敏感性分析計畫",
     subgroupPh: "例如：依 eGFR 基線值分組、排除高偏差風險研究、僅納入 CKD 專屬試驗",
+    aiCheckInterpret: "AI 檢查解讀",
+    aiCheckingInterpret: "AI 檢查中...",
 
     // Step 6: Conclusions
     conclusionTitle: "撰寫結論",
@@ -154,6 +156,9 @@ const T = {
     congrats: "🎉 恭喜完成！",
     congratsDesc: "你已完成一個完整的統合分析流程——從定義 PICO 到撰寫結論。將你的分析結果和圖表加入學術海報吧！",
     summaryTitle: "你的統合分析摘要",
+    aiFullReview: "AI 全面審查",
+    aiFullReviewing: "AI 審查中...",
+    aiFullReviewDesc: "AI 會檢視你的整個專案（從 PICO 到結論），找出步驟間的不一致、遺漏、和可改進之處。",
     backToHub: "返回課程主頁",
     noData: "請先完成規劃篇（Phase 1）",
     goToMidterm: "前往規劃篇 →",
@@ -268,6 +273,8 @@ const T = {
     failsafe: "Fail-safe N",
     subgroupPlan: "Subgroup or sensitivity analysis plan",
     subgroupPh: "e.g., Subgroup by baseline eGFR, exclude high RoB studies, restrict to CKD-dedicated trials",
+    aiCheckInterpret: "AI Review Interpretation",
+    aiCheckingInterpret: "AI reviewing...",
 
     conclusionTitle: "Write Conclusions",
     mainFinding: "Main Finding",
@@ -289,6 +296,9 @@ const T = {
     congrats: "🎉 Congratulations!",
     congratsDesc: "You've completed a full meta-analysis workflow — from defining PICO to writing conclusions. Add your results and plots to your academic poster!",
     summaryTitle: "Your Meta-Analysis Summary",
+    aiFullReview: "AI Full Review",
+    aiFullReviewing: "AI reviewing...",
+    aiFullReviewDesc: "AI will review your entire project (PICO through conclusions), checking for cross-step inconsistencies, omissions, and areas for improvement.",
     backToHub: "Back to Course Hub",
     noData: "Please complete the Planning phase (Phase 1) first",
     goToMidterm: "Go to Planning Workshop →",
@@ -637,10 +647,67 @@ function Step3({ project, analysis, lang }) {
   );
 }
 
-function Step4({ analysis, setA, lang }) {
-  const tx = T[lang];
+function Step4({ analysis, setA, project, lang }) {
+  const tx = T[lang]; const [aiLoading, setAiLoading] = useState(false);
+  const [aiFeedback, setAiFeedback] = useState(analysis._interpretFeedback || null);
   const biasOpts = [{ key: "eggers", label: tx.eggers }, { key: "trimFill", label: tx.trimFill }, { key: "beggs", label: tx.beggs }, { key: "failsafe", label: tx.failsafe }];
   const toggleTest = k => { const c = analysis.biasTests || []; setA(p => ({ ...p, biasTests: c.includes(k) ? c.filter(x => x !== k) : [...c, k] })); };
+
+  // At least 2 of 4 interpretation fields must have content
+  const filledFields = [analysis.forestQ1, analysis.forestQ2, analysis.hetInterpretation, analysis.funnelAssessment].filter(v => (v || "").trim().length > 10);
+  const canCheck = filledFields.length >= 2;
+
+  const handleAiCheck = async () => {
+    setAiLoading(true); setAiFeedback(null);
+    const isZh = lang === "zh";
+    const picoStr = `P: ${project.pico?.p || "?"} | I: ${project.pico?.i || "?"} | C: ${project.pico?.c || "?"} | O: ${project.pico?.o || "?"}`;
+    const studyCount = getIncluded(project).length;
+
+    const systemPrompt = isZh
+      ? `你是統合分析方法學專家與教學者。學生完成基本統合分析後正在練習解讀結果。
+研究主題 — ${picoStr}
+納入研究：${studyCount} 篇　效果量類型：${analysis.effectType}　模型：${analysis.model === "random" ? "隨機效果" : "固定效果"}
+
+請針對學生的解讀回答，逐項檢查：
+1. 整體效果量解讀是否正確？（方向、大小、顯著性的描述是否準確）
+2. 權重和一致性的描述是否合理？
+3. 異質性解讀是否正確？（I² 的分級、可能原因的推測）
+4. 漏斗圖解讀是否恰當？（若有填寫）
+5. 是否遺漏了重要的面向？（例如只報告統計顯著性但忽略臨床意義）
+
+每項以「✅」（正確）或「⚠️」（需改進）開頭，簡短說明。最後一句給整體建議。
+繁體中文，6-8 句。不用 Markdown。`
+      : `You are a meta-analysis methodology expert and educator. The student has completed a basic MA and is practicing result interpretation.
+Study topic — ${picoStr}
+Studies: ${studyCount} | Effect: ${analysis.effectType} | Model: ${analysis.model === "random" ? "Random-Effects" : "Fixed-Effect"}
+
+Review the student's interpretation answers, checking each area:
+1. Is the pooled effect interpretation correct? (direction, magnitude, significance described accurately)
+2. Is the weight/consistency description reasonable?
+3. Is the heterogeneity interpretation correct? (I² classification, possible sources)
+4. Is the funnel plot interpretation appropriate? (if provided)
+5. Are any important aspects missing? (e.g., reporting only statistical significance but ignoring clinical meaning)
+
+Start each item with "✅" (correct) or "⚠️" (needs improvement), with a brief explanation. End with one overall suggestion.
+6-8 sentences. No Markdown.`;
+
+    const userMsg = [
+      `Q1 (Pooled effect): ${analysis.forestQ1 || "(empty)"}`,
+      `Q2 (Consistency & weights): ${analysis.forestQ2 || "(empty)"}`,
+      `Q3 (Heterogeneity): ${analysis.hetInterpretation || "(empty)"}`,
+      `Q4 (Funnel plot): ${analysis.funnelAssessment || "(empty)"}`,
+      `Bias tests selected: ${(analysis.biasTests || []).join(", ") || "none"}`,
+      `Subgroup/sensitivity plan: ${analysis.subgroupPlan || "(empty)"}`,
+    ].join("\n");
+
+    try {
+      const resp = await fetch("/api/ai-feedback", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ system: systemPrompt, userMessage: userMsg }) });
+      const data = await resp.json();
+      const text = data.content?.map(i => i.text || "").join("") || (isZh ? "無法取得回饋" : "Could not get feedback");
+      setAiFeedback(text); setA(p => ({ ...p, _interpretFeedback: text }));
+    } catch { setAiFeedback(isZh ? "連線錯誤" : "Connection error"); }
+    setAiLoading(false);
+  };
 
   return (
     <div>
@@ -680,6 +747,13 @@ function Step4({ analysis, setA, lang }) {
         ); })}
       </div>
       <InputField label={tx.subgroupPlan} value={analysis.subgroupPlan || ""} onChange={v => setA(p => ({ ...p, subgroupPlan: v }))} placeholder={tx.subgroupPh} multiline />
+
+      {/* AI Interpretation Check */}
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 12 }}>
+        <Btn primary onClick={handleAiCheck} disabled={!canCheck || aiLoading}>{aiLoading ? tx.aiCheckingInterpret : `🤖 ${tx.aiCheckInterpret}`}</Btn>
+        {!canCheck && <span style={{ fontSize: 12, color: MUTED }}>{lang === "zh" ? "請至少填寫 2 項解讀" : "Fill in at least 2 interpretation fields"}</span>}
+      </div>
+      <AiFeedbackBox feedback={aiFeedback} loading={aiLoading} lang={lang} />
     </div>
   );
 }
@@ -739,8 +813,93 @@ Start with "✅" or "⚠️". 4-6 sentences. No Markdown.`;
   );
 }
 
-function Completion({ analysis, project, lang }) {
-  const tx = T[lang];
+function Completion({ analysis, setA, project, lang }) {
+  const tx = T[lang]; const [aiLoading, setAiLoading] = useState(false);
+  const [aiFeedback, setAiFeedback] = useState(analysis._fullReviewFeedback || null);
+
+  const handleFullReview = async () => {
+    setAiLoading(true); setAiFeedback(null);
+    const isZh = lang === "zh";
+    const inc = getIncluded(project);
+
+    // Build RoB summary
+    const robSummary = inc.map(s => {
+      const rob = s.rob || {};
+      const domains = Object.entries(rob).map(([k, v]) => `${k}: ${v}`).join(", ");
+      return `${s.citation}: ${domains || "not rated"}`;
+    }).join("\n");
+
+    const systemPrompt = isZh
+      ? `你是統合分析方法學專家與教學者。請全面審查這位學生的完整統合分析專案，從 PICO 到結論。
+
+針對以下 6 個面向逐一評估，每項以「✅」（良好）或「⚠️」（需改進）開頭：
+
+1. 內部一致性：PICO → 搜尋策略 → 納入研究 → 效果量選擇 → 結論，是否前後連貫？
+2. 方法學適當性：效果量類型和模型選擇是否合理？是否與資料型態匹配？
+3. 偏差風險考量：RoB 評估結果是否反映在解讀和結論中？高偏差研究是否有適當處理？
+4. 結果解讀品質：統計結果的解讀是否準確？是否區分統計顯著性和臨床意義？
+5. 報告完整性：是否報告了所有必要的統計數據（效果量、CI、p 值、I²）？
+6. 結論合理性：GRADE 評級是否與證據品質一致？臨床意義是否具體且有依據？
+
+最後用 1-2 句給出整體評價和最重要的改進建議。
+繁體中文，8-12 句。不用 Markdown。`
+      : `You are a meta-analysis methodology expert and educator. Please conduct a comprehensive review of this student's complete meta-analysis project, from PICO through conclusions.
+
+Evaluate these 6 dimensions, starting each with "✅" (good) or "⚠️" (needs improvement):
+
+1. Internal consistency: Is there a coherent thread from PICO → search → included studies → effect size choice → conclusions?
+2. Methodological appropriateness: Are the effect size type and model reasonable? Do they match the data type?
+3. Risk of bias consideration: Are RoB ratings reflected in the interpretation and conclusions? Are high-bias studies handled appropriately?
+4. Interpretation quality: Is the statistical output interpreted accurately? Does the student distinguish statistical significance from clinical importance?
+5. Reporting completeness: Are all necessary statistics reported (effect size, CI, p-value, I²)?
+6. Conclusion reasonableness: Is the GRADE rating consistent with evidence quality? Are clinical implications specific and evidence-based?
+
+End with 1-2 sentences of overall assessment and the single most important improvement suggestion.
+8-12 sentences. No Markdown.`;
+
+    const userMsg = [
+      `=== PICO ===`,
+      `P: ${project.pico?.p || "?"}`,
+      `I: ${project.pico?.i || "?"}`,
+      `C: ${project.pico?.c || "?"}`,
+      `O: ${project.pico?.o || "?"}`,
+      ``,
+      `=== STUDIES (${inc.length} included) ===`,
+      inc.map(s => s.citation).join(", "),
+      ``,
+      `=== RISK OF BIAS ===`,
+      robSummary,
+      ``,
+      `=== ANALYSIS CHOICES ===`,
+      `Effect size: ${analysis.effectType}`,
+      `Model: ${analysis.model}`,
+      `Rationale: ${analysis.rationale || "(empty)"}`,
+      ``,
+      `=== INTERPRETATION ===`,
+      `Pooled effect: ${analysis.forestQ1 || "(empty)"}`,
+      `Consistency/weights: ${analysis.forestQ2 || "(empty)"}`,
+      `Heterogeneity: ${analysis.hetInterpretation || "(empty)"}`,
+      `Funnel plot: ${analysis.funnelAssessment || "(empty)"}`,
+      `Bias tests selected: ${(analysis.biasTests || []).join(", ") || "none"}`,
+      `Subgroup plan: ${analysis.subgroupPlan || "(empty)"}`,
+      ``,
+      `=== CONCLUSIONS ===`,
+      `Main finding: ${analysis.mainFinding || "(empty)"}`,
+      `GRADE: ${analysis.certainty || "(empty)"}`,
+      `GRADE rationale: ${analysis.certRationale || "(empty)"}`,
+      `Limitations: ${analysis.limitations || "(empty)"}`,
+      `Implications: ${analysis.implications || "(empty)"}`,
+    ].join("\n");
+
+    try {
+      const resp = await fetch("/api/ai-feedback", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ system: systemPrompt, userMessage: userMsg }) });
+      const data = await resp.json();
+      const text = data.content?.map(i => i.text || "").join("") || (isZh ? "無法取得回饋" : "Could not get feedback");
+      setAiFeedback(text); setA(p => ({ ...p, _fullReviewFeedback: text }));
+    } catch { setAiFeedback(isZh ? "連線錯誤" : "Connection error"); }
+    setAiLoading(false);
+  };
+
   return (
     <div style={{ textAlign: "center" }}>
       <h2 style={{ fontSize: 24, fontWeight: 700, color: DARK, marginBottom: 8 }}>{tx.congrats}</h2>
@@ -757,6 +916,18 @@ function Completion({ analysis, project, lang }) {
           {analysis.implications && <div><strong style={{ color: DARK }}>{lang === "zh" ? "臨床意義" : "Implications"}:</strong> {analysis.implications}</div>}
         </div>
       </Card>
+
+      {/* AI Full Review */}
+      <Card style={{ textAlign: "left", maxWidth: 600, margin: "24px auto 0" }}>
+        <h4 style={{ fontSize: 15, fontWeight: 700, color: DARK, marginBottom: 8, display: "flex", alignItems: "center", gap: 8 }}>
+          🔍 {tx.aiFullReview}
+        </h4>
+        <p style={{ fontSize: 12, color: MUTED, marginBottom: 16, lineHeight: 1.6 }}>{tx.aiFullReviewDesc}</p>
+        <Btn primary onClick={handleFullReview} disabled={aiLoading}>
+          {aiLoading ? tx.aiFullReviewing : `🤖 ${tx.aiFullReview}`}
+        </Btn>
+        <AiFeedbackBox feedback={aiFeedback} loading={aiLoading} lang={lang} />
+      </Card>
     </div>
   );
 }
@@ -770,7 +941,7 @@ export default function Final({ onNavigate, user, onLogin, onLogout }) {
   const [analysis, setA] = useState(() => {
     try { const s = sessionStorage.getItem("ma_project_final"); if (s) return JSON.parse(s); } catch {}
     const inc = getIncluded(project); const bin = inc.length > 0 ? isBinary(inc) : true;
-    return { effectType: bin ? "OR" : "MD", model: "random", rationale: "", forestQ1: "", forestQ2: "", hetInterpretation: "", funnelAssessment: "", biasTests: [], subgroupPlan: "", mainFinding: "", certainty: "", certRationale: "", limitations: "", implications: "", _conclusionFeedback: null };
+    return { effectType: bin ? "OR" : "MD", model: "random", rationale: "", forestQ1: "", forestQ2: "", hetInterpretation: "", funnelAssessment: "", biasTests: [], subgroupPlan: "", mainFinding: "", certainty: "", certRationale: "", limitations: "", implications: "", _interpretFeedback: null, _conclusionFeedback: null, _fullReviewFeedback: null };
   });
 
   useEffect(() => { try { sessionStorage.setItem("ma_project_final", JSON.stringify(analysis)); } catch {} }, [analysis]);
@@ -851,9 +1022,9 @@ export default function Final({ onNavigate, user, onLogin, onLogout }) {
           {step === 0 && <Step1 analysis={analysis} setA={setA} project={project} lang={lang} />}
           {step === 1 && <Step2 project={project} analysis={analysis} lang={lang} />}
           {step === 2 && <Step3 project={project} analysis={analysis} lang={lang} />}
-          {step === 3 && <Step4 analysis={analysis} setA={setA} lang={lang} />}
+          {step === 3 && <Step4 analysis={analysis} setA={setA} project={project} lang={lang} />}
           {step === 4 && <Step5 analysis={analysis} setA={setA} project={project} lang={lang} />}
-          {isDone && <Completion analysis={analysis} project={project} lang={lang} />}
+          {isDone && <Completion analysis={analysis} setA={setA} project={project} lang={lang} />}
         </Card>
 
         {!isDone ? (
