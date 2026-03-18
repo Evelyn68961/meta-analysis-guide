@@ -76,6 +76,14 @@ const TX = {
     subgroupDesc: "依調節變項分組，比較各組效果差異。",
     metareg: "統合迴歸分析",
     metaregDesc: "檢驗調節變項是否能解釋研究間異質性。",
+
+    // Interpretation guides
+    guideLeaveOneOut: "看什麼：每排除一篇研究後的效果量變化。如果整體結果不因任何單篇研究的排除而大幅改變，結論具穩健性。注意效果量變化最大的那篇研究。",
+    guideTrimFill: "看什麼：左側估計的「缺失研究」數量。如果補入缺失研究後效果量大幅改變，可能存在發表偏差。漏斗圖中空心點為補入的假設性研究。",
+    guideEggers: "看什麼：p 值。若 p < 0.05，漏斗圖具統計顯著不對稱，提示可能存在發表偏差。但研究數少於 10 篇時，此檢定的統計效力較低。",
+    guideInfluence: "看什麼：Cook's distance 和 DFFITS 值。數值明顯偏大的研究對整體結果有不成比例的影響，可能需要在敏感性分析中排除。",
+    guideSubgroup: "看什麼：各組的效果量和信賴區間。QM 檢定（組間差異檢定）的 p 值告訴你各組之間是否有統計顯著差異。",
+    guideMetareg: "看什麼：調節變項的迴歸係數和 p 值。如果顯著，代表該變項可能解釋部分研究間異質性。R² 表示被解釋的異質性比例。",
   },
   en: {
     initTitle: "Loading R Statistical Engine",
@@ -139,6 +147,14 @@ const TX = {
     subgroupDesc: "Compare effect sizes across subgroups defined by a moderator variable.",
     metareg: "Meta-Regression",
     metaregDesc: "Test whether a moderator variable explains between-study heterogeneity.",
+
+    // Interpretation guides
+    guideLeaveOneOut: "What to look for: how much the effect size changes when each study is removed. If the overall result stays stable regardless of which study is dropped, the conclusion is robust. Note which study's removal causes the biggest shift.",
+    guideTrimFill: "What to look for: the number of 'missing studies' estimated on the left side. If the adjusted effect changes substantially after imputing missing studies, publication bias may be present. Open circles in the funnel plot represent imputed studies.",
+    guideEggers: "What to look for: the p-value. If p < 0.05, the funnel plot shows statistically significant asymmetry, suggesting possible publication bias. However, with fewer than 10 studies, this test has low statistical power.",
+    guideInfluence: "What to look for: Cook's distance and DFFITS values. Studies with notably large values have disproportionate influence on the overall result and may need to be examined in sensitivity analyses.",
+    guideSubgroup: "What to look for: the effect size and confidence interval for each subgroup. The QM test (test of moderators) p-value tells you whether there is a statistically significant difference between subgroups.",
+    guideMetareg: "What to look for: the regression coefficient and p-value of the moderator. If significant, the variable may explain some of the between-study heterogeneity. R² shows the proportion of heterogeneity explained.",
   },
 };
 
@@ -195,8 +211,8 @@ plot(inf)`;
 
     case "subgroup": {
       if (!moderator) return null;
-      // Get unique values of the moderator to build per-subgroup rma() calls
-      const safemod = moderator.replace(/[^a-zA-Z0-9_.]/g, ".");
+      // Must match buildRCode's sanitization: replace non-alphanumeric with _, lowercase
+      const safemod = moderator.replace(/[^a-zA-Z0-9_]/g, "_").toLowerCase();
       const vals = [...new Set(studies.map(s => s.moderators?.[moderator]).filter(Boolean))];
       if (vals.length === 0) return null;
 
@@ -217,7 +233,7 @@ plot(inf)`;
 
     case "metareg": {
       if (!moderator) return null;
-      const safemod = moderator.replace(/[^a-zA-Z0-9_.]/g, ".");
+      const safemod = moderator.replace(/[^a-zA-Z0-9_]/g, "_").toLowerCase();
       return `# ── Meta-Regression: ${moderator} ──
 res_reg <- rma(yi, vi, mods = ~ ${safemod}, data = dat, ${method})
 print(res_reg)`;
@@ -411,9 +427,6 @@ export default function WebRRunner({ rCode, lang = "zh", pico, effectType, model
   const [showAdvPanel, setShowAdvPanel] = useState(false);
 
   const webRRef = useRef(null);
-  const forestCanvasRef = useRef(null);
-  const funnelCanvasRef = useRef(null);
-  const advPlotCanvasRef = useRef(null);
   const initAttemptedRef = useRef(false);
 
   const hasModerators = moderatorColumns.length > 0;
@@ -452,7 +465,29 @@ export default function WebRRunner({ rCode, lang = "zh", pico, effectType, model
     }
   }, [initWebR]);
 
+  // ── Count actual studies from the R code ──
+  const countStudies = (code) => {
+    const studyLine = code.match(/study\s*=\s*c\(([^)]*)\)/);
+    if (!studyLine) return 5;
+    return (studyLine[1].match(/"/g) || []).length / 2;
+  };
+
+  // ── Convert ImageBitmap to data URL string ──
+  const bitmapToDataURL = (bmp) => {
+    if (!bmp || !bmp.width || !bmp.height) return null;
+    const c = document.createElement("canvas");
+    c.width = bmp.width;
+    c.height = bmp.height;
+    c.getContext("2d").drawImage(bmp, 0, 0);
+    return c.toDataURL("image/png");
+  };
+
   // ── Run R Code (Layer 1) ──
+  // WebR 0.3.1+ auto-captures plots in captureR's result.images — but ONLY
+  // when canvas is opened with capture=TRUE, or when no manual canvas device
+  // is used at all. The old code called webr::canvas(capture=FALSE) which
+  // sends images as messages instead of storing them in result.images.
+  // FIX: Use webr::canvas(capture=TRUE) so captureR collects the ImageBitmaps.
   const handleRun = async () => {
     if (!webRRef.current || !rCode) return;
     const webR = webRRef.current;
@@ -480,64 +515,63 @@ export default function WebRRunner({ rCode, lang = "zh", pico, effectType, model
       const plotIdx = codeLines.findIndex(l => l.trim().startsWith("forest("));
       const funnelIdx = codeLines.findIndex(l => l.trim().startsWith("funnel("));
 
-      // Everything before the first plot command is analysis code
       const firstPlotLine = Math.min(
         plotIdx >= 0 ? plotIdx : codeLines.length,
         funnelIdx >= 0 ? funnelIdx : codeLines.length
       );
-      // Walk back to skip the comment line before forest()
       let analysisEnd = firstPlotLine;
       while (analysisEnd > 0 && codeLines[analysisEnd - 1].trim().startsWith("#")) analysisEnd--;
       const analysisCode = codeLines.slice(0, analysisEnd).join("\n");
 
-      // 1. Run analysis code and capture text output
-      const analysisResult = await shelter.captureR(analysisCode, {
-        withAutoprint: true, captureStreams: true, captureConditions: false,
-      });
-      const outputText = analysisResult.output.map(o => o.data).join("\n");
-      setROutput(outputText);
-
-      // 2. Forest plot
+      // Extract forest plot code
+      let forestCode = "";
       if (plotIdx >= 0) {
-        // Grab from forest( line to the next blank line
         let end = plotIdx + 1;
         while (end < codeLines.length && codeLines[end].trim() !== "" && !codeLines[end].trim().startsWith("funnel(") && !codeLines[end].trim().startsWith("# ──")) end++;
-        const forestCode = codeLines.slice(plotIdx, end).join("\n");
-        const nStudies = (rCode.match(/slab/g) || []).length > 0 ? (rCode.match(/c\(/g) || []).length : 5;
-        const plotHeight = Math.max(400, 150 + nStudies * 40);
-        try {
-          const forestResult = await shelter.captureR(`
-            webr::canvas(width = 900, height = ${plotHeight})
-            par(bg = "white")
-            ${forestCode}
-            dev.off()
-          `, {
-            withAutoprint: true, captureStreams: true, captureConditions: false,
-          });
-          if (forestResult.images && forestResult.images.length > 0) {
-            setForestImg(forestResult.images[forestResult.images.length - 1]);
-          }
-        } catch (e) { console.warn("Forest plot error:", e); }
+        forestCode = codeLines.slice(plotIdx, end).join("\n");
       }
 
-      // 3. Funnel plot
+      // Extract funnel plot code
+      let funnelCode = "";
       if (funnelIdx >= 0) {
         let end = funnelIdx + 1;
         while (end < codeLines.length && codeLines[end].trim() !== "" && !codeLines[end].trim().startsWith("# ──")) end++;
-        const funnelCode = codeLines.slice(funnelIdx, end).join("\n");
-        try {
-          const funnelResult = await shelter.captureR(`
-            webr::canvas(width = 600, height = 500)
-            par(bg = "white")
-            ${funnelCode}
-            dev.off()
-          `, {
-            withAutoprint: true, captureStreams: true, captureConditions: false,
-          });
-          if (funnelResult.images && funnelResult.images.length > 0) {
-            setFunnelImg(funnelResult.images[funnelResult.images.length - 1]);
-          }
-        } catch (e) { console.warn("Funnel plot error:", e); }
+        funnelCode = codeLines.slice(funnelIdx, end).join("\n");
+      }
+
+      // Build canvas dimensions
+      const nStudies = countStudies(rCode);
+      const plotHeight = Math.max(400, 150 + nStudies * 40);
+
+      // ── Run EVERYTHING in one captureR call ──
+      // capture=TRUE makes webr::canvas store images for captureR to collect.
+      const fullCode = [
+        analysisCode,
+        forestCode ? `\nwebr::canvas(width = 900, height = ${plotHeight}, capture = TRUE)\npar(bg = "white")\n${forestCode}\ndev.off()` : "",
+        funnelCode ? `\nwebr::canvas(width = 600, height = 500, capture = TRUE)\npar(bg = "white")\n${funnelCode}\ndev.off()` : "",
+      ].filter(Boolean).join("\n");
+
+      const result = await shelter.captureR(fullCode, {
+        withAutoprint: true, captureStreams: true, captureConditions: false,
+      });
+
+      // Extract text output
+      const outputText = result.output.map(o => o.data).join("\n");
+      setROutput(outputText);
+
+      // Extract plot images — forest first (index 0), funnel second (index 1)
+      if (result.images && result.images.length > 0) {
+        let imgIdx = 0;
+        if (forestCode && imgIdx < result.images.length) {
+          const url = bitmapToDataURL(result.images[imgIdx]);
+          if (url) setForestImg(url);
+          imgIdx++;
+        }
+        if (funnelCode && imgIdx < result.images.length) {
+          const url = bitmapToDataURL(result.images[imgIdx]);
+          if (url) setFunnelImg(url);
+          imgIdx++;
+        }
       }
 
       shelter.purge();
@@ -549,28 +583,12 @@ export default function WebRRunner({ rCode, lang = "zh", pico, effectType, model
     }
   };
 
-  // ── Draw image to canvas ──
-  const drawToCanvas = useCallback((canvasRef, img) => {
-    if (!canvasRef.current || !img) return;
-    const canvas = canvasRef.current;
-    canvas.width = img.width;
-    canvas.height = img.height;
-    const ctx = canvas.getContext("2d");
-    ctx.fillStyle = "#FFFFFF";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(img, 0, 0, img.width, img.height);
-  }, []);
-
-  useEffect(() => { drawToCanvas(forestCanvasRef, forestImg); }, [forestImg, drawToCanvas]);
-  useEffect(() => { drawToCanvas(funnelCanvasRef, funnelImg); }, [funnelImg, drawToCanvas]);
-  useEffect(() => { drawToCanvas(advPlotCanvasRef, advPlotImg); }, [advPlotImg, drawToCanvas]);
-
-  // ── Download plot as PNG ──
-  const downloadCanvas = (canvasRef, filename) => {
-    if (!canvasRef.current) return;
+  // ── Download plot ──
+  const downloadPlot = (dataUrl, filename) => {
+    if (!dataUrl) return;
     const link = document.createElement("a");
     link.download = filename;
-    link.href = canvasRef.current.toDataURL("image/png");
+    link.href = dataUrl;
     link.click();
   };
 
@@ -702,19 +720,18 @@ Structure your response as:
       const hasPlot = plotTypes.includes(advSelectedType);
 
       const wrappedCode = hasPlot
-        ? `webr::canvas(width = 700, height = 500)\npar(bg = "white")\n${code}\ndev.off()`
+        ? `webr::canvas(width = 700, height = 500, capture = TRUE)\npar(bg = "white")\n${code}\ndev.off()`
         : code;
 
       const result = await shelter.captureR(wrappedCode, {
         withAutoprint: true, captureStreams: true, captureConditions: false,
       });
-
       const outputText = result.output.map(o => o.data).join("\n");
       setAdvOutput(outputText);
 
-      // Capture any plots
       if (result.images && result.images.length > 0) {
-        setAdvPlotImg(result.images[result.images.length - 1]);
+        const url = bitmapToDataURL(result.images[result.images.length - 1]);
+        if (url) setAdvPlotImg(url);
       }
 
       shelter.purge();
@@ -827,6 +844,7 @@ Structure your response as:
               50% { transform: translateX(150%); }
               100% { transform: translateX(-100%); }
             }
+            pre::selection, pre *::selection { background: #45475A; color: #CDD6F4; }
           `}</style>
 
           <div style={{ fontSize: 11, color: MUTED, marginTop: 16, opacity: 0.7 }}>
@@ -892,13 +910,13 @@ Structure your response as:
                 <h4 style={{ fontSize: 14, fontWeight: 700, color: DARK, margin: 0, display: "flex", alignItems: "center", gap: 8 }}>
                   📊 {tx.forestTitle}
                 </h4>
-                <button onClick={() => downloadCanvas(forestCanvasRef, "forest_plot.png")}
+                <button onClick={() => downloadPlot(forestImg, "forest_plot.png")}
                   style={{ padding: "4px 12px", borderRadius: 8, fontSize: 11, fontWeight: 600, fontFamily: FONT, cursor: "pointer", border: `1px solid ${LIGHT_BORDER}`, background: CARD_BG, color: MUTED }}>
                   📥 {tx.downloadForest}
                 </button>
               </div>
               <div style={{ background: "#FFF", borderRadius: 12, border: `1px solid ${LIGHT_BORDER}`, padding: 12, overflow: "auto" }}>
-                <canvas ref={forestCanvasRef} style={{ maxWidth: "100%", height: "auto", display: "block" }} />
+                <img src={forestImg} alt="Forest Plot" style={{ maxWidth: "100%", height: "auto", display: "block" }} />
               </div>
             </div>
           )}
@@ -910,13 +928,13 @@ Structure your response as:
                 <h4 style={{ fontSize: 14, fontWeight: 700, color: DARK, margin: 0, display: "flex", alignItems: "center", gap: 8 }}>
                   📊 {tx.funnelTitle}
                 </h4>
-                <button onClick={() => downloadCanvas(funnelCanvasRef, "funnel_plot.png")}
+                <button onClick={() => downloadPlot(funnelImg, "funnel_plot.png")}
                   style={{ padding: "4px 12px", borderRadius: 8, fontSize: 11, fontWeight: 600, fontFamily: FONT, cursor: "pointer", border: `1px solid ${LIGHT_BORDER}`, background: CARD_BG, color: MUTED }}>
                   📥 {tx.downloadFunnel}
                 </button>
               </div>
               <div style={{ background: "#FFF", borderRadius: 12, border: `1px solid ${LIGHT_BORDER}`, padding: 12, overflow: "auto" }}>
-                <canvas ref={funnelCanvasRef} style={{ maxWidth: "100%", height: "auto", display: "block" }} />
+                <img src={funnelImg} alt="Funnel Plot" style={{ maxWidth: "100%", height: "auto", display: "block" }} />
               </div>
             </div>
           )}
@@ -1197,6 +1215,20 @@ Structure your response as:
                   {advOutput && (
                     <div style={{ marginTop: 16 }}>
 
+                      {/* Interpretation guide */}
+                      {advSelectedType && tx[`guide${advSelectedType.charAt(0).toUpperCase() + advSelectedType.slice(1)}`] && (
+                        <div style={{
+                          background: `${PURPLE}06`, border: `1px solid ${PURPLE}20`,
+                          borderRadius: 12, padding: "14px 18px", marginBottom: 16,
+                          display: "flex", gap: 10, alignItems: "flex-start",
+                        }}>
+                          <span style={{ fontSize: 16, flexShrink: 0, marginTop: 1 }}>💡</span>
+                          <div style={{ fontSize: 13, color: DARK, lineHeight: 1.7 }}>
+                            {tx[`guide${advSelectedType.charAt(0).toUpperCase() + advSelectedType.slice(1)}`]}
+                          </div>
+                        </div>
+                      )}
+
                       {/* Advanced Plot */}
                       {advPlotImg && (
                         <div style={{ marginBottom: 20 }}>
@@ -1204,13 +1236,13 @@ Structure your response as:
                             <h4 style={{ fontSize: 14, fontWeight: 700, color: DARK, margin: 0, display: "flex", alignItems: "center", gap: 8 }}>
                               📊 {tx.advPlotTitle}
                             </h4>
-                            <button onClick={() => downloadCanvas(advPlotCanvasRef, `${advSelectedType}_plot.png`)}
+                            <button onClick={() => downloadPlot(advPlotImg, `${advSelectedType}_plot.png`)}
                               style={{ padding: "4px 12px", borderRadius: 8, fontSize: 11, fontWeight: 600, fontFamily: FONT, cursor: "pointer", border: `1px solid ${LIGHT_BORDER}`, background: CARD_BG, color: MUTED }}>
                               📥 {tx.advDownloadPlot}
                             </button>
                           </div>
                           <div style={{ background: "#FFF", borderRadius: 12, border: `1px solid ${LIGHT_BORDER}`, padding: 12, overflow: "auto" }}>
-                            <canvas ref={advPlotCanvasRef} style={{ maxWidth: "100%", height: "auto", display: "block" }} />
+                            <img src={advPlotImg} alt="Advanced Plot" style={{ maxWidth: "100%", height: "auto", display: "block" }} />
                           </div>
                         </div>
                       )}
