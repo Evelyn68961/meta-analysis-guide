@@ -3,7 +3,25 @@
 > **Purpose:** Document the discussion, final decisions, and execution plan for adding in-browser R computation (via WebR + metafor) to the MA Workshop: Analysis (Final.jsx).
 > **Date:** March 12, 2026
 > **Last updated:** March 13, 2026 — Added Layer 2 advanced analysis design
-> **Status:** Plan approved. Ready for proof-of-concept, then integration.
+> **Status:** Phase 0–2 complete and working on `dev`. Layer 1 + Layer 2 live.
+> **Last updated:** March 18, 2026 — WebR plots fixed (capture=TRUE), Layer 2 mini-lessons added, AI checks expanded
+
+### Implementation Notes (March 18, 2026)
+
+**Critical fix:** `webr::canvas()` must use `capture = TRUE` for `captureR()` to collect plot images in `result.images`. Default `capture = FALSE` sends images as messages (for `webR.flush()`), not into the captureR return value. All three canvas calls (forest, funnel, advanced plots) now use `capture = TRUE`.
+
+**Architecture change:** Analysis + forest + funnel plots run in a single `captureR()` call to ensure the `res` object is in scope for plot commands. `result.images[0]` = forest, `result.images[1]` = funnel.
+
+**Layer 2 enhancements:**
+- Advanced analysis panel gated on `rOutput` (available after basic analysis), not `aiResult` (which required AI interpretation first)
+- Mini-lesson guides extracted to `advancedGuides.js` — structured 4-part lessons (📖 what → 🎯 when → 📊 how to read → ✅ decision rule) shown BEFORE running each analysis via collapsible `<details open>` block
+- AI recommendation button remains optional assistance, not a gate
+
+**New AI checks in Final.jsx:**
+- Step 4 (Interpret & Report): AI reviews user's interpretation answers against their PICO/data context (requires ≥2 of 4 fields filled)
+- Step 5 (Conclusions): Existing AI conclusion check (unchanged)
+- Step 5 (below conclusions): AI Full Project Review — holistic review of entire project (PICO → studies → RoB → analysis choices → interpretation → conclusions) evaluating 6 dimensions with ✅/⚠️
+- Completion screen: Summary card + "View My Learning Path" link to profile page
 
 ---
 
@@ -630,9 +648,15 @@ Phase 1.5 (Midterm moderator columns) can run in parallel with Phase 1 since the
 | Mar 13 | **Moderator columns added to Midterm** | Required for subgroup/meta-regression; easier to add now than retrofit |
 | Mar 13 | **Guided menu for v1, free-text input for v2** | Safe launch; AI prompt designed for future expansion |
 | Mar 13 | **AI decides which analysis, static templates execute** | Zero risk of broken R code; AI used where judgment matters |
+| Mar 18 | **`capture = TRUE` fix for webr::canvas()** | Default `capture = FALSE` sends images as messages, not into `result.images` — plots were invisible |
+| Mar 18 | **Single captureR call for analysis + plots** | Ensures `res` object persists in scope for forest/funnel commands |
+| Mar 18 | **Mini-lessons extracted to advancedGuides.js** | Structured teach-then-do flow; shown before running each advanced analysis |
+| Mar 18 | **AI interpretation check added to Step 4** | Reviews user's interpretation against their data context |
+| Mar 18 | **AI full project review added to Step 5** | Holistic review of entire project across 6 dimensions |
+| Mar 18 | **Advanced panel gated on rOutput, not aiResult** | Users don't need AI interpretation to access advanced analyses |
 
 ---
 
 *Document created: March 12, 2026*
-*Last updated: March 13, 2026*
-*Status: Plan approved with Layer 2 expansion. Next step: Phase 0 proof-of-concept.*
+*Last updated: March 18, 2026*
+*Status: Phase 0–2 complete. WebR + Layer 2 working on `dev`. Next: Phase 3 polish + Phase 4 documentation.*

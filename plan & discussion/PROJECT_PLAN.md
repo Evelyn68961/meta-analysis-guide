@@ -35,7 +35,7 @@ Courses 4–5 games introduce **progressive difficulty** (3 foundation MCQ → g
 | | **—** | **MA Workshop: Planning** | **5-step guided workshop: Define PICO (🤖 AI), Search Strategy (🤖 AI), Add Studies, Data Extraction, Risk of Bias. Gate: PICO ✅ + ≥3 studies.** | ✅ Built on `dev` |
 | **Advanced** | 4 | Effect Sizes & Forest Plots | Dino Key Quest (pick 1 of 7 dinos, 9 Qs from 105-question bank: 3 foundation MCQ + 6 advanced mixed-type, progressive unlock, crystal cave theme) | ✅ Built on `dev` (upgraded: +1 teaching section "Common Pitfalls", click-based forest plot, 2×2 effect size cards, wider layout) |
 | | 5 | Heterogeneity & Publication Bias | Dino Door Escape → Dino Map Escape (pick 1 of 7 dinos, 9 Qs from 105-question bank: 3 foundation MCQ + 6 advanced mixed-type, progressive unlock, treasure map + door theme) | ✅ Built on `dev` |
-| | **—** | **MA Workshop: Analysis** | **5-step guided workshop: Effect Size & Model, Prepare Data (CSV + R code), Run Analysis (Onlinemeta / R), Interpret & Report, Conclusions (🤖 AI).** | ✅ Built on `dev` |
+| | **—** | **MA Workshop: Analysis** | **5-step guided workshop: Effect Size & Model, Prepare Data (CSV + R code), Run Analysis (WebR in-browser + Onlinemeta / R), Interpret & Report (🤖 AI), Conclusions (🤖 AI). Completion screen with 🤖 AI Full Project Review. WebR runs metafor in-browser with forest/funnel plots. Layer 2 advanced analysis (leave-one-out, trim-fill, Egger's, influence, subgroup, meta-regression) with teach-then-do mini-lessons.** | ✅ Built on `dev` |
 
 ---
 
@@ -69,7 +69,9 @@ src/
 ├── DinoIntro.jsx        ← Dino Codex page (RPG-style character intro; accessible at #dino or #dino=N; linked from ProfilePage dino cards)
 │
 ├── Midterm.jsx          ← MA Workshop Phase 1: Plan Your Meta-Analysis (5-step wizard; PICO + Search with AI checks; study entry, extraction, RoB; gate to Phase 2)
-├── Final.jsx            ← MA Workshop Phase 2: Analysis & Conclusions (5-step wizard; effect size/model choice; data prep with CSV + auto-generated R code; external tool guidance; interpretation with reporting guide; conclusions with AI check)
+├── Final.jsx            ← MA Workshop Phase 2: Analysis & Conclusions (5-step wizard; effect size/model choice; data prep with CSV + auto-generated R code; WebR in-browser execution with forest/funnel plots; Layer 2 advanced analysis with mini-lessons; interpretation with AI check; conclusions with AI check; completion with AI full project review + profile link)
+├── WebRRunner.jsx       ← WebR in-browser R execution component (Layer 1 basic + Layer 2 advanced analysis; captureR with capture=TRUE for plots; 6 analysis types with static R templates)
+├── advancedGuides.js    ← Bilingual mini-lesson content for 6 advanced analysis types (what/when/how/decision rule)
 │
 ├── questionHelpers.js   ← Shared helper functions: pickQuestions(), pickBalanced(), pickByType(), pickAdvancedMix()
 ├── course0Questions.js  ← Course 0 question bank (35 Qs: 5 per category × 7 categories)
@@ -224,7 +226,7 @@ Project docs:
 - **API key:** Stored in Vercel Environment Variables (`ANTHROPIC_API_KEY`), never exposed in frontend code
 - **Local dev:** Use `vercel dev` (not `npm start`) to test serverless functions locally; `.env.local` pulled from Vercel
 - **Cost:** ~$0.003–0.01 per AI check (prepaid credits at console.anthropic.com)
-- **Courses using it:** Course 1 AI PICO Workshop + Freestyle PICO, Course 2 AI Boolean Query Checker, **MA Workshop: Planning** (PICO check + Search strategy check), **MA Workshop: Analysis** (Conclusions check)
+- **Courses using it:** Course 1 AI PICO Workshop + Freestyle PICO, Course 2 AI Boolean Query Checker, **MA Workshop: Planning** (PICO check + Search strategy check), **MA Workshop: Analysis** (Layer 1 AI interpretation, Layer 2 AI recommend + interpret, Step 4 interpretation check, Step 5 conclusions check, Completion full project review)
 - **Future courses:** Can reuse the same `/api/ai-feedback` endpoint — just send different system prompts from frontend
 - **Cost control (Phase 3):** AI workshop features gated behind login + course completion
 
