@@ -918,6 +918,7 @@ End with 1-2 sentences of overall assessment and the single most important impro
 
 function Completion({ analysis, project, lang, onNavigate, onBack }) {
   const tx = T[lang];
+  const [hovProfile, setHovProfile] = useState(false);
   return (
     <div style={{ textAlign: "center" }}>
       <h2 style={{ fontSize: 24, fontWeight: 700, color: DARK, marginBottom: 8 }}>{tx.congrats}</h2>
@@ -936,9 +937,19 @@ function Completion({ analysis, project, lang, onNavigate, onBack }) {
       </Card>
       <div style={{ marginTop: 24, display: "flex", justifyContent: "center", gap: 12 }}>
         <Btn onClick={onBack}>← {lang === "zh" ? "上一步" : "Back"}</Btn>
-        <Btn primary onClick={() => onNavigate("profile")} style={{ background: "#0E7C86", boxShadow: "0 4px 16px rgba(14,124,134,0.25)" }}>
+        <button
+          onClick={() => onNavigate("profile")}
+          onMouseEnter={() => setHovProfile(true)}
+          onMouseLeave={() => setHovProfile(false)}
+          style={{
+            padding: "10px 24px", borderRadius: 10, fontSize: 14, fontWeight: 600, fontFamily: FONT,
+            cursor: "pointer", border: "none", color: "#FFF",
+            background: hovProfile ? "#0A5F67" : "#11939E",
+            boxShadow: hovProfile ? "0 4px 16px rgba(14,124,134,0.35)" : "0 4px 12px rgba(14,124,134,0.2)",
+            transition: "all 0.2s",
+          }}>
           🦕 {lang === "zh" ? "查看我的學習歷程" : "View My Learning Path"}
-        </Btn>
+        </button>
       </div>
     </div>
   );
@@ -1045,9 +1056,7 @@ export default function Final({ onNavigate, user, onLogin, onLogout }) {
             <div style={{ fontSize: 12, color: MUTED }}>{step + 1} / {steps.length}</div>
             <Btn primary onClick={() => setStep(s => s + 1)}>{isLast ? (lang === "zh" ? "完成 🎉" : "Finish 🎉") : tx.next}</Btn>
           </div>
-        ) : (
-          <div style={{ textAlign: "center" }}><Btn onClick={() => onNavigate("hub")} style={{ marginTop: 16 }}>← {tx.backToHub}</Btn></div>
-        )}
+        ) : null}
 
         <div style={{ textAlign: "center", marginTop: 32 }}>
           <button onClick={() => onNavigate("hub")} style={{ background: "none", border: "none", fontSize: 13, color: MUTED, cursor: "pointer", fontFamily: FONT }}>← {tx.backToHub}</button>
