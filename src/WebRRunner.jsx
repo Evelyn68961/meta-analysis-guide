@@ -425,7 +425,18 @@ export default function WebRRunner({ rCode, lang = "zh", pico, effectType, model
     setErrorMsg(null);
 
     try {
-      const { WebR } = await import("https://webr.r-wasm.org/latest/webr.mjs");
+      const { WebR } = await new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.type = "module";
+        script.textContent = `
+          import { WebR } from "https://webr.r-wasm.org/latest/webr.mjs";
+          window.__WebR = WebR;
+          window.dispatchEvent(new Event("webr-loaded"));
+        `;
+        window.addEventListener("webr-loaded", () => resolve({ WebR: window.__WebR }), { once: true });
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
       const webR = new WebR();
       await webR.init();
       webRRef.current = webR;
