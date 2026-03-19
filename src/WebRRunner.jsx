@@ -78,6 +78,11 @@ const TX = {
     subgroupDesc: "依調節變項分組，比較各組效果差異。",
     metareg: "統合迴歸分析",
     metaregDesc: "檢驗調節變項是否能解釋研究間異質性。",
+
+    // Output Reading Guide (side-by-side)
+    outputGuideBtn: "📖 看不懂？點此查看解讀指南",
+    outputGuideHide: "收起解讀指南",
+    guideTip: "💡 p 值 = 效果是否顯著 ｜ I² = 各研究是否一致 ｜ tau² = 差異有多大。三者搭配解讀。",
   },
   en: {
     initTitle: "Loading R Statistical Engine",
@@ -142,6 +147,11 @@ const TX = {
     subgroupDesc: "Compare effect sizes across subgroups defined by a moderator variable.",
     metareg: "Meta-Regression",
     metaregDesc: "Test whether a moderator variable explains between-study heterogeneity.",
+
+    // Output Reading Guide (side-by-side)
+    outputGuideBtn: "📖 Not sure what this means? Open the reading guide",
+    outputGuideHide: "Hide reading guide",
+    guideTip: "💡 p-value = is the effect significant? ｜ I² = are studies consistent? ｜ tau² = how large is the variation? Read all three together.",
   },
 };
 
@@ -177,44 +187,103 @@ function buildAdvancedRCode(analysisType, moderator, model, studies) {
     case "leaveOneOut":
       return `# ── Leave-One-Out Sensitivity Analysis ──
 l1o <- leave1out(res)
-print(l1o)`;
+cat("══════════════════════════════════════\\n")
+cat("  Leave-One-Out Sensitivity Analysis\\n")
+cat("══════════════════════════════════════\\n\\n")
+for (i in 1:nrow(l1o)) {
+  cat(rownames(l1o)[i], "\\n")
+  cat("  Effect:", round(l1o$estimate[i], 4),
+      "  95% CI:", round(l1o$ci.lb[i], 4), "to", round(l1o$ci.ub[i], 4),
+      "  p:", formatC(l1o$pval[i], format="g", digits=4), "\\n")
+}
+cat("\\n── Summary ──\\n")
+cat("Original effect:", round(coef(res), 4), "\\n")
+range_est <- range(l1o$estimate)
+cat("Range after removal:", round(range_est[1], 4), "to", round(range_est[2], 4), "\\n")
+cat("Max change:", round(max(abs(l1o$estimate - coef(res))), 4), "\\n")`;
 
     case "trimFill":
       return `# ── Trim-and-Fill Analysis ──
 tf <- trimfill(res)
-print(tf)
+cat("══════════════════════════════════════\\n")
+cat("  Trim-and-Fill Analysis\\n")
+cat("══════════════════════════════════════\\n\\n")
+cat("Estimated missing studies:", tf$k0, "(", tf$side, "side )\\n\\n")
+cat("── Adjusted Results ──\\n")
+cat("Effect:", round(coef(tf), 4), "\\n")
+cat("95% CI:", round(tf$ci.lb, 4), "to", round(tf$ci.ub, 4), "\\n")
+cat("p-value:", formatC(tf$pval, format="g", digits=4), "\\n\\n")
+cat("── Comparison ──\\n")
+cat("Original effect:", round(coef(res), 4), "\\n")
+cat("Adjusted effect:", round(coef(tf), 4), "\\n")
+cat("Change:", round(abs(coef(tf) - coef(res)), 4), "\\n")
 funnel(tf, main = "Funnel Plot (Trim-and-Fill)")`;
 
     case "eggers":
       return `# ── Egger's Regression Test ──
 reg_test <- regtest(res)
-print(reg_test)`;
+cat("══════════════════════════════════════\\n")
+cat("  Egger's Regression Test\\n")
+cat("══════════════════════════════════════\\n\\n")
+cat("Tests for funnel plot asymmetry\\n")
+cat("(asymmetry suggests possible publication bias)\\n\\n")
+cat("z-value:", round(reg_test$zval, 4), "\\n")
+cat("p-value:", formatC(reg_test$pval, format="g", digits=4), "\\n\\n")
+if (reg_test$pval < 0.05) cat("Result: Significant asymmetry detected (p < 0.05)\\n") else cat("Result: No significant asymmetry (p >= 0.05)\\n")
+if (res$k < 10) cat("Note: Test has low power with fewer than 10 studies (k =", res$k, ")\\n")`;
 
     case "influence":
       return `# ── Influence Diagnostics ──
 inf <- influence(res)
-print(inf)
+cat("══════════════════════════════════════\\n")
+cat("  Influence Diagnostics\\n")
+cat("══════════════════════════════════════\\n\\n")
+cat("Study | Cook's D | DFFITS | Hat | Weight%\\n")
+cat("──────────────────────────────────────────\\n")
+for (i in 1:res$k) {
+  cat(sprintf("%-20s  %.4f    %.4f   %.4f   %.1f%%\\n",
+    res$slab[i], inf$inf$cook.d[i], inf$inf$dffits[i],
+    inf$inf$hat[i], inf$inf$weight[i]))
+}
+cat("\\n── Potential Outliers ──\\n")
+cd_threshold <- mean(inf$inf$cook.d) + 2 * sd(inf$inf$cook.d)
+outliers <- which(inf$inf$cook.d > cd_threshold)
+if (length(outliers) > 0) {
+  cat("High Cook's D:", paste(res$slab[outliers], collapse=", "), "\\n")
+} else {
+  cat("No studies with unusually high Cook's D\\n")
+}
 plot(inf)`;
 
     case "subgroup": {
       if (!moderator) return null;
-      // Must match buildRCode's sanitization: replace non-alphanumeric with _, lowercase
       const safemod = moderator.replace(/[^a-zA-Z0-9_]/g, "_").toLowerCase();
       const vals = [...new Set(studies.map(s => s.moderators?.[moderator]).filter(Boolean))];
       if (vals.length === 0) return null;
 
       let code = `# ── Subgroup Analysis by "${moderator}" ──\n`;
-      code += `cat("\\n=== Subgroup Analysis by ${moderator} ===\\n\\n")\n`;
+      code += `cat("══════════════════════════════════════\\n")\n`;
+      code += `cat("  Subgroup Analysis: ${moderator}\\n")\n`;
+      code += `cat("══════════════════════════════════════\\n\\n")\n`;
       vals.forEach((val) => {
         const safeVal = val.replace(/"/g, '\\"');
-        code += `\ncat("--- Subgroup: ${moderator} = ${safeVal} ---\\n")\n`;
-        code += `res_sub_${val.replace(/[^a-zA-Z0-9]/g, "_")} <- rma(yi, vi, data = dat, subset = (${safemod} == "${safeVal}"), ${method}, slab = dat$study)\n`;
-        code += `print(res_sub_${val.replace(/[^a-zA-Z0-9]/g, "_")})\n`;
+        const safeVarName = val.replace(/[^a-zA-Z0-9]/g, "_");
+        code += `\nres_sub_${safeVarName} <- tryCatch(\n`;
+        code += `  rma(yi, vi, data = dat, subset = (${safemod} == "${safeVal}"), ${method}, slab = dat$study),\n`;
+        code += `  error = function(e) NULL)\n`;
+        code += `cat("── ${moderator} = ${safeVal} ──\\n")\n`;
+        code += `if (!is.null(res_sub_${safeVarName})) {\n`;
+        code += `  cat("Studies:", res_sub_${safeVarName}$k, "\\n")\n`;
+        code += `  cat("Effect:", round(coef(res_sub_${safeVarName}), 4), "\\n")\n`;
+        code += `  cat("95% CI:", round(res_sub_${safeVarName}$ci.lb, 4), "to", round(res_sub_${safeVarName}$ci.ub, 4), "\\n")\n`;
+        code += `  cat("p-value:", formatC(res_sub_${safeVarName}$pval, format="g", digits=4), "\\n")\n`;
+        code += `  cat("I²:", round(res_sub_${safeVarName}$I2, 1), "%\\n\\n")\n`;
+        code += `} else { cat("(too few studies to analyze)\\n\\n") }\n`;
       });
-      // Test for between-group differences
-      code += `\ncat("\\n--- Between-Group Test ---\\n")\n`;
+      code += `\ncat("── Between-Group Test ──\\n")\n`;
       code += `res_mod <- rma(yi, vi, mods = ~ factor(${safemod}), data = dat, ${method})\n`;
-      code += `cat("QM (test of moderators):", res_mod$QM, "df =", res_mod$m, "p =", res_mod$QMp, "\\n")\n`;
+      code += `cat("QM:", round(res_mod$QM, 4), "  df:", res_mod$m, "  p:", formatC(res_mod$QMp, format="g", digits=4), "\\n")\n`;
+      code += `if (res_mod$QMp < 0.05) cat("Result: Significant difference between subgroups\\n") else cat("Result: No significant difference between subgroups\\n")\n`;
       return code;
     }
 
@@ -223,7 +292,21 @@ plot(inf)`;
       const safemod = moderator.replace(/[^a-zA-Z0-9_]/g, "_").toLowerCase();
       return `# ── Meta-Regression: ${moderator} ──
 res_reg <- rma(yi, vi, mods = ~ ${safemod}, data = dat, ${method})
-print(res_reg)`;
+cat("══════════════════════════════════════\\n")
+cat("  Meta-Regression: ${moderator}\\n")
+cat("══════════════════════════════════════\\n\\n")
+cat("── Coefficients ──\\n")
+for (i in 1:nrow(coef(summary(res_reg)))) {
+  cat(rownames(coef(summary(res_reg)))[i], "\\n")
+  cat("  Estimate:", round(coef(summary(res_reg))[i, "estimate"], 4),
+      "  SE:", round(coef(summary(res_reg))[i, "se"], 4),
+      "  p:", formatC(coef(summary(res_reg))[i, "pval"], format="g", digits=4), "\\n")
+}
+cat("\\n── Model Fit ──\\n")
+cat("QM (test of moderator):", round(res_reg$QM, 4), "  p:", formatC(res_reg$QMp, format="g", digits=4), "\\n")
+cat("R²:", round(res_reg$R2, 1), "% of heterogeneity explained\\n")
+cat("Residual I²:", round(res_reg$I2, 1), "%\\n")
+if (res_reg$QMp < 0.05) cat("\\nResult: ${moderator} significantly predicts effect size\\n") else cat("\\nResult: ${moderator} does not significantly predict effect size\\n")`;
     }
 
     default:
@@ -383,6 +466,189 @@ Based on I², Q-test, number of studies, and available moderators, respond in th
 [{"type":"analysisTypeKey","moderator":"moderatorName or null","reason":"1 sentence rationale"}]`;
 }
 
+// ═══ R OUTPUT PARSER ═══
+function parseROutput(rOutput, effectType, model, lang) {
+  const zh = lang === "zh";
+  const isLog = ["OR", "RR"].includes(effectType);
+  const rows = [];
+
+  // 1. Model line: "Model: Random-Effects | Studies: 8"
+  const modelMatch = rOutput.match(/Model:\s*([\w-]+)\s*\|\s*Studies:\s*(\d+)/);
+  if (modelMatch) {
+    const mType = modelMatch[1];
+    const k = modelMatch[2];
+    const isRandom = /Random/i.test(mType);
+    rows.push({
+      raw: `Model: ${mType} | Studies: ${k}`,
+      plain: zh
+        ? `使用${isRandom ? "隨機效果" : "固定效果"}模型，包含 ${k} 篇研究`
+        : `${isRandom ? "Random-effects" : "Fixed-effect"} model with ${k} studies`,
+      color: "#8E44AD",
+    });
+  }
+
+  // 2. Pooled effect: "OR: 0.8301"
+  const measure = effectType || "OR";
+  const pooledMatch = rOutput.match(new RegExp(`${measure}:\\s*([\\d.e+-]+)`));
+  const ciMatch = rOutput.match(/95%\s*CI:\s*([\d.e+-]+)\s*to\s*([\d.e+-]+)/);
+  const pMatch = rOutput.match(/p-value:\s*([\d.e<+-]+\S*)/);
+
+  if (pooledMatch) {
+    const val = parseFloat(pooledMatch[1]);
+    const ciLb = ciMatch ? parseFloat(ciMatch[1]) : null;
+    const ciUb = ciMatch ? parseFloat(ciMatch[2]) : null;
+    const nullVal = isLog ? 1 : 0;
+
+    // Effect meaning
+    let meaning;
+    if (zh) {
+      if (measure === "OR") meaning = val < 1 ? `介入組勝算較低（OR = ${val.toFixed(2)}，降低 ${((1 - val) * 100).toFixed(0)}%）` : `介入組勝算較高（OR = ${val.toFixed(2)}）`;
+      else if (measure === "RR") meaning = val < 1 ? `介入組風險較低（RR = ${val.toFixed(2)}，降低 ${((1 - val) * 100).toFixed(0)}%）` : `介入組風險較高（RR = ${val.toFixed(2)}）`;
+      else if (measure === "RD") meaning = `兩組風險絕對差 = ${val.toFixed(4)}`;
+      else if (measure === "MD") meaning = `兩組平均值差 = ${val.toFixed(2)}`;
+      else if (measure === "SMD") meaning = `標準化均值差 = ${val.toFixed(2)}`;
+      else meaning = `${measure} = ${val.toFixed(4)}`;
+    } else {
+      if (measure === "OR") meaning = val < 1 ? `Intervention has lower odds (OR = ${val.toFixed(2)}, ${((1 - val) * 100).toFixed(0)}% reduction)` : `Intervention has higher odds (OR = ${val.toFixed(2)})`;
+      else if (measure === "RR") meaning = val < 1 ? `Intervention has lower risk (RR = ${val.toFixed(2)}, ${((1 - val) * 100).toFixed(0)}% reduction)` : `Intervention has higher risk (RR = ${val.toFixed(2)})`;
+      else if (measure === "RD") meaning = `Absolute risk difference = ${val.toFixed(4)}`;
+      else if (measure === "MD") meaning = `Mean difference = ${val.toFixed(2)}`;
+      else if (measure === "SMD") meaning = `Standardized mean diff = ${val.toFixed(2)}`;
+      else meaning = `${measure} = ${val.toFixed(4)}`;
+    }
+
+    // CI interpretation
+    let ciNote = "";
+    if (ciLb !== null && ciUb !== null) {
+      const includes = isLog ? (ciLb <= 1 && ciUb >= 1) : (ciLb <= 0 && ciUb >= 0);
+      ciNote = includes
+        ? (zh ? `95% CI 包含 ${nullVal} → 可能不顯著` : `95% CI includes ${nullVal} → may not be significant`)
+        : (zh ? `95% CI 不包含 ${nullVal} → 統計顯著` : `95% CI excludes ${nullVal} → significant`);
+    }
+
+    rows.push({
+      raw: `${measure}: ${val.toFixed(4)} (${ciLb?.toFixed(4)} – ${ciUb?.toFixed(4)})`,
+      plain: `${meaning}\n${ciNote}`,
+      color: "#C0392B",
+    });
+  }
+
+  // 3. p-value: "p-value: 4.15e-11"
+  if (pMatch) {
+    const pRaw = pMatch[1];
+    const pVal = parseFloat(pRaw);
+    const pDisplay = pVal < 0.001 ? "< 0.001" : pVal.toFixed(4);
+    rows.push({
+      raw: `p-value: ${pRaw}`,
+      plain: pVal < 0.001
+        ? (zh ? `p ${pDisplay} → 非常顯著（強證據）` : `p ${pDisplay} → highly significant (strong evidence)`)
+        : pVal < 0.05
+          ? (zh ? `p = ${pDisplay} → 達顯著水準` : `p = ${pDisplay} → statistically significant`)
+          : (zh ? `p = ${pDisplay} → 未達顯著` : `p = ${pDisplay} → not significant`),
+      color: "#2E86C1",
+    });
+  }
+
+  // 4. I²: "I²: 0 %  (none)"
+  const i2Match = rOutput.match(/I²:\s*([\d.]+)\s*%/);
+  if (i2Match) {
+    const i2 = parseFloat(i2Match[1]);
+    let level;
+    if (zh) level = i2 === 0 ? "無異質性，各研究高度一致" : i2 <= 25 ? "低度異質性" : i2 <= 50 ? "中度異質性" : "高度異質性，建議探索原因";
+    else level = i2 === 0 ? "No heterogeneity — highly consistent" : i2 <= 25 ? "Low heterogeneity" : i2 <= 50 ? "Moderate heterogeneity" : "High heterogeneity — investigate";
+    rows.push({ raw: `I² = ${i2}%`, plain: `${zh ? "異質性" : "Heterogeneity"} ${i2}% → ${level}`, color: "#D4A843" });
+  }
+
+  // 5. tau²: "tau²: 0"
+  const tau2Match = rOutput.match(/tau²:\s*([\d.e+-]+)/);
+  if (tau2Match) {
+    const tau2 = parseFloat(tau2Match[1]);
+    rows.push({
+      raw: `tau² = ${tau2}`,
+      plain: tau2 === 0
+        ? (zh ? "研究間無額外差異" : "No between-study variance")
+        : (zh ? `研究間變異 = ${tau2}` : `Between-study variance = ${tau2}`),
+      color: "#8E44AD",
+    });
+  }
+
+  // 6. Q test: "Q = 4.51 (df = 7, p = 0.72)"
+  const qMatch = rOutput.match(/Q\s*=\s*([\d.]+)\s*\(df\s*=\s*(\d+)\s*,\s*p\s*=\s*([\d.]+)\)/);
+  if (qMatch) {
+    const qp = parseFloat(qMatch[3]);
+    rows.push({
+      raw: `Q = ${qMatch[1]} (df = ${qMatch[2]}, p = ${qp})`,
+      plain: qp < 0.05
+        ? (zh ? `Q 檢定 p = ${qp} → 顯著，各研究結果不一致` : `Q test p = ${qp} → significant, studies differ`)
+        : (zh ? `Q 檢定 p = ${qp} → 不顯著，各研究結果一致` : `Q test p = ${qp} → non-significant, consistent`),
+      color: "#3DA87A",
+    });
+  }
+
+  return rows;
+}
+
+// ═══ SIDE-BY-SIDE READING GUIDE ═══
+function OutputReadingGuide({ rOutput, lang, effectType, model }) {
+  const tx = (lang === "zh" ? TX.zh : TX.en);
+  const rows = parseROutput(rOutput, effectType, model, lang);
+
+  return (
+    <div style={{
+      marginTop: 12, borderRadius: 14, overflow: "hidden",
+      border: `1px solid ${BLUE}25`,
+    }}>
+      {/* Header row */}
+      <div style={{
+        display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0,
+        background: `${BLUE}10`, borderBottom: `1px solid ${BLUE}20`,
+      }}>
+        <div style={{ padding: "8px 14px", fontSize: 12, fontWeight: 700, color: DARK, fontFamily: FONT }}>
+          R Output
+        </div>
+        <div style={{ padding: "8px 14px", fontSize: 12, fontWeight: 700, color: DARK, fontFamily: FONT, borderLeft: `1px solid ${BLUE}20` }}>
+          {lang === "zh" ? "白話翻譯" : "Plain-language translation"}
+        </div>
+      </div>
+
+      {/* Data rows */}
+      {rows.map((row, i) => (
+        <div key={i} style={{
+          display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0,
+          borderBottom: i < rows.length - 1 ? `1px solid ${LIGHT_BORDER}` : "none",
+        }}>
+          <div className="r-output-cell" style={{
+            padding: "10px 14px", fontSize: 12, lineHeight: 1.6,
+            fontFamily: "'Courier New', Courier, monospace",
+            background: "#1E1E2E", color: "#CDD6F4",
+            borderLeft: `3px solid ${row.color}`,
+            whiteSpace: "pre-wrap", wordBreak: "break-word",
+          }}>
+            {row.raw}
+          </div>
+          <div style={{
+            padding: "10px 14px", fontSize: 13, lineHeight: 1.6,
+            color: DARK, background: CARD_BG,
+            borderLeft: `1px solid ${LIGHT_BORDER}`,
+            whiteSpace: "pre-wrap",
+          }}>
+            {row.plain}
+          </div>
+        </div>
+      ))}
+
+      {/* Tip footer */}
+      <div style={{
+        padding: "8px 14px", fontSize: 12, color: MUTED,
+        background: `${AMBER}08`, borderTop: `1px solid ${LIGHT_BORDER}`,
+        lineHeight: 1.6,
+      }}>
+        {tx.guideTip}
+      </div>
+    </div>
+  );
+}
+
 // ═══ MAIN COMPONENT ═══
 export default function WebRRunner({ rCode, lang = "zh", pico, effectType, model, moderatorColumns = [], studies = [], onAiInterpret }) {
   const tx = TX[lang] || TX.en;
@@ -394,6 +660,7 @@ export default function WebRRunner({ rCode, lang = "zh", pico, effectType, model
   const [forestImg, setForestImg] = useState(null);
   const [funnelImg, setFunnelImg] = useState(null);
   const [showCode, setShowCode] = useState(false);
+  const [showOutputGuide, setShowOutputGuide] = useState(false);
   const [aiResult, setAiResult] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
 
@@ -553,8 +820,11 @@ export default function WebRRunner({ rCode, lang = "zh", pico, effectType, model
         withAutoprint: true, captureStreams: true, captureConditions: false,
       });
 
-      // Extract text output
-      const outputText = result.output.map(o => o.data).join("\n");
+      // Extract text output — strip canvas device messages
+      const outputText = result.output.map(o => o.data).join("\n")
+        .replace(/canvas\s*\n\s*\d+\s*/g, "")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
       setROutput(outputText);
 
       // Extract plot images — forest first (index 0), funnel second (index 1)
@@ -790,7 +1060,14 @@ Structure your response as:
   const isLoading = status === STATUS.LOADING_ENGINE || status === STATUS.LOADING_PACKAGES;
 
   return (
-    <div style={{ fontFamily: FONT }}>
+    <div style={{ fontFamily: FONT }} className="webr-runner">
+      <style>{`
+        .webr-runner pre::selection, .webr-runner pre *::selection,
+        .webr-runner code::selection, .webr-runner code *::selection,
+        .webr-runner .r-output-cell::selection, .webr-runner .r-output-cell *::selection {
+          background: #44475A !important; color: #F8F8F2 !important;
+        }
+      `}</style>
 
       {/* ── Loading State ── */}
       {isLoading && (
@@ -800,7 +1077,7 @@ Structure your response as:
           </div>
 
           {/* Progress steps */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", maxWidth: 360, margin: "0 auto 24px", width = "100%" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", maxWidth: 360, margin: "0 auto 24px" }}>
             {[
               { key: "engine", label: tx.stepEngine, active: status === STATUS.LOADING_ENGINE, done: status === STATUS.LOADING_PACKAGES },
               { key: "pkg", label: tx.stepPackage, active: status === STATUS.LOADING_PACKAGES, done: false },
@@ -951,6 +1228,24 @@ Structure your response as:
               }}>
                 {rOutput}
               </pre>
+
+              {/* Reading Guide Toggle */}
+              <button onClick={() => setShowOutputGuide(!showOutputGuide)}
+                style={{
+                  marginTop: 10, padding: "8px 16px", borderRadius: 8,
+                  fontSize: 12, fontWeight: 600, fontFamily: FONT, cursor: "pointer",
+                  border: `1.5px solid ${showOutputGuide ? BLUE : LIGHT_BORDER}`,
+                  background: showOutputGuide ? `${BLUE}08` : CARD_BG,
+                  color: showOutputGuide ? BLUE : MUTED,
+                  transition: "all 0.2s",
+                }}>
+                {showOutputGuide ? tx.outputGuideHide : tx.outputGuideBtn}
+              </button>
+
+              {/* Side-by-Side Reading Guide */}
+              {showOutputGuide && (
+                <OutputReadingGuide rOutput={rOutput} lang={lang} effectType={effectType} model={model} />
+              )}
             </div>
           )}
 

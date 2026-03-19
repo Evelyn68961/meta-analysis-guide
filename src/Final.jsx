@@ -462,15 +462,20 @@ dat <- escalc(measure = "${measure}",
   code += `# ── Run Meta-Analysis ──
 res <- rma(yi, vi, data = dat, ${method}, slab = dat$study)
 
-# ── View Results ──
-print(res)
-cat("\\n--- Key Statistics ---\\n")
-cat("Pooled ${measure}:", ${isLog ? "exp(coef(res))" : "coef(res)"}, "\\n")
-cat("95% CI:", ${isLog ? "exp(res$ci.lb), \"to\", exp(res$ci.ub)" : "res$ci.lb, \"to\", res$ci.ub"}, "\\n")
-cat("p-value:", res$pval, "\\n")
-cat("I²:", res$I2, "%\\n")
-cat("Q:", res$QE, "(df =", res$k - 1, ", p =", res$QEp, ")\\n")
-cat("tau²:", res$tau2, "\\n")
+# ── Results ──
+cat("══════════════════════════════════════\\n")
+cat("  ${measure} Meta-Analysis Results\\n")
+cat("══════════════════════════════════════\\n\\n")
+cat("Model: ${model === "fixed" ? "Fixed-Effect" : "Random-Effects"} | Studies:", res$k, "\\n\\n")
+cat("── Pooled Effect ──\\n")
+cat("${measure}:", ${isLog ? "round(exp(coef(res)), 4)" : "round(coef(res), 4)"}, "\\n")
+cat("95% CI:", ${isLog ? "round(exp(res$ci.lb), 4), \"to\", round(exp(res$ci.ub), 4)" : "round(res$ci.lb, 4), \"to\", round(res$ci.ub, 4)"}, "\\n")
+cat("p-value:", formatC(res$pval, format = "g", digits = 4), "\\n\\n")
+cat("── Heterogeneity ──\\n")
+cat("I²:", round(res$I2, 1), "%")
+if (res$I2 == 0) cat("  (none)\\n") else if (res$I2 <= 25) cat("  (low)\\n") else if (res$I2 <= 50) cat("  (moderate)\\n") else cat("  (high)\\n")
+cat("tau²:", round(res$tau2, 4), "\\n")
+cat("Q =", round(res$QE, 2), "(df =", res$k - 1, ", p =", round(res$QEp, 4), ")\\n")
 
 # ── Forest Plot ──
 forest(res, header = TRUE,
