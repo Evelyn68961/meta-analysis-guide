@@ -800,7 +800,7 @@ Structure your response as:
           </div>
 
           {/* Progress steps */}
-          <div style={{ display: "flex", justifyContent: "center", gap: 0, marginBottom: 24, maxWidth: 360, margin: "0 auto 24px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", maxWidth: 360, margin: "0 auto 24px", width = "100%" }}>
             {[
               { key: "engine", label: tx.stepEngine, active: status === STATUS.LOADING_ENGINE, done: status === STATUS.LOADING_PACKAGES },
               { key: "pkg", label: tx.stepPackage, active: status === STATUS.LOADING_PACKAGES, done: false },
