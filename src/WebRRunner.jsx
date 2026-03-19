@@ -187,20 +187,21 @@ function buildAdvancedRCode(analysisType, moderator, model, studies) {
     case "leaveOneOut":
       return `# ── Leave-One-Out Sensitivity Analysis ──
 l1o <- leave1out(res)
+l1o_df <- as.data.frame(l1o)
 cat("══════════════════════════════════════\\n")
 cat("  Leave-One-Out Sensitivity Analysis\\n")
 cat("══════════════════════════════════════\\n\\n")
-for (i in 1:nrow(l1o)) {
-  cat(rownames(l1o)[i], "\\n")
-  cat("  Effect:", round(l1o$estimate[i], 4),
-      "  95% CI:", round(l1o$ci.lb[i], 4), "to", round(l1o$ci.ub[i], 4),
-      "  p:", formatC(l1o$pval[i], format="g", digits=4), "\\n")
+for (i in 1:nrow(l1o_df)) {
+  cat(rownames(l1o_df)[i], "\\n")
+  cat("  Effect:", round(l1o_df$estimate[i], 4),
+      "  95% CI:", round(l1o_df$ci.lb[i], 4), "to", round(l1o_df$ci.ub[i], 4),
+      "  p:", formatC(l1o_df$pval[i], format="g", digits=4), "\\n")
 }
 cat("\\n── Summary ──\\n")
 cat("Original effect:", round(coef(res), 4), "\\n")
-range_est <- range(l1o$estimate)
+range_est <- range(l1o_df$estimate)
 cat("Range after removal:", round(range_est[1], 4), "to", round(range_est[2], 4), "\\n")
-cat("Max change:", round(max(abs(l1o$estimate - coef(res))), 4), "\\n")`;
+cat("Max change:", round(max(abs(l1o_df$estimate - coef(res))), 4), "\\n")`;
 
     case "trimFill":
       return `# ── Trim-and-Fill Analysis ──
@@ -235,19 +236,19 @@ if (res$k < 10) cat("Note: Test has low power with fewer than 10 studies (k =", 
     case "influence":
       return `# ── Influence Diagnostics ──
 inf <- influence(res)
+inf_df <- as.data.frame(inf$inf)
 cat("══════════════════════════════════════\\n")
 cat("  Influence Diagnostics\\n")
 cat("══════════════════════════════════════\\n\\n")
-cat("Study | Cook's D | DFFITS | Hat | Weight%\\n")
-cat("──────────────────────────────────────────\\n")
-for (i in 1:res$k) {
-  cat(sprintf("%-20s  %.4f    %.4f   %.4f   %.1f%%\\n",
-    res$slab[i], inf$inf$cook.d[i], inf$inf$dffits[i],
-    inf$inf$hat[i], inf$inf$weight[i]))
+for (i in 1:nrow(inf_df)) {
+  cat(res$slab[i], "\\n")
+  cat("  Cook's D:", round(inf_df$cook.d[i], 4),
+      "  DFFITS:", round(inf_df$dffits[i], 4),
+      "  hat:", round(inf_df$hat[i], 4), "\\n")
 }
 cat("\\n── Potential Outliers ──\\n")
-cd_threshold <- mean(inf$inf$cook.d) + 2 * sd(inf$inf$cook.d)
-outliers <- which(inf$inf$cook.d > cd_threshold)
+cd_threshold <- mean(inf_df$cook.d, na.rm=TRUE) + 2 * sd(inf_df$cook.d, na.rm=TRUE)
+outliers <- which(inf_df$cook.d > cd_threshold)
 if (length(outliers) > 0) {
   cat("High Cook's D:", paste(res$slab[outliers], collapse=", "), "\\n")
 } else {
@@ -296,15 +297,17 @@ cat("═════════════════════════
 cat("  Meta-Regression: ${moderator}\\n")
 cat("══════════════════════════════════════\\n\\n")
 cat("── Coefficients ──\\n")
-for (i in 1:nrow(coef(summary(res_reg)))) {
-  cat(rownames(coef(summary(res_reg)))[i], "\\n")
-  cat("  Estimate:", round(coef(summary(res_reg))[i, "estimate"], 4),
-      "  SE:", round(coef(summary(res_reg))[i, "se"], 4),
-      "  p:", formatC(coef(summary(res_reg))[i, "pval"], format="g", digits=4), "\\n")
+ct <- coef(summary(res_reg))
+for (i in 1:nrow(ct)) {
+  cat(rownames(ct)[i], "\\n")
+  cat("  Estimate:", round(ct[i, "estimate"], 4),
+      "  SE:", round(ct[i, "se"], 4),
+      "  p:", formatC(ct[i, "pval"], format="g", digits=4), "\\n")
 }
 cat("\\n── Model Fit ──\\n")
 cat("QM (test of moderator):", round(res_reg$QM, 4), "  p:", formatC(res_reg$QMp, format="g", digits=4), "\\n")
-cat("R²:", round(res_reg$R2, 1), "% of heterogeneity explained\\n")
+r2_val <- ifelse(is.null(res_reg$R2), NA, res_reg$R2)
+cat("R²:", ifelse(is.na(r2_val), "N/A", paste0(round(r2_val, 1), "%")), "of heterogeneity explained\\n")
 cat("Residual I²:", round(res_reg$I2, 1), "%\\n")
 if (res_reg$QMp < 0.05) cat("\\nResult: ${moderator} significantly predicts effect size\\n") else cat("\\nResult: ${moderator} does not significantly predict effect size\\n")`;
     }
