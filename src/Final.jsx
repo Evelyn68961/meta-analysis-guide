@@ -701,8 +701,26 @@ function Step3({ project, analysis, setA, lang }) {
       )}
 
       {/* ── Interpretation fields (type here while looking at results) ── */}
-      <div style={{ marginTop: 32, borderTop: `1px solid ${LIGHT_BORDER}`, paddingTop: 24 }}>
-        <h4 style={{ fontSize: 15, fontWeight: 600, color: DARK, marginBottom: 6 }}>{tx.interpretNowTitle}</h4>
+      <div style={{ marginTop: 32, paddingTop: 24 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
+          <div style={{ flex: 1, height: 1, background: LIGHT_BORDER }} />
+          <button onClick={() => setA(p => ({ ...p, _showInterpret: !p._showInterpret }))}
+            style={{
+              display: "flex", alignItems: "center", gap: 8,
+              padding: "8px 20px", borderRadius: 10,
+              fontSize: 14, fontWeight: 700, fontFamily: FONT,
+              cursor: "pointer",
+              border: `2px solid ${BLUE}40`,
+              background: analysis._showInterpret ? `${BLUE}10` : CARD_BG,
+              color: BLUE,
+              transition: "all 0.2s",
+            }}>
+            {tx.interpretNowTitle}
+            <span style={{ fontSize: 11, transform: analysis._showInterpret ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }}>▼</span>
+          </button>
+          <div style={{ flex: 1, height: 1, background: LIGHT_BORDER }} />
+        </div>
+        {analysis._showInterpret && <>
         <p style={{ fontSize: 13, color: MUTED, marginBottom: 16, lineHeight: 1.6 }}>{tx.interpretNowDesc}</p>
         <InputField label={tx.forestQ1} value={analysis.forestQ1 || ""} onChange={v => setA(p => ({ ...p, forestQ1: v }))} placeholder={tx.forestQ1Ph} multiline />
         <InputField label={tx.forestQ2} value={analysis.forestQ2 || ""} onChange={v => setA(p => ({ ...p, forestQ2: v }))} placeholder={tx.forestQ2Ph} multiline />
@@ -722,6 +740,7 @@ function Step3({ project, analysis, setA, lang }) {
               placeholder={ph} multiline />
           );
         })}
+        </>}
       </div>
     </div>
   );
