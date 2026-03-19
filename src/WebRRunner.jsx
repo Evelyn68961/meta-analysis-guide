@@ -35,6 +35,10 @@ const TX = {
     interpretTitle: "AI 結果解讀",
     downloadForest: "下載森林圖",
     downloadFunnel: "下載漏斗圖",
+    forestGuideBtn: "📖 如何解讀森林圖？",
+    forestGuide: "◆ 每條橫線 = 一篇研究的效果量與 95% 信賴區間\n◆ 橫線越短 = 精確度越高（通常樣本越大）\n◆ 方塊大小 = 該研究的權重（越大 = 權重越高）\n◆ 底部菱形 = 合併效果量（菱形寬度 = 信賴區間）\n◆ 垂直虛線 = 無效線（OR=1 或 MD=0）\n◆ 若菱形未跨越無效線 → 合併效果達統計顯著",
+    funnelGuideBtn: "📖 如何解讀漏斗圖？",
+    funnelGuide: "◆ 每個點 = 一篇研究\n◆ X 軸 = 效果量，Y 軸 = 標準誤（越上方 = 精確度越高）\n◆ 理想狀態：點應對稱分布在合併效果線兩側，形成倒漏斗形\n◆ 若一側明顯缺少研究 → 可能存在發表偏差\n◆ 底部離散的點 = 小型研究（精確度低，變異大屬正常）\n◆ 研究數少於 10 篇時，漏斗圖的判讀力有限",
     errorTitle: "執行錯誤",
     errorHint: "如遇到問題，可使用「線上計算器」或「R 程式碼」分頁。",
     desktopNote: "建議使用桌面瀏覽器以獲得最佳體驗",
@@ -104,6 +108,10 @@ const TX = {
     interpretTitle: "AI Interpretation",
     downloadForest: "Download Forest Plot",
     downloadFunnel: "Download Funnel Plot",
+    forestGuideBtn: "📖 How to read the forest plot?",
+    forestGuide: "◆ Each horizontal line = one study's effect size and 95% CI\n◆ Shorter line = more precise (usually larger sample)\n◆ Square size = study weight (bigger = more weight)\n◆ Diamond at bottom = pooled effect (width = CI)\n◆ Vertical dashed line = line of no effect (OR=1 or MD=0)\n◆ If diamond doesn't cross the no-effect line → pooled effect is statistically significant",
+    funnelGuideBtn: "📖 How to read the funnel plot?",
+    funnelGuide: "◆ Each dot = one study\n◆ X-axis = effect size, Y-axis = standard error (higher = more precise)\n◆ Ideally: dots should be symmetrically distributed around the pooled effect line, forming an inverted funnel\n◆ If one side has noticeably fewer studies → possible publication bias\n◆ Dots at the bottom = smaller studies (less precise, more scatter is normal)\n◆ With fewer than 10 studies, funnel plot interpretation has limited power",
     errorTitle: "Execution Error",
     errorHint: "If you encounter issues, try the Online Calculator or R Code tabs.",
     desktopNote: "Desktop browser recommended for best experience",
@@ -816,10 +824,8 @@ function parseAdvancedOutput(advOutput, analysisType, lang, effectType) {
           const sig = pVal < 0.05;
           rows.push({
             raw: `${header}: Effect ${effMatch[1]}, p ${pMatch?.[1] || "?"}`,
-            plain: sig
-              ? (zh ? `${header} → 效果量 ${effMatch[1]}，達統計顯著` : `${header} → effect ${effMatch[1]}, statistically significant`)
-              : (zh ? `${header} → 效果量 ${effMatch[1]}，未達顯著` : `${header} → effect ${effMatch[1]}, not significant`),
-            color: sig ? "#2E86C1" : "#6B7A8D",
+          plain: zh ? `${header} → 效果量 ${effMatch[1]}` : `${header} → effect ${effMatch[1]}`,
+          color: "#6B7A8D",
           });
         }
       });
@@ -891,6 +897,8 @@ export default function WebRRunner({ rCode, lang = "zh", pico, effectType, model
   const [funnelImg, setFunnelImg] = useState(null);
   const [showCode, setShowCode] = useState(false);
   const [showOutputGuide, setShowOutputGuide] = useState(false);
+  const [showForestGuide, setShowForestGuide] = useState(false);
+  const [showFunnelGuide, setShowFunnelGuide] = useState(false);
   const [aiResult, setAiResult] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
 
@@ -903,7 +911,7 @@ export default function WebRRunner({ rCode, lang = "zh", pico, effectType, model
   const [advAiResult, setAdvAiResult] = useState(null);
   const [advAiLoading, setAdvAiLoading] = useState(false);
   const [advShowCode, setAdvShowCode] = useState(false);
-  const [showAdvGuide, setShowAdvGuide] = useState(false);
+  const [showAdvGuide, setShowAdvGuide] = useState(true);
   const [advRCode, setAdvRCode] = useState(null);
   const [advError, setAdvError] = useState(null);
   const [advHistory, setAdvHistory] = useState([]); // completed analyses
@@ -1430,6 +1438,15 @@ Structure your response as:
               <div style={{ background: "#FFF", borderRadius: 12, border: `1px solid ${LIGHT_BORDER}`, padding: 12, overflow: "auto" }}>
                 <img src={forestImg} alt="Forest Plot" style={{ maxWidth: "100%", height: "auto", display: "block" }} />
               </div>
+              <button onClick={() => setShowForestGuide(!showForestGuide)}
+                style={{ marginTop: 10, padding: "6px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600, fontFamily: FONT, cursor: "pointer", border: `1.5px solid ${showForestGuide ? BLUE : LIGHT_BORDER}`, background: showForestGuide ? `${BLUE}08` : CARD_BG, color: showForestGuide ? BLUE : MUTED, transition: "all 0.2s" }}>
+                {showForestGuide ? tx.outputGuideHide : tx.forestGuideBtn}
+              </button>
+              {showForestGuide && (
+                <div style={{ background: `${BLUE}06`, border: `1px solid ${BLUE}15`, borderRadius: 10, padding: 16, marginTop: 10, fontSize: 13, color: DARK, lineHeight: 1.9, whiteSpace: "pre-wrap" }}>
+                  {tx.forestGuide}
+                </div>
+              )}
             </div>
           )}
 
@@ -1448,6 +1465,15 @@ Structure your response as:
               <div style={{ background: "#FFF", borderRadius: 12, border: `1px solid ${LIGHT_BORDER}`, padding: 12, overflow: "auto" }}>
                 <img src={funnelImg} alt="Funnel Plot" style={{ maxWidth: "100%", height: "auto", display: "block" }} />
               </div>
+              <button onClick={() => setShowFunnelGuide(!showFunnelGuide)}
+                style={{ marginTop: 10, padding: "6px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600, fontFamily: FONT, cursor: "pointer", border: `1.5px solid ${showFunnelGuide ? BLUE : LIGHT_BORDER}`, background: showFunnelGuide ? `${BLUE}08` : CARD_BG, color: showFunnelGuide ? BLUE : MUTED, transition: "all 0.2s" }}>
+                {showFunnelGuide ? tx.outputGuideHide : tx.funnelGuideBtn}
+              </button>
+              {showFunnelGuide && (
+                <div style={{ background: `${BLUE}06`, border: `1px solid ${BLUE}15`, borderRadius: 10, padding: 16, marginTop: 10, fontSize: 13, color: DARK, lineHeight: 1.9, whiteSpace: "pre-wrap" }}>
+                  {tx.funnelGuide}
+                </div>
+              )}
             </div>
           )}
 
