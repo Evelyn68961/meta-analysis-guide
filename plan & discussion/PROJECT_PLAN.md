@@ -35,7 +35,7 @@ Courses 4–5 games introduce **progressive difficulty** (3 foundation MCQ → g
 | | **—** | **MA Workshop: Planning** | **5-step guided workshop: Define PICO (🤖 AI), Search Strategy (🤖 AI), Add Studies, Data Extraction, Risk of Bias. Gate: PICO ✅ + ≥3 studies.** | ✅ Built on `dev` |
 | **Advanced** | 4 | Effect Sizes & Forest Plots | Dino Key Quest (pick 1 of 7 dinos, 9 Qs from 105-question bank: 3 foundation MCQ + 6 advanced mixed-type, progressive unlock, crystal cave theme) | ✅ Built on `dev` (upgraded: +1 teaching section "Common Pitfalls", click-based forest plot, 2×2 effect size cards, wider layout) |
 | | 5 | Heterogeneity & Publication Bias | Dino Door Escape → Dino Map Escape (pick 1 of 7 dinos, 9 Qs from 105-question bank: 3 foundation MCQ + 6 advanced mixed-type, progressive unlock, treasure map + door theme) | ✅ Built on `dev` |
-| | **—** | **MA Workshop: Analysis** | **5-step guided workshop: Effect Size & Model, Prepare Data (CSV + R code), Run Analysis (WebR in-browser + Onlinemeta / R), Interpret & Report (🤖 AI), Conclusions (🤖 AI). Completion screen with 🤖 AI Full Project Review. WebR runs metafor in-browser with forest/funnel plots. Layer 2 advanced analysis (leave-one-out, trim-fill, Egger's, influence, subgroup, meta-regression) with teach-then-do mini-lessons.** | ✅ Built on `dev` |
+| | **—** | **MA Workshop: Analysis** | **5-step guided workshop: Effect Size & Model, Prepare Data (CSV + R code), Run Analysis (WebR in-browser with clean structured output + side-by-side reading guide + interpretation fields; Onlinemeta / R fallback), Review & AI Check (all interpretations editable + 🤖 AI), Conclusions (🤖 AI). Completion screen with 🤖 AI Full Project Review. WebR runs metafor in-browser with forest/funnel plots. Layer 2 advanced analysis (leave-one-out, trim-fill, Egger's, influence, subgroup, meta-regression) with teach-then-do mini-lessons and dynamic interpretation fields.** | ✅ Built on `dev` |
 
 ---
 
@@ -69,8 +69,8 @@ src/
 ├── DinoIntro.jsx        ← Dino Codex page (RPG-style character intro; accessible at #dino or #dino=N; linked from ProfilePage dino cards)
 │
 ├── Midterm.jsx          ← MA Workshop Phase 1: Plan Your Meta-Analysis (5-step wizard; PICO + Search with AI checks; study entry, extraction, RoB; gate to Phase 2)
-├── Final.jsx            ← MA Workshop Phase 2: Analysis & Conclusions (5-step wizard; effect size/model choice; data prep with CSV + auto-generated R code; WebR in-browser execution with forest/funnel plots; Layer 2 advanced analysis with mini-lessons; interpretation with AI check; conclusions with AI check; completion with AI full project review + profile link)
-├── WebRRunner.jsx       ← WebR in-browser R execution component (Layer 1 basic + Layer 2 advanced analysis; captureR with capture=TRUE for plots; 6 analysis types with static R templates)
+├── Final.jsx            ← MA Workshop Phase 2: Analysis & Conclusions (5-step wizard; effect size/model choice; data prep with CSV + auto-generated R code; WebR in-browser execution with clean structured output + side-by-side reading guide; Layer 2 advanced analysis with mini-lessons + dynamic interpretation fields; Step 3 = analyze + type interpretation; Step 4 = review/correct all interpretations + AI check; conclusions with AI check; completion with AI full project review + profile link)
+├── WebRRunner.jsx       ← WebR in-browser R execution component (Layer 1 basic + Layer 2 advanced analysis; clean cat() output replacing print(res); parseROutput + parseAdvancedOutput for side-by-side guide; text selection CSS fix; canvas/pdf device message stripping; onAdvComplete callback for dynamic interpretation fields)
 ├── advancedGuides.js    ← Bilingual mini-lesson content for 6 advanced analysis types (what/when/how/decision rule)
 │
 ├── questionHelpers.js   ← Shared helper functions: pickQuestions(), pickBalanced(), pickByType(), pickAdvancedMix()

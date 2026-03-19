@@ -4,7 +4,27 @@
 > **Date:** March 12, 2026
 > **Last updated:** March 13, 2026 — Added Layer 2 advanced analysis design
 > **Status:** Phase 0–2 complete and working on `dev`. Layer 1 + Layer 2 live.
-> **Last updated:** March 18, 2026 — WebR plots fixed (capture=TRUE), Layer 2 mini-lessons added, AI checks expanded
+> **Last updated:** March 19, 2026 — Clean R output, side-by-side reading guide, advanced output cleanup, Step 3/4 workflow restructure
+
+### Implementation Notes (March 19, 2026)
+
+**R output cleanup — `print(res)` removed from all R code:**
+- `buildRCode()` in Final.jsx: replaced `print(res)` + redundant `cat("Key Statistics")` block with a single clean `cat()` output (Model, Pooled Effect with CI/p, Heterogeneity with I²/tau²/Q). No more raw metafor dump, `Signif. codes` line, or duplicate data.
+- `buildAdvancedRCode()` in WebRRunner.jsx: all 6 advanced analyses (leave-one-out, trim-and-fill, Egger's, influence, subgroup, meta-regression) rewritten from `print()` to structured `cat()` output. `leave1out()` and `influence()` results converted via `as.data.frame()` before field access. Meta-regression stores `coef(summary())` once. `R²` null-checked.
+- `canvas` and `pdf` device messages stripped from both basic and advanced output text via regex.
+
+**Side-by-side reading guide:**
+- `parseROutput()` parses the clean basic R output by regex and generates bilingual `{ raw, plain, color }` rows.
+- `parseAdvancedOutput()` does the same for all 6 advanced analysis types, with threshold-based assessments (e.g., max change < 0.05 → stable, all p < 0.05 → robust, missing studies = 0 → no bias).
+- `SideBySideGuide` reusable component renders the rows as a two-column table (dark code left, plain-language right).
+- `OutputReadingGuide` (basic) and `AdvancedReadingGuide` (advanced) wrap the parser + component. Both toggled by a "📖 看不懂？" button below the output.
+
+**Text selection fix:** Outer `<div>` has `className="webr-runner"`, `<style>` targets all `pre`, `code`, and `.r-output-cell` descendants with `::selection { background: #44475A; color: #F8F8F2 }`.
+
+**Step 3/4 workflow restructure:**
+- Step 3 now includes interpretation fields (Q1–Q4 basic + dynamic advanced fields) below the analysis output, so users type while looking at results.
+- Advanced interpretation fields appear dynamically as each advanced analysis completes (`onAdvComplete` callback from WebRRunner → Final.jsx stores `completedAdvanced` array + `advInterpretations` object in analysis state).
+- Step 4 shows all fields (basic + advanced) editable for review/correction, plus reporting guide, bias tests, subgroup plan, and AI check. AI prompt updated to also review advanced analysis interpretations.
 
 ### Implementation Notes (March 18, 2026)
 
@@ -654,9 +674,16 @@ Phase 1.5 (Midterm moderator columns) can run in parallel with Phase 1 since the
 | Mar 18 | **AI interpretation check added to Step 4** | Reviews user's interpretation against their data context |
 | Mar 18 | **AI full project review added to Step 5** | Holistic review of entire project across 6 dimensions |
 | Mar 18 | **Advanced panel gated on rOutput, not aiResult** | Users don't need AI interpretation to access advanced analyses |
+| Mar 19 | **`print(res)` removed from all R code** | Raw metafor output was unreadable for pharmacists; replaced with structured `cat()` output |
+| Mar 19 | **Side-by-side reading guide (code-parsed, no AI)** | Regex parses R output values, generates bilingual plain-language rows — zero token cost |
+| Mar 19 | **Advanced R code rewritten with `as.data.frame()`** | `leave1out()` and `influence()` return list objects, not data frames — direct `$column[i]` access fails |
+| Mar 19 | **`canvas`/`pdf` device messages stripped** | R graphics device outputs "canvas 2" / "pdf 2" — meaningless noise, now regex-removed |
+| Mar 19 | **Interpretation fields moved to Step 3** | Users type while looking at results, not on a separate blank page |
+| Mar 19 | **Dynamic advanced interpretation fields** | `onAdvComplete` callback from WebRRunner; fields appear as each analysis completes; stored in `advInterpretations` object |
+| Mar 19 | **Step 4 = review + correct + AI check** | All fields editable; AI prompt covers basic + advanced interpretations |
 
 ---
 
 *Document created: March 12, 2026*
-*Last updated: March 18, 2026*
-*Status: Phase 0–2 complete. WebR + Layer 2 working on `dev`. Next: Phase 3 polish + Phase 4 documentation.*
+*Last updated: March 19, 2026*
+*Status: Phase 0–2 complete. WebR + Layer 2 working on `dev`. R output cleaned up, side-by-side guide added, Step 3/4 restructured. Next: Phase 3 polish + Phase 4 documentation.*
