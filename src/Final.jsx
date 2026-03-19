@@ -118,6 +118,12 @@ const T = {
     reportExampleText: "五項隨機對照試驗（N = 32,476）的統合分析顯示，SGLT2 抑制劑顯著降低複合腎臟結局風險（OR = 0.67, 95% CI: 0.55–0.82, p < 0.001）。研究間異質性為中度（I² = 35.2%）。",
     forestQ1: "整體效果量代表什麼意義？是否具統計顯著性？",
     forestQ1Ph: "例如：OR = 0.67 表示介入組事件發生風險為對照組的 67%，95% CI 不跨越 1，具統計顯著性。",
+    interpretNowTitle: "✍️ 解讀你的結果",
+    interpretNowDesc: "看完分析結果後，試著用自己的話回答以下問題：",
+    reviewTitle: "檢查你的解讀",
+    reviewDesc: "以下是你在上一步填寫的解讀。確認無誤後，可請 AI 檢查。",
+    reviewEmpty: "（尚未填寫）",
+    reviewEdit: "返回上一步修改",
     forestQ2: "各研究的效果方向是否一致？哪篇權重最大？",
     forestQ2Ph: "例如：5 篇研究效果方向一致，均偏向介入組。EMPA-KIDNEY 權重最大，因樣本數最多且信賴區間最窄。",
     hetInterpret: "你如何解讀異質性？",
@@ -131,6 +137,22 @@ const T = {
     failsafe: "Fail-safe N",
     subgroupPlan: "次群組或敏感性分析計畫",
     subgroupPh: "例如：依 eGFR 基線值分組、排除高偏差風險研究、僅納入 CKD 專屬試驗",
+    advInterpretLabel: {
+      leaveOneOut: "你如何解讀逐一排除分析結果？",
+      trimFill: "你如何解讀 Trim-and-Fill 分析結果？",
+      eggers: "你如何解讀 Egger's 檢定結果？",
+      influence: "你如何解讀影響力診斷結果？",
+      subgroup: "你如何解讀次群組分析結果？",
+      metareg: "你如何解讀統合迴歸結果？",
+    },
+    advInterpretPh: {
+      leaveOneOut: "例如：排除任一研究後結果穩定，最大變動僅 0.017，結論穩健。",
+      trimFill: "例如：估計缺失 0 篇研究，無明顯發表偏差。",
+      eggers: "例如：p = 0.45，漏斗圖無顯著不對稱。但研究數僅 8 篇，檢定效力有限。",
+      influence: "例如：沒有研究的 Cook's D 異常偏高，結果不受個別研究主導。",
+      subgroup: "例如：兩組效果方向一致，但 QM 檢定不顯著（p = 0.32），組間無顯著差異。",
+      metareg: "例如：調節變項不顯著（p = 0.15），R² = 0%，無法解釋異質性。",
+    },
     aiCheckInterpret: "AI 檢查解讀",
     aiCheckingInterpret: "AI 檢查中...",
 
@@ -260,6 +282,12 @@ const T = {
     reportExampleText: "A meta-analysis of five RCTs (N = 32,476) showed that SGLT2 inhibitors significantly reduced the composite kidney outcome (OR = 0.67, 95% CI: 0.55–0.82, p < 0.001). Heterogeneity was moderate (I² = 35.2%).",
     forestQ1: "What does the pooled effect mean? Is it statistically significant?",
     forestQ1Ph: "e.g., OR = 0.67 means the intervention group had 33% lower odds of the event, and the 95% CI does not cross 1, so it's statistically significant.",
+    interpretNowTitle: "✍️ Interpret your results",
+    interpretNowDesc: "After reviewing the output above, answer these questions in your own words:",
+    reviewTitle: "Review your interpretation",
+    reviewDesc: "Below is what you wrote in the previous step. Confirm or go back to edit, then ask AI to check.",
+    reviewEmpty: "(not yet filled)",
+    reviewEdit: "Go back to edit",
     forestQ2: "Are effect directions consistent across studies? Which study has the highest weight?",
     forestQ2Ph: "e.g., All 5 studies favor the intervention. EMPA-KIDNEY has the highest weight due to the largest sample size and narrowest CI.",
     hetInterpret: "How do you interpret the heterogeneity?",
@@ -273,6 +301,22 @@ const T = {
     failsafe: "Fail-safe N",
     subgroupPlan: "Subgroup or sensitivity analysis plan",
     subgroupPh: "e.g., Subgroup by baseline eGFR, exclude high RoB studies, restrict to CKD-dedicated trials",
+    advInterpretLabel: {
+      leaveOneOut: "How do you interpret the leave-one-out results?",
+      trimFill: "How do you interpret the trim-and-fill results?",
+      eggers: "How do you interpret Egger's test results?",
+      influence: "How do you interpret the influence diagnostics?",
+      subgroup: "How do you interpret the subgroup analysis?",
+      metareg: "How do you interpret the meta-regression results?",
+    },
+    advInterpretPh: {
+      leaveOneOut: "e.g., Results stable after removing any study; max change only 0.017. Conclusion is robust.",
+      trimFill: "e.g., 0 missing studies estimated; no evidence of publication bias.",
+      eggers: "e.g., p = 0.45, no significant funnel asymmetry. But with only 8 studies, power is limited.",
+      influence: "e.g., No study has unusually high Cook's D; results not driven by any single study.",
+      subgroup: "e.g., Both groups show consistent effects; QM test non-significant (p = 0.32), no between-group difference.",
+      metareg: "e.g., Moderator not significant (p = 0.15), R² = 0%, does not explain heterogeneity.",
+    },
     aiCheckInterpret: "AI Review Interpretation",
     aiCheckingInterpret: "AI reviewing...",
 
@@ -564,7 +608,7 @@ function Step2({ project, analysis, lang }) {
   );
 }
 
-function Step3({ project, analysis, lang }) {
+function Step3({ project, analysis, setA, lang }) {
   const tx = T[lang]; const [tab, setTab] = useState("webr");
   const inc = getIncluded(project); const bin = isBinary(inc);
   const modColumns = project.moderatorColumns || [];
@@ -608,6 +652,13 @@ function Step3({ project, analysis, lang }) {
           model={analysis.model}
           moderatorColumns={modColumns}
           studies={inc}
+          onAdvComplete={({ type, moderator }) => {
+            setA(p => {
+              const existing = p.completedAdvanced || [];
+              if (existing.some(a => a.type === type && a.moderator === moderator)) return p;
+              return { ...p, completedAdvanced: [...existing, { type, moderator }] };
+            });
+          }}
         />
       )}
 
@@ -648,6 +699,30 @@ function Step3({ project, analysis, lang }) {
           </div>
         </div>
       )}
+
+      {/* ── Interpretation fields (type here while looking at results) ── */}
+      <div style={{ marginTop: 32, borderTop: `1px solid ${LIGHT_BORDER}`, paddingTop: 24 }}>
+        <h4 style={{ fontSize: 15, fontWeight: 600, color: DARK, marginBottom: 6 }}>{tx.interpretNowTitle}</h4>
+        <p style={{ fontSize: 13, color: MUTED, marginBottom: 16, lineHeight: 1.6 }}>{tx.interpretNowDesc}</p>
+        <InputField label={tx.forestQ1} value={analysis.forestQ1 || ""} onChange={v => setA(p => ({ ...p, forestQ1: v }))} placeholder={tx.forestQ1Ph} multiline />
+        <InputField label={tx.forestQ2} value={analysis.forestQ2 || ""} onChange={v => setA(p => ({ ...p, forestQ2: v }))} placeholder={tx.forestQ2Ph} multiline />
+        <InputField label={tx.hetInterpret} value={analysis.hetInterpretation || ""} onChange={v => setA(p => ({ ...p, hetInterpretation: v }))} placeholder={tx.hetInterpretPh} multiline />
+        <InputField label={tx.funnelInterpret} value={analysis.funnelAssessment || ""} onChange={v => setA(p => ({ ...p, funnelAssessment: v }))} placeholder={tx.funnelPh} multiline />
+
+        {/* Advanced interpretation fields — appear as analyses complete */}
+        {(analysis.completedAdvanced || []).map((adv) => {
+          const key = adv.moderator ? `${adv.type}_${adv.moderator}` : adv.type;
+          const label = tx.advInterpretLabel?.[adv.type] || adv.type;
+          const ph = tx.advInterpretPh?.[adv.type] || "";
+          const fullLabel = adv.moderator ? `${label} (${adv.moderator})` : label;
+          return (
+            <InputField key={key} label={fullLabel}
+              value={(analysis.advInterpretations || {})[key] || ""}
+              onChange={v => setA(p => ({ ...p, advInterpretations: { ...(p.advInterpretations || {}), [key]: v } }))}
+              placeholder={ph} multiline />
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -658,9 +733,10 @@ function Step4({ analysis, setA, project, lang }) {
   const biasOpts = [{ key: "eggers", label: tx.eggers }, { key: "trimFill", label: tx.trimFill }, { key: "beggs", label: tx.beggs }, { key: "failsafe", label: tx.failsafe }];
   const toggleTest = k => { const c = analysis.biasTests || []; setA(p => ({ ...p, biasTests: c.includes(k) ? c.filter(x => x !== k) : [...c, k] })); };
 
-  // At least 2 of 4 interpretation fields must have content
+  // At least 2 interpretation fields must have content (basic + advanced)
   const filledFields = [analysis.forestQ1, analysis.forestQ2, analysis.hetInterpretation, analysis.funnelAssessment].filter(v => (v || "").trim().length > 10);
-  const canCheck = filledFields.length >= 2;
+  const advFields = Object.values(analysis.advInterpretations || {}).filter(v => (v || "").trim().length > 10);
+  const canCheck = filledFields.length + advFields.length >= 2;
 
   const handleAiCheck = async () => {
     setAiLoading(true); setAiFeedback(null);
@@ -678,7 +754,8 @@ function Step4({ analysis, setA, project, lang }) {
 2. 權重和一致性的描述是否合理？
 3. 異質性解讀是否正確？（I² 的分級、可能原因的推測）
 4. 漏斗圖解讀是否恰當？（若有填寫）
-5. 是否遺漏了重要的面向？（例如只報告統計顯著性但忽略臨床意義）
+5. 進階分析解讀是否正確？（若有填寫，如敏感性分析、發表偏差檢測等）
+6. 是否遺漏了重要的面向？（例如只報告統計顯著性但忽略臨床意義）
 
 每項以「✅」（正確）或「⚠️」（需改進）開頭，簡短說明。最後一句給整體建議。
 繁體中文，6-8 句。不用 Markdown。`
@@ -691,7 +768,8 @@ Review the student's interpretation answers, checking each area:
 2. Is the weight/consistency description reasonable?
 3. Is the heterogeneity interpretation correct? (I² classification, possible sources)
 4. Is the funnel plot interpretation appropriate? (if provided)
-5. Are any important aspects missing? (e.g., reporting only statistical significance but ignoring clinical meaning)
+5. Are advanced analysis interpretations correct? (if provided, e.g., sensitivity analysis, publication bias tests)
+6. Are any important aspects missing? (e.g., reporting only statistical significance but ignoring clinical meaning)
 
 Start each item with "✅" (correct) or "⚠️" (needs improvement), with a brief explanation. End with one overall suggestion.
 6-8 sentences. No Markdown.`;
@@ -701,6 +779,10 @@ Start each item with "✅" (correct) or "⚠️" (needs improvement), with a bri
       `Q2 (Consistency & weights): ${analysis.forestQ2 || "(empty)"}`,
       `Q3 (Heterogeneity): ${analysis.hetInterpretation || "(empty)"}`,
       `Q4 (Funnel plot): ${analysis.funnelAssessment || "(empty)"}`,
+      ...(analysis.completedAdvanced || []).map(adv => {
+        const key = adv.moderator ? `${adv.type}_${adv.moderator}` : adv.type;
+        return `Advanced — ${adv.type}${adv.moderator ? ` (${adv.moderator})` : ""}: ${(analysis.advInterpretations || {})[key] || "(empty)"}`;
+      }),
       `Bias tests selected: ${(analysis.biasTests || []).join(", ") || "none"}`,
       `Subgroup/sensitivity plan: ${analysis.subgroupPlan || "(empty)"}`,
     ].join("\n");
@@ -716,10 +798,31 @@ Start each item with "✅" (correct) or "⚠️" (needs improvement), with a bri
 
   return (
     <div>
-      <h3 style={{ fontSize: 16, fontWeight: 600, color: DARK, marginBottom: 16 }}>{tx.interpretTitle}</h3>
+      <h3 style={{ fontSize: 16, fontWeight: 600, color: DARK, marginBottom: 8 }}>{tx.reviewTitle}</h3>
+      <p style={{ fontSize: 13, color: MUTED, marginBottom: 20, lineHeight: 1.6 }}>{tx.reviewDesc}</p>
+
+      {/* Interpretation fields — editable for corrections */}
+      <InputField label={tx.forestQ1} value={analysis.forestQ1 || ""} onChange={v => setA(p => ({ ...p, forestQ1: v }))} placeholder={tx.forestQ1Ph} multiline />
+      <InputField label={tx.forestQ2} value={analysis.forestQ2 || ""} onChange={v => setA(p => ({ ...p, forestQ2: v }))} placeholder={tx.forestQ2Ph} multiline />
+      <InputField label={tx.hetInterpret} value={analysis.hetInterpretation || ""} onChange={v => setA(p => ({ ...p, hetInterpretation: v }))} placeholder={tx.hetInterpretPh} multiline />
+      <InputField label={tx.funnelInterpret} value={analysis.funnelAssessment || ""} onChange={v => setA(p => ({ ...p, funnelAssessment: v }))} placeholder={tx.funnelPh} multiline />
+
+      {/* Advanced interpretation fields — match what was completed in Step 3 */}
+      {(analysis.completedAdvanced || []).map((adv) => {
+        const key = adv.moderator ? `${adv.type}_${adv.moderator}` : adv.type;
+        const label = tx.advInterpretLabel?.[adv.type] || adv.type;
+        const ph = tx.advInterpretPh?.[adv.type] || "";
+        const fullLabel = adv.moderator ? `${label} (${adv.moderator})` : label;
+        return (
+          <InputField key={key} label={fullLabel}
+            value={(analysis.advInterpretations || {})[key] || ""}
+            onChange={v => setA(p => ({ ...p, advInterpretations: { ...(p.advInterpretations || {}), [key]: v } }))}
+            placeholder={ph} multiline />
+        );
+      })}
 
       {/* Reporting guidance box */}
-      <div style={{ background: `${BLUE}06`, border: `1px solid ${BLUE}20`, borderRadius: 12, padding: 20, marginBottom: 24 }}>
+      <div style={{ background: `${BLUE}06`, border: `1px solid ${BLUE}20`, borderRadius: 12, padding: 20, marginBottom: 24, marginTop: 20 }}>
         <h4 style={{ fontSize: 14, fontWeight: 600, color: DARK, marginBottom: 10, display: "flex", alignItems: "center", gap: 8 }}>
           📋 {tx.reportGuideTitle}
         </h4>
@@ -738,12 +841,6 @@ Start each item with "✅" (correct) or "⚠️" (needs improvement), with a bri
         </div>
       </div>
 
-      {/* Interpretation questions */}
-      <InputField label={tx.forestQ1} value={analysis.forestQ1 || ""} onChange={v => setA(p => ({ ...p, forestQ1: v }))} placeholder={tx.forestQ1Ph} multiline />
-      <InputField label={tx.forestQ2} value={analysis.forestQ2 || ""} onChange={v => setA(p => ({ ...p, forestQ2: v }))} placeholder={tx.forestQ2Ph} multiline />
-      <InputField label={tx.hetInterpret} value={analysis.hetInterpretation || ""} onChange={v => setA(p => ({ ...p, hetInterpretation: v }))} placeholder={tx.hetInterpretPh} multiline />
-      <InputField label={tx.funnelInterpret} value={analysis.funnelAssessment || ""} onChange={v => setA(p => ({ ...p, funnelAssessment: v }))} placeholder={tx.funnelPh} multiline />
-
       {/* Bias tests */}
       <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: DARK, marginBottom: 10, marginTop: 8 }}>{tx.biasTests}</label>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
@@ -756,7 +853,7 @@ Start each item with "✅" (correct) or "⚠️" (needs improvement), with a bri
       {/* AI Interpretation Check */}
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 12 }}>
         <Btn primary onClick={handleAiCheck} disabled={!canCheck || aiLoading}>{aiLoading ? tx.aiCheckingInterpret : `🤖 ${tx.aiCheckInterpret}`}</Btn>
-        {!canCheck && <span style={{ fontSize: 12, color: MUTED }}>{lang === "zh" ? "請至少填寫 2 項解讀" : "Fill in at least 2 interpretation fields"}</span>}
+        {!canCheck && <span style={{ fontSize: 12, color: MUTED }}>{lang === "zh" ? "請至少在上一步填寫 2 項解讀" : "Fill in at least 2 interpretation fields in the previous step"}</span>}
       </div>
       <AiFeedbackBox feedback={aiFeedback} loading={aiLoading} lang={lang} />
     </div>
@@ -969,7 +1066,7 @@ export default function Final({ onNavigate, user, onLogin, onLogout }) {
   const [analysis, setA] = useState(() => {
     try { const s = sessionStorage.getItem("ma_project_final"); if (s) return JSON.parse(s); } catch {}
     const inc = getIncluded(project); const bin = inc.length > 0 ? isBinary(inc) : true;
-    return { effectType: bin ? "OR" : "MD", model: "random", rationale: "", forestQ1: "", forestQ2: "", hetInterpretation: "", funnelAssessment: "", biasTests: [], subgroupPlan: "", mainFinding: "", certainty: "", certRationale: "", limitations: "", implications: "", _interpretFeedback: null, _conclusionFeedback: null, _fullReviewFeedback: null };
+    return { effectType: bin ? "OR" : "MD", model: "random", rationale: "", forestQ1: "", forestQ2: "", hetInterpretation: "", funnelAssessment: "", biasTests: [], subgroupPlan: "", mainFinding: "", certainty: "", certRationale: "", limitations: "", implications: "", completedAdvanced: [], advInterpretations: {}, _interpretFeedback: null, _conclusionFeedback: null, _fullReviewFeedback: null };
   });
 
   useEffect(() => { try { sessionStorage.setItem("ma_project_final", JSON.stringify(analysis)); } catch {} }, [analysis]);
@@ -1049,7 +1146,7 @@ export default function Final({ onNavigate, user, onLogin, onLogout }) {
         <Card style={{ marginBottom: 24 }}>
           {step === 0 && <Step1 analysis={analysis} setA={setA} project={project} lang={lang} />}
           {step === 1 && <Step2 project={project} analysis={analysis} lang={lang} />}
-          {step === 2 && <Step3 project={project} analysis={analysis} lang={lang} />}
+          {step === 2 && <Step3 project={project} analysis={analysis} setA={setA} lang={lang} />}
           {step === 3 && <Step4 analysis={analysis} setA={setA} project={project} lang={lang} />}
           {step === 4 && <Step5 analysis={analysis} setA={setA} project={project} lang={lang} />}
           {isDone && <Completion analysis={analysis} project={project} lang={lang} onNavigate={onNavigate} onBack={() => setStep(s => s - 1)} />}
