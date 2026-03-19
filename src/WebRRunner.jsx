@@ -247,7 +247,7 @@ for (i in 1:nrow(inf_df)) {
       "  hat:", round(inf_df$hat[i], 4), "\\n")
 }
 cat("\\n── Potential Outliers ──\\n")
-cd_threshold <- mean(inf_df$cook.d, na.rm=TRUE) + 2 * sd(inf_df$cook.d, na.rm=TRUE)
+cd_threshold <- 4 / nrow(inf_df)
 outliers <- which(inf_df$cook.d > cd_threshold)
 if (length(outliers) > 0) {
   cat("High Cook's D:", paste(res$slab[outliers], collapse=", "), "\\n")
@@ -592,10 +592,8 @@ function parseROutput(rOutput, effectType, model, lang) {
 }
 
 // ═══ SIDE-BY-SIDE READING GUIDE ═══
-function OutputReadingGuide({ rOutput, lang, effectType, model }) {
-  const tx = (lang === "zh" ? TX.zh : TX.en);
-  const rows = parseROutput(rOutput, effectType, model, lang);
-
+function SideBySideGuide({ rows, tip, lang }) {
+  if (!rows || rows.length === 0) return null;
   return (
     <div style={{
       marginTop: 12, borderRadius: 14, overflow: "hidden",
@@ -641,19 +639,248 @@ function OutputReadingGuide({ rOutput, lang, effectType, model }) {
       ))}
 
       {/* Tip footer */}
-      <div style={{
-        padding: "8px 14px", fontSize: 12, color: MUTED,
-        background: `${AMBER}08`, borderTop: `1px solid ${LIGHT_BORDER}`,
-        lineHeight: 1.6,
-      }}>
-        {tx.guideTip}
-      </div>
+      {tip && (
+        <div style={{
+          padding: "8px 14px", fontSize: 12, color: MUTED,
+          background: `${AMBER}08`, borderTop: `1px solid ${LIGHT_BORDER}`,
+          lineHeight: 1.6,
+        }}>
+          {tip}
+        </div>
+      )}
     </div>
   );
 }
 
+function OutputReadingGuide({ rOutput, lang, effectType, model }) {
+  const tx = (lang === "zh" ? TX.zh : TX.en);
+  const rows = parseROutput(rOutput, effectType, model, lang);
+  return <SideBySideGuide rows={rows} tip={tx.guideTip} lang={lang} />;
+}
+
+// ═══ ADVANCED OUTPUT PARSER ═══
+function parseAdvancedOutput(advOutput, analysisType, lang, effectType) {
+  const zh = lang === "zh";
+  const isLog = ["OR", "RR"].includes(effectType);
+  const rows = [];
+
+  switch (analysisType) {
+    case "leaveOneOut": {
+      // Parse summary section
+      const origMatch = advOutput.match(/Original effect:\s*(-?[\d.]+)/);
+      const rangeMatch = advOutput.match(/Range after removal:\s*(-?[\d.]+)\s*to\s*(-?[\d.]+)/);
+      const maxMatch = advOutput.match(/Max change:\s*([\d.]+)/);
+      // Check if all p-values remain significant
+      const pVals = [...advOutput.matchAll(/p:\s*([\d.e<+-]+)/g)].map(m => m[1]);
+      const allSig = pVals.every(p => p.startsWith("<") || parseFloat(p) < 0.05);
+
+      if (origMatch) {
+        rows.push({
+          raw: `Original: ${origMatch[1]}`,
+          plain: zh ? `原始合併效果量 = ${origMatch[1]}` : `Original pooled effect = ${origMatch[1]}`,
+          color: "#8E44AD",
+        });
+      }
+      if (rangeMatch) {
+        const spread = (parseFloat(rangeMatch[2]) - parseFloat(rangeMatch[1])).toFixed(4);
+        rows.push({
+          raw: `Range: ${rangeMatch[1]} to ${rangeMatch[2]}`,
+          plain: zh
+            ? `排除任一研究後，效果量在 ${rangeMatch[1]} 到 ${rangeMatch[2]} 之間（變動幅度 ${spread}）`
+            : `After removing any study, effect ranges from ${rangeMatch[1]} to ${rangeMatch[2]} (spread ${spread})`,
+          color: "#2E86C1",
+        });
+      }
+      if (maxMatch) {
+        const maxC = parseFloat(maxMatch[1]);
+        const stable = maxC < 0.05;
+        rows.push({
+          raw: `Max change: ${maxMatch[1]}`,
+          plain: stable
+            ? (zh ? `最大變動 ${maxC} → 結果穩定，排除任一研究都不會大幅改變結論` : `Max change ${maxC} → results stable, no single study drives the conclusion`)
+            : (zh ? `最大變動 ${maxC} → 某些研究對結果有較大影響，需注意` : `Max change ${maxC} → some studies have notable influence, investigate further`),
+          color: stable ? "#3DA87A" : "#D4A843",
+        });
+      }
+      if (pVals.length > 0) {
+        rows.push({
+          raw: allSig ? "All p < 0.05" : "Some p ≥ 0.05",
+          plain: allSig
+            ? (zh ? "排除任一研究後，結果都維持統計顯著 → 結論穩健" : "Result stays significant after every removal → robust conclusion")
+            : (zh ? "排除某些研究後，結果不再顯著 → 結論可能依賴特定研究" : "Result loses significance after some removals → conclusion may depend on specific studies"),
+          color: allSig ? "#3DA87A" : "#C0392B",
+        });
+      }
+      break;
+    }
+
+    case "trimFill": {
+      const missingMatch = advOutput.match(/Estimated missing studies:\s*(\d+)/);
+      const adjMatch = advOutput.match(/Adjusted effect:\s*(-?[\d.]+)/);
+      const origMatch = advOutput.match(/Original effect:\s*(-?[\d.]+)/);
+      const changeMatch = advOutput.match(/Change:\s*([\d.]+)/);
+
+      if (missingMatch) {
+        const n = parseInt(missingMatch[1]);
+        rows.push({
+          raw: `Missing studies: ${n}`,
+          plain: n === 0
+            ? (zh ? "估計缺失研究數 = 0 → 沒有發現明顯的發表偏差" : "Estimated missing studies = 0 → no evidence of publication bias")
+            : (zh ? `估計有 ${n} 篇可能因不顯著而未發表的研究` : `Estimated ${n} studies may be missing due to publication bias`),
+          color: n === 0 ? "#3DA87A" : "#D4A843",
+        });
+      }
+      if (origMatch && adjMatch) {
+        rows.push({
+          raw: `Original: ${origMatch[1]} → Adjusted: ${adjMatch[1]}`,
+          plain: zh ? `補入缺失研究後，效果量從 ${origMatch[1]} 變為 ${adjMatch[1]}` : `After imputing missing studies, effect changed from ${origMatch[1]} to ${adjMatch[1]}`,
+          color: "#2E86C1",
+        });
+      }
+      if (changeMatch) {
+        const c = parseFloat(changeMatch[1]);
+        const big = c > 0.05;
+        rows.push({
+          raw: `Change: ${changeMatch[1]}`,
+          plain: big
+            ? (zh ? `變動 ${c} → 校正後效果量明顯改變，可能存在發表偏差` : `Change ${c} → adjusted effect differs notably, publication bias may be present`)
+            : (zh ? `變動 ${c} → 校正後效果量變化很小，結果穩定` : `Change ${c} → minimal adjustment, results robust`),
+          color: big ? "#D4A843" : "#3DA87A",
+        });
+      }
+      break;
+    }
+
+    case "eggers": {
+      const zMatch = advOutput.match(/z-value:\s*(-?[\d.]+)/);
+      const pMatch = advOutput.match(/p-value:\s*([\d.e<+-]+)/);
+      const resultMatch = advOutput.match(/Result:\s*(.+)/);
+      const noteMatch = advOutput.match(/Note:\s*(.+)/);
+
+      if (pMatch) {
+        const pVal = parseFloat(pMatch[1]);
+        const sig = pVal < 0.05;
+        rows.push({
+          raw: `p-value: ${pMatch[1]}`,
+          plain: sig
+            ? (zh ? `p = ${pMatch[1]} → 漏斗圖顯著不對稱，提示可能有發表偏差` : `p = ${pMatch[1]} → significant funnel asymmetry, possible publication bias`)
+            : (zh ? `p = ${pMatch[1]} → 漏斗圖無顯著不對稱，未發現發表偏差` : `p = ${pMatch[1]} → no significant asymmetry, no evidence of publication bias`),
+          color: sig ? "#C0392B" : "#3DA87A",
+        });
+      }
+      if (noteMatch) {
+        rows.push({
+          raw: noteMatch[0],
+          plain: zh ? "研究數少於 10 篇時，此檢定的統計效力較低，結果僅供參考" : "With fewer than 10 studies, this test has low power — interpret with caution",
+          color: "#D4A843",
+        });
+      }
+      break;
+    }
+
+    case "influence": {
+      const outlierMatch = advOutput.match(/High Cook's D:\s*(.+)/);
+      const noOutlier = /No studies with unusually high/.test(advOutput);
+
+      if (noOutlier) {
+        rows.push({
+          raw: "No outliers detected",
+          plain: zh ? "沒有研究對整體結果有不成比例的影響 → 結果穩定" : "No study has disproportionate influence → results stable",
+          color: "#3DA87A",
+        });
+      } else if (outlierMatch) {
+        rows.push({
+          raw: `Outliers: ${outlierMatch[1]}`,
+          plain: zh ? `以下研究的 Cook's D 偏高，對結果有較大影響：${outlierMatch[1]}` : `These studies have high Cook's D (notable influence): ${outlierMatch[1]}`,
+          color: "#C0392B",
+        });
+      }
+      break;
+    }
+
+    case "subgroup": {
+      // Parse QM result
+      const qmMatch = advOutput.match(/QM:\s*([\d.]+)\s+df:\s*(\d+)\s+p:\s*([\d.e<+-]+)/);
+      const resultMatch = advOutput.match(/Result:\s*(.+)/);
+
+      // Parse each subgroup
+      const subgroupBlocks = advOutput.split(/── .+ ──/).slice(1);
+      const subgroupHeaders = [...advOutput.matchAll(/── (.+) ──/g)].map(m => m[1]).filter(h => h !== "Between-Group Test");
+
+      subgroupHeaders.forEach((header, i) => {
+        const block = subgroupBlocks[i] || "";
+        const effMatch = block.match(/Effect:\s*(-?[\d.]+)/);
+        const pMatch = block.match(/p-value:\s*([\d.e<+-]+)/);
+        if (effMatch) {
+          const pVal = pMatch ? parseFloat(pMatch[1]) : 1;
+          const sig = pVal < 0.05;
+          rows.push({
+            raw: `${header}: Effect ${effMatch[1]}, p ${pMatch?.[1] || "?"}`,
+            plain: sig
+              ? (zh ? `${header} → 效果量 ${effMatch[1]}，達統計顯著` : `${header} → effect ${effMatch[1]}, statistically significant`)
+              : (zh ? `${header} → 效果量 ${effMatch[1]}，未達顯著` : `${header} → effect ${effMatch[1]}, not significant`),
+            color: sig ? "#2E86C1" : "#6B7A8D",
+          });
+        }
+      });
+
+      if (qmMatch) {
+        const qmp = parseFloat(qmMatch[3]);
+        rows.push({
+          raw: `QM = ${qmMatch[1]}, p = ${qmMatch[3]}`,
+          plain: qmp < 0.05
+            ? (zh ? `組間差異檢定 p = ${qmMatch[3]} → 各組之間有顯著差異` : `Between-group test p = ${qmMatch[3]} → significant difference between subgroups`)
+            : (zh ? `組間差異檢定 p = ${qmMatch[3]} → 各組之間無顯著差異` : `Between-group test p = ${qmMatch[3]} → no significant difference between subgroups`),
+          color: qmp < 0.05 ? "#C0392B" : "#3DA87A",
+        });
+      }
+      break;
+    }
+
+    case "metareg": {
+      const qmMatch = advOutput.match(/QM[^:]*:\s*([\d.]+)\s+p:\s*([\d.e<+-]+)/);
+      const r2Match = advOutput.match(/R²:\s*([\d.]+|N\/A)%?\s*/);
+      const resultMatch = advOutput.match(/Result:\s*(.+)/);
+
+      if (qmMatch) {
+        const qmp = parseFloat(qmMatch[2]);
+        rows.push({
+          raw: `QM = ${qmMatch[1]}, p = ${qmMatch[2]}`,
+          plain: qmp < 0.05
+            ? (zh ? `調節變項的效果達顯著（p = ${qmMatch[2]}），能解釋部分異質性` : `Moderator is significant (p = ${qmMatch[2]}), explains some heterogeneity`)
+            : (zh ? `調節變項的效果不顯著（p = ${qmMatch[2]}），無法解釋異質性` : `Moderator not significant (p = ${qmMatch[2]}), does not explain heterogeneity`),
+          color: qmp < 0.05 ? "#2E86C1" : "#6B7A8D",
+        });
+      }
+      if (r2Match && r2Match[1] !== "N/A") {
+        const r2 = parseFloat(r2Match[1]);
+        rows.push({
+          raw: `R² = ${r2}%`,
+          plain: zh ? `此變項解釋了 ${r2}% 的研究間異質性` : `This moderator explains ${r2}% of between-study heterogeneity`,
+          color: r2 > 50 ? "#3DA87A" : r2 > 0 ? "#D4A843" : "#6B7A8D",
+        });
+      }
+      break;
+    }
+
+    default:
+      break;
+  }
+
+  return rows;
+}
+
+function AdvancedReadingGuide({ advOutput, analysisType, lang, effectType }) {
+  const rows = parseAdvancedOutput(advOutput, analysisType, lang, effectType);
+  if (!rows || rows.length === 0) return null;
+  const tip = lang === "zh"
+    ? "💡 進階分析輔助判斷：結果是否穩定、是否有發表偏差、哪些研究影響最大。"
+    : "💡 Advanced analyses help assess: result stability, publication bias, and influential studies.";
+  return <SideBySideGuide rows={rows} tip={tip} lang={lang} />;
+}
+
 // ═══ MAIN COMPONENT ═══
-export default function WebRRunner({ rCode, lang = "zh", pico, effectType, model, moderatorColumns = [], studies = [], onAiInterpret }) {
+export default function WebRRunner({ rCode, lang = "zh", pico, effectType, model, moderatorColumns = [], studies = [], onAiInterpret, onAdvComplete }) {
   const tx = TX[lang] || TX.en;
 
   // Layer 1 state
@@ -676,6 +903,7 @@ export default function WebRRunner({ rCode, lang = "zh", pico, effectType, model
   const [advAiResult, setAdvAiResult] = useState(null);
   const [advAiLoading, setAdvAiLoading] = useState(false);
   const [advShowCode, setAdvShowCode] = useState(false);
+  const [showAdvGuide, setShowAdvGuide] = useState(false);
   const [advRCode, setAdvRCode] = useState(null);
   const [advError, setAdvError] = useState(null);
   const [advHistory, setAdvHistory] = useState([]); // completed analyses
@@ -997,8 +1225,13 @@ Structure your response as:
       const result = await shelter.captureR(wrappedCode, {
         withAutoprint: true, captureStreams: true, captureConditions: false,
       });
-      const outputText = result.output.map(o => o.data).join("\n");
+      const outputText = result.output.map(o => o.data).join("\n")
+        .replace(/canvas\s*\n\s*\d+\s*/g, "")
+        .replace(/pdf\s*\n\s*\d+\s*/g, "")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
       setAdvOutput(outputText);
+      if (onAdvComplete) onAdvComplete({ type: advSelectedType, moderator: advSelectedMod });
 
       if (result.images && result.images.length > 0) {
         const url = bitmapToDataURL(result.images[result.images.length - 1]);
@@ -1041,13 +1274,14 @@ Structure your response as:
   // ── Save to history and reset for another analysis ──
   const handleRunAnother = () => {
     if (advOutput) {
-      setAdvHistory(h => [...h, {
+      const entry = {
         type: advSelectedType,
         moderator: advSelectedMod,
         output: advOutput,
         aiResult: advAiResult,
         code: advRCode,
-      }]);
+      };
+      setAdvHistory(h => [...h, entry]);
     }
     setAdvOutput(null);
     setAdvPlotImg(null);
@@ -1565,6 +1799,23 @@ Structure your response as:
                         }}>
                           {advOutput}
                         </pre>
+
+                        {/* Advanced Reading Guide Toggle */}
+                        <button onClick={() => setShowAdvGuide(!showAdvGuide)}
+                          style={{
+                            marginTop: 10, padding: "8px 16px", borderRadius: 8,
+                            fontSize: 12, fontWeight: 600, fontFamily: FONT, cursor: "pointer",
+                            border: `1.5px solid ${showAdvGuide ? PURPLE : LIGHT_BORDER}`,
+                            background: showAdvGuide ? `${PURPLE}08` : CARD_BG,
+                            color: showAdvGuide ? PURPLE : MUTED,
+                            transition: "all 0.2s",
+                          }}>
+                          {showAdvGuide ? tx.outputGuideHide : tx.outputGuideBtn}
+                        </button>
+
+                        {showAdvGuide && (
+                          <AdvancedReadingGuide advOutput={advOutput} analysisType={advSelectedType} lang={lang} effectType={effectType} />
+                        )}
                       </div>
 
                       {/* Advanced R Code (collapsible) */}
