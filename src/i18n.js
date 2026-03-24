@@ -43,7 +43,7 @@ const translations = {
     whyCard2Title: "解決分歧",
     whyCard2Text: "當研究A說「是」而研究B說「否」時，統合分析提供了公平的、數學化的仲裁，而不是選擇性引用。",
     whyCard3Title: "發現隱藏模式",
-    whyCard3Text: "透過次族群分析，你可以發現一種治療對老年患者有效但對年輕患者無效——這是單個研究可能無法揭示的。",
+    whyCard3Text: "透過次族群分析，你可以發現一種治療對老年患者有效但對年輕患者無效——這是單一研究可能無法揭示的。",
     whyCard4Title: "影響真實決策",
     whyCard4Text: "統合分析位於證據金字塔的頂端。政府、醫院和指南委員會依靠它們來制定治療和政策決策。",
     whyCard5Title: "揭露缺失證據",
@@ -396,7 +396,7 @@ const translations = {
     // AI PICO Workshop
     c1aiLabel: "AI 練習工坊",
     c1aiTitle: "讓 AI 幫你檢查 PICO",
-    c1aiDesc: "選擇一個臨床情境，寫下你自己的 PICO，然後讓 AI 逐一檢查每個元素，給你即時的個人化回饋。填完全部四個欄位後，還可以做整體評估！",
+    c1aiDesc: "選擇一個臨床情境，寫出 PICO，然後讓 AI 逐一檢查每個元素，給你即時的個人化回饋。填完全部四個欄位後，還可以做整體評估！",
     c1aiScenario: "選擇情境：",
 
     // AI Freestyle PICO
