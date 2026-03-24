@@ -82,7 +82,7 @@ const T = {
     prismaFullText: "全文評估",
     prismaIncluded: "納入",
     prismaInMA: "納入統合分析",
-    prismaExclWithReason: "篇排除（含理由）",
+    prismaExclWithReason: "篇排除",
     prismaAuto: "自動",
     prismaYouEnter: "手動輸入",
     prismaDbFrom: "來自步驟 2 的資料庫：",
