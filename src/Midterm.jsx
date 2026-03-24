@@ -68,6 +68,26 @@ const T = {
     minStudies: "至少需要 3 篇納入研究才能繼續",
     studyCount: (n) => `已納入 ${n} 篇研究`,
     removeStudy: "移除",
+    // PRISMA
+    prismaTitle: "PRISMA 流程圖",
+    prismaDesc: "上方為你手動輸入的篩選數據，下方根據研究清單自動計算。",
+    prismaIdentification: "辨識",
+    prismaRecordsId: "檢索到的文獻數",
+    prismaDuplicates: "去重後",
+    prismaDupRemoved: "篇重複移除",
+    prismaScreening: "篩選",
+    prismaTitleAbstract: "題目/摘要篩選",
+    prismaScreenExcluded: "篇不相關排除",
+    prismaEligibility: "適格性",
+    prismaFullText: "全文評估",
+    prismaIncluded: "納入",
+    prismaInMA: "納入統合分析",
+    prismaExclWithReason: "篇排除（含理由）",
+    prismaAuto: "自動",
+    prismaYouEnter: "手動輸入",
+    prismaDbFrom: "來自步驟 2 的資料庫：",
+    prismaDownload: "下載 PNG",
+    prismaNoStudies: "新增研究後，流程圖底部會自動更新。",
     // Step 4
     outcomeType: "結局類型",
     binary: "二元 (Binary)",
@@ -158,6 +178,26 @@ const T = {
     minStudies: "At least 3 included studies required to proceed",
     studyCount: (n) => `${n} studies included`,
     removeStudy: "Remove",
+    // PRISMA
+    prismaTitle: "PRISMA flow diagram",
+    prismaDesc: "Screening numbers above are entered by you. Bottom section auto-updates from your study list.",
+    prismaIdentification: "Identification",
+    prismaRecordsId: "Records identified",
+    prismaDuplicates: "After deduplication",
+    prismaDupRemoved: "duplicates removed",
+    prismaScreening: "Screening",
+    prismaTitleAbstract: "Title/abstract screened",
+    prismaScreenExcluded: "irrelevant excluded",
+    prismaEligibility: "Eligibility",
+    prismaFullText: "Full-text assessed",
+    prismaIncluded: "Included",
+    prismaInMA: "Studies in meta-analysis",
+    prismaExclWithReason: "excluded (with reasons)",
+    prismaAuto: "auto",
+    prismaYouEnter: "you enter",
+    prismaDbFrom: "Databases from step 2:",
+    prismaDownload: "Download PNG",
+    prismaNoStudies: "Add studies below — the bottom of the chart will update automatically.",
     // Step 4
     outcomeType: "Outcome Type",
     binary: "Binary",
@@ -556,6 +596,264 @@ Start with "✅" or "⚠️". Be concise (4-6 sentences). No Markdown.`;
   );
 }
 
+// ═══ PRISMA FLOW CHART ═══
+function PrismaFlowChart({ project, setProject, lang }) {
+  const tx = T[lang];
+  const prismaRef = useRef(null);
+  const prisma = project.prisma || {};
+  const databases = project.search?.databases || [];
+  const studies = project.studies || [];
+  const includedCount = studies.filter(s => s.included).length;
+  const excludedStudies = studies.filter(s => !s.included);
+  const excludedCount = excludedStudies.length;
+  const totalStudies = studies.length;
+
+  // Group exclusion reasons
+  const reasonGroups = {};
+  excludedStudies.forEach(s => {
+    const reason = (s.excludeReason || (lang === "zh" ? "未註明" : "Not specified")).trim();
+    reasonGroups[reason] = (reasonGroups[reason] || 0) + 1;
+  });
+
+  const setPrisma = (field, val) => {
+    setProject(prev => ({ ...prev, prisma: { ...(prev.prisma || {}), [field]: val } }));
+  };
+
+  // Download as PNG
+  const downloadPNG = useCallback(() => {
+    const el = prismaRef.current;
+    if (!el) return;
+    const svgNS = "http://www.w3.org/2000/svg";
+    const pad = 24;
+    const w = el.offsetWidth;
+    const h = el.offsetHeight;
+
+    // Build a foreign-object SVG snapshot
+    const svg = document.createElementNS(svgNS, "svg");
+    svg.setAttribute("width", w + pad * 2);
+    svg.setAttribute("height", h + pad * 2);
+    svg.setAttribute("xmlns", svgNS);
+
+    const fo = document.createElementNS(svgNS, "foreignObject");
+    fo.setAttribute("x", pad);
+    fo.setAttribute("y", pad);
+    fo.setAttribute("width", w);
+    fo.setAttribute("height", h);
+
+    const clone = el.cloneNode(true);
+    clone.style.background = "#FFFFFF";
+    // Replace inputs with static text
+    clone.querySelectorAll("input").forEach(inp => {
+      const span = document.createElement("span");
+      span.textContent = inp.value || "—";
+      span.style.cssText = "font-size:14px;font-weight:600;color:#1D2B3A;font-family:'Noto Sans TC','Outfit',sans-serif;";
+      inp.replaceWith(span);
+    });
+    // Hide download button in export
+    clone.querySelectorAll("[data-no-export]").forEach(n => n.remove());
+
+    fo.appendChild(clone);
+    svg.appendChild(fo);
+
+    const svgStr = new XMLSerializer().serializeToString(svg);
+    const canvas = document.createElement("canvas");
+    const scale = 2;
+    canvas.width = (w + pad * 2) * scale;
+    canvas.height = (h + pad * 2) * scale;
+    const ctx = canvas.getContext("2d");
+    ctx.scale(scale, scale);
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const img = new Image();
+    img.onload = () => {
+      ctx.drawImage(img, 0, 0);
+      const a = document.createElement("a");
+      a.download = "PRISMA_flowchart.png";
+      a.href = canvas.toDataURL("image/png");
+      a.click();
+    };
+    img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgStr);
+  }, []);
+
+  // Shared styles
+  const boxBase = {
+    borderRadius: 10, padding: "10px 16px", textAlign: "center", position: "relative", width: "100%", maxWidth: 340,
+  };
+  const boxManual = { ...boxBase, background: CARD_BG, border: `1.5px dashed ${LIGHT_BORDER}` };
+  const boxAuto = { ...boxBase, background: `${GOLD}06`, border: `1px solid ${LIGHT_BORDER}` };
+  const stageLabel = (color, text) => (
+    <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.2, textTransform: "uppercase", color, marginBottom: 4 }}>{text}</div>
+  );
+  const tag = (type) => (
+    <span style={{
+      display: "inline-block", fontSize: 10, padding: "1px 6px", borderRadius: 4, marginLeft: 6, fontWeight: 600,
+      background: type === "auto" ? `${GREEN}14` : `${AMBER}14`,
+      color: type === "auto" ? GREEN : AMBER,
+    }}>{type === "auto" ? tx.prismaAuto : tx.prismaYouEnter}</span>
+  );
+  const arrowDown = (
+    <div style={{ display: "flex", justifyContent: "center" }}>
+      <div style={{ width: 1, height: 22, background: LIGHT_BORDER, position: "relative" }}>
+        <div style={{ position: "absolute", bottom: -4, left: -4, width: 0, height: 0, borderLeft: "5px solid transparent", borderRight: "5px solid transparent", borderTop: `5px solid ${LIGHT_BORDER}` }} />
+      </div>
+    </div>
+  );
+  const numInput = (field, autoPlaceholder) => (
+    <input
+      type="number"
+      value={prisma[field] || ""}
+      onChange={e => setPrisma(field, e.target.value)}
+      placeholder={autoPlaceholder || "?"}
+      style={{
+        border: `1px solid ${LIGHT_BORDER}`, borderRadius: 6, padding: "4px 8px",
+        fontSize: 14, fontWeight: 600, width: 72, textAlign: "center",
+        fontFamily: FONT, color: DARK, background: CARD_BG, outline: "none",
+      }}
+      onFocus={e => e.target.style.borderColor = GOLD}
+      onBlur={e => e.target.style.borderColor = LIGHT_BORDER}
+    />
+  );
+
+  return (
+    <div ref={prismaRef} style={{ marginBottom: 24 }}>
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+        <div style={{ fontSize: 15, fontWeight: 600, color: DARK }}>{tx.prismaTitle}</div>
+        <div style={{ display: "flex", gap: 6 }}>
+          <button data-no-export onClick={() => window.open("https://estech.shinyapps.io/prisma_flowdiagram/", "_blank")} style={{
+            padding: "5px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600,
+            fontFamily: FONT, cursor: "pointer", border: `1px solid ${LIGHT_BORDER}`,
+            background: CARD_BG, color: MUTED, display: "flex", alignItems: "center", gap: 4,
+          }}>{lang === "zh" ? "正式 PRISMA 產生器 ↗" : "Formal PRISMA generator ↗"}</button>
+          <button data-no-export onClick={downloadPNG} style={{
+            padding: "5px 14px", borderRadius: 8, fontSize: 12, fontWeight: 600,
+            fontFamily: FONT, cursor: "pointer", border: `1px solid ${LIGHT_BORDER}`,
+            background: CARD_BG, color: MUTED, display: "flex", alignItems: "center", gap: 4,
+          }}>⬇ {tx.prismaDownload}</button>
+        </div>
+      </div>
+      <p style={{ fontSize: 13, color: MUTED, lineHeight: 1.6, marginBottom: 12 }}>{tx.prismaDesc}</p>
+
+      {/* Database pills from Step 2 */}
+      {databases.length > 0 && (
+        <div style={{ marginBottom: 12 }}>
+          <span style={{ fontSize: 12, color: MUTED }}>{tx.prismaDbFrom}</span>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 4 }}>
+            {databases.map(db => (
+              <span key={db} style={{
+                fontSize: 11, padding: "2px 8px", borderRadius: 12,
+                background: `${GOLD}10`, color: GOLD, border: `0.5px solid ${GOLD}30`, fontWeight: 500,
+              }}>{db}</span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* The flowchart */}
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0, padding: 16, background: CARD_BG, borderRadius: 12, border: `1px solid ${LIGHT_BORDER}` }}>
+
+        {/* ─── IDENTIFICATION ─── */}
+        <div style={boxManual}>
+          {stageLabel(GOLD, tx.prismaIdentification)}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 13, color: MUTED }}>{tx.prismaRecordsId}:</span>
+            {numInput("recordsIdentified")}
+          </div>
+        </div>
+        {arrowDown}
+
+        {/* ─── DEDUPLICATION ─── */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, width: "100%" }}>
+          <div style={{ ...boxManual, maxWidth: 280 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, flexWrap: "wrap" }}>
+              <span style={{ fontSize: 13, color: MUTED }}>{tx.prismaDuplicates}:</span>
+              {numInput("afterDedup")}
+            </div>
+          </div>
+          <div style={{ width: 28, height: 1, background: LIGHT_BORDER, flexShrink: 0 }} />
+          <div style={{
+            border: `1px solid ${LIGHT_BORDER}`, borderRadius: 8, padding: "6px 10px",
+            fontSize: 12, color: MUTED, background: CARD_BG, textAlign: "center", minWidth: 100,
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 4, justifyContent: "center", flexWrap: "wrap" }}>
+              {numInput("duplicatesRemoved")}
+              <span>{tx.prismaDupRemoved}</span>
+            </div>
+          </div>
+        </div>
+        {arrowDown}
+
+        {/* ─── SCREENING ─── */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, width: "100%" }}>
+          <div style={{ ...boxManual, maxWidth: 280 }}>
+            {stageLabel("#7B68C8", tx.prismaScreening)}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, flexWrap: "wrap" }}>
+              <span style={{ fontSize: 13, color: MUTED }}>{tx.prismaTitleAbstract}:</span>
+              {numInput("titleAbstractScreened")}
+            </div>
+          </div>
+          <div style={{ width: 28, height: 1, background: LIGHT_BORDER, flexShrink: 0 }} />
+          <div style={{
+            border: `1px solid ${LIGHT_BORDER}`, borderRadius: 8, padding: "6px 10px",
+            fontSize: 12, color: MUTED, background: CARD_BG, textAlign: "center", minWidth: 100,
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 4, justifyContent: "center", flexWrap: "wrap" }}>
+              {numInput("titleAbstractExcluded")}
+              <span>{tx.prismaScreenExcluded}</span>
+            </div>
+          </div>
+        </div>
+        {arrowDown}
+
+        {/* ─── ELIGIBILITY (editable, auto-placeholder) ─── */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, width: "100%" }}>
+          <div style={{ ...boxAuto, maxWidth: 280 }}>
+            {stageLabel(GREEN, tx.prismaEligibility)}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, flexWrap: "wrap" }}>
+              <span style={{ fontSize: 13, color: MUTED }}>{tx.prismaFullText}:</span>
+              {numInput("fullTextAssessed", String(totalStudies || ""))}
+            </div>
+          </div>
+          <div style={{ width: 28, height: 1, background: LIGHT_BORDER, flexShrink: 0 }} />
+          <div style={{
+            border: `1px solid ${LIGHT_BORDER}`, borderRadius: 8, padding: "6px 10px",
+            fontSize: 12, color: MUTED, background: CARD_BG, textAlign: "left", minWidth: 100, maxWidth: 180,
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 4, justifyContent: "center", flexWrap: "wrap", marginBottom: excludedCount > 0 ? 4 : 0 }}>
+              {numInput("fullTextExcluded", String(excludedCount || ""))}
+              <span>{tx.prismaExclWithReason}</span>
+            </div>
+            {excludedCount > 0 && Object.entries(reasonGroups).map(([reason, count]) => (
+              <div key={reason} style={{ fontSize: 11, lineHeight: 1.4, color: MUTED }}>{reason} ({count})</div>
+            ))}
+          </div>
+        </div>
+        {arrowDown}
+
+        {/* ─── INCLUDED (editable, auto-placeholder) ─── */}
+        <div style={{ ...boxAuto, maxWidth: 340, borderColor: `${GREEN}50`, background: `${GREEN}06` }}>
+          {stageLabel("#0E7C86", tx.prismaIncluded)}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 13, color: MUTED }}>{tx.prismaInMA}:</span>
+            {numInput("includedInMA", String(includedCount || ""))}
+          </div>
+        </div>
+      </div>
+
+      {/* Hint if no studies yet */}
+      {studies.length === 0 && (
+        <div style={{ marginTop: 8, fontSize: 12, color: MUTED, textAlign: "center" }}>
+          💡 {tx.prismaNoStudies}
+        </div>
+      )}
+
+      {/* Divider before study list */}
+      <div style={{ borderTop: `1px solid ${LIGHT_BORDER}`, marginTop: 24, marginBottom: 0 }} />
+    </div>
+  );
+}
+
 // ═══ STEP 3: ADD STUDIES ═══
 function Step3Studies({ project, setProject, lang }) {
   const tx = T[lang];
@@ -588,6 +886,9 @@ function Step3Studies({ project, setProject, lang }) {
 
   return (
     <div>
+      {/* PRISMA Flow Diagram */}
+      <PrismaFlowChart project={project} setProject={setProject} lang={lang} />
+
       <Hint>
         {lang === "zh"
           ? "輸入你要納入統合分析的研究。至少需要 3 篇。在真實的系統性文獻回顧中，你會篩選數百篇——這裡只需要輸入最終納入的研究。"
@@ -1049,6 +1350,7 @@ export default function Midterm({ onNavigate, user, onLogin, onLogout }) {
       pico: { p: "", i: "", c: "", o: "" },
       search: { databases: [], booleanQuery: "", greyLiterature: "" },
       studies: [],
+      prisma: { recordsIdentified: "", duplicatesRemoved: "", afterDedup: "", titleAbstractScreened: "", titleAbstractExcluded: "", fullTextAssessed: "", fullTextExcluded: "", includedInMA: "" },
       _picoPass: false,
       _picoFeedback: null,
       _searchFeedback: null,
@@ -1065,6 +1367,7 @@ export default function Midterm({ onNavigate, user, onLogin, onLogout }) {
       ...prev,
       ...DEMO_PROJECT,
       search: { databases: ["PubMed", "Embase", "Cochrane CENTRAL"], booleanQuery: "(\"SGLT2 inhibitors\" OR dapagliflozin OR empagliflozin OR canagliflozin) AND (\"chronic kidney disease\" OR CKD OR \"renal outcome\" OR nephropathy) AND (\"randomized controlled trial\" OR RCT)", greyLiterature: "ClinicalTrials.gov, EMPA-KIDNEY supplementary appendix" },
+      prisma: { recordsIdentified: "2847", duplicatesRemoved: "924", afterDedup: "1923", titleAbstractScreened: "1923", titleAbstractExcluded: "1911", fullTextAssessed: "", fullTextExcluded: "", includedInMA: "" },
       _picoPass: false,
       _picoFeedback: null,
       _searchFeedback: null,
