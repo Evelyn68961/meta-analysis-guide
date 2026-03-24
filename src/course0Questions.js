@@ -25,7 +25,7 @@ export const course0Questions = [
   // ── Category 0: What & Why (Discovery) ──
   {
     id: "c0-WW01", category: 0,
-    zh: { q: "什麼是統合分析？", opts: ["一項收集患者新數據的研究", "一種統計方法，將同一主題的多項研究結果合併", "一種僅用文字總結研究結果的文獻綜述", "一項有很多參與者的大型臨床試驗"], exp: "統合分析使用統計技術將多項獨立研究的數值結果合併，產生一個總體估計值。與敘述性綜述不同，它使用數學——而不僅僅是文字——來綜合證據。" },
+    zh: { q: "什麼是統合分析？", opts: ["一項收集患者新數據的研究", "一種統計方法，將同一主題的多項研究結果合併", "一種僅用文字總結研究結果的文獻綜述", "一項有很多參與者的大型臨床試驗"], exp: "統合分析使用統計技術將多項獨立研究的數值結果合併，產生一個總體估計值。與系統性文獻回顧不同，它使用數學——而不僅僅是文字——來綜合證據。" },
     en: { q: "What is a meta-analysis?", opts: ["A study that collects new data from patients", "A statistical method that combines results from multiple studies on the same topic", "A type of literature review that summarizes study findings in words only", "A single large clinical trial with many participants"], exp: "A meta-analysis uses statistical techniques to combine numerical results from multiple independent studies, producing a single overall estimate. Unlike a narrative review, it uses math — not just words — to synthesize evidence." },
     correct: 1
   },
