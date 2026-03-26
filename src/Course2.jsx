@@ -307,7 +307,7 @@ function BooleanComboBuilder({ lang }) {
         { color: GOLD, terms: ["SGLT2 inhibitor", "dapagliflozin", "empagliflozin", "canagliflozin"] },
         { color: GREEN, terms: ["mortality", "hospitalization", "clinical outcome", "survival"] },
       ],
-      conceptsZh: ["疾病（心衰竭）", "介入（SGLT2i）", "結局"],
+      conceptsZh: ["疾病（心衰竭）", "介入（SGLT2i）", "結果"],
       conceptsEn: ["Disease (HF)", "Intervention (SGLT2i)", "Outcome"],
     },
     {
@@ -638,7 +638,7 @@ function PrismaFlowDiagram({ t, lang }) {
 // ═══ S5 UPGRADE: SCREENING DRILL ═══
 function ScreeningDrill({ lang }) {
   const pico = {
-    zh: "PICO：成人心衰竭患者 (P) 使用 SGLT2 抑制劑 (I) vs. 安慰劑 (C)，主要結局為心血管死亡或因心衰竭住院 (O)",
+    zh: "PICO：成人心衰竭患者 (P) 使用 SGLT2 抑制劑 (I) vs. 安慰劑 (C)，主要結果為心血管死亡或因心衰竭住院 (O)",
     en: "PICO: Adults with HF (P), SGLT2 inhibitors (I) vs. placebo (C), primary outcome: CV death or HF hospitalization (O)",
   };
 
@@ -647,7 +647,7 @@ function ScreeningDrill({ lang }) {
       id: 1,
       titleZh: "DAPA-HF: Dapagliflozin 在射出分率降低之心衰竭的療效",
       titleEn: "DAPA-HF: Dapagliflozin in Heart Failure with Reduced Ejection Fraction",
-      snippetZh: "隨機雙盲試驗，4744 名 HFrEF 患者，Dapagliflozin 10mg vs 安慰劑，主要結局為心血管死亡或心衰竭惡化。追蹤 18.2 個月。",
+      snippetZh: "隨機雙盲試驗，4744 名 HFrEF 患者，Dapagliflozin 10mg vs 安慰劑，主要結果為心血管死亡或心衰竭惡化。追蹤 18.2 個月。",
       snippetEn: "Randomized double-blind trial, 4744 HFrEF patients, Dapagliflozin 10mg vs placebo, primary outcome: CV death or worsening HF. Median follow-up 18.2 months.",
       answer: "include",
       expZh: "完全符合 PICO：HFrEF 患者、SGLT2i vs 安慰劑、心血管死亡/心衰住院。納入。",
@@ -677,7 +677,7 @@ function ScreeningDrill({ lang }) {
       id: 4,
       titleZh: "EMPEROR-Preserved: Empagliflozin 在射出分率保留之心衰竭",
       titleEn: "EMPEROR-Preserved: Empagliflozin in HF with Preserved Ejection Fraction",
-      snippetZh: "隨機雙盲試驗，5988 名 HFpEF 患者，Empagliflozin 10mg vs 安慰劑。主要結局為心血管死亡或因心衰竭住院的複合結局。",
+      snippetZh: "隨機雙盲試驗，5988 名 HFpEF 患者，Empagliflozin 10mg vs 安慰劑。主要結果為心血管死亡或因心衰竭住院的複合結果。",
       snippetEn: "Randomized double-blind trial, 5988 HFpEF patients, Empagliflozin 10mg vs placebo. Primary outcome: composite of CV death or HF hospitalization.",
       answer: "include",
       expZh: "符合 PICO：HFpEF 患者、SGLT2i vs 安慰劑、心血管死亡/心衰住院。納入。",
@@ -1249,7 +1249,7 @@ export default function Course2({ onNavigate, user, onLogin, onLogout }) {
               {
                 badZh: "搜尋策略中加入 Outcome 的搜尋詞", badEn: "Including Outcome terms in the search strategy",
                 goodZh: "只用 P 和 I（有時加 C）搜尋，在篩選階段再根據 O 判斷", goodEn: "Search with P and I (sometimes C) only; filter by O during screening",
-                expZh: "不同研究描述結局的方式差異極大。加入 O 可能意外排除相關研究。大多數搜尋策略指引建議只搜尋 P 和 I。",
+                expZh: "不同研究描述結果的方式差異極大。加入 O 可能意外排除相關研究。大多數搜尋策略指引建議只搜尋 P 和 I。",
                 expEn: "Outcome descriptions vary enormously across studies. Including O terms may miss relevant studies. Most guidelines recommend searching P and I only.",
               },
               {
