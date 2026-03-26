@@ -359,23 +359,30 @@ export default function DinoFoodRescue({ t, lang, user }) {
           {lang === "zh" ? "選一隻恐龍開始 ↓" : "Pick a dino to start ↓"}
         </p>
         <div style={{ display: "flex", justifyContent: "center", gap: 10, flexWrap: "wrap" }}>
-          {DINO_COLORS.map((c, i) => {
-            const unlocked = availableDinos.includes(i);
-            return (
-              <div key={i} onClick={() => unlocked && startGame(i)} style={{ cursor: unlocked ? "pointer" : "not-allowed", textAlign: "center", transition: "all 0.2s", padding: "8px 6px", borderRadius: 12, opacity: unlocked ? 1 : 0.5, position: "relative", filter: unlocked ? "none" : "grayscale(0.6)" }}
-                onMouseEnter={(e) => { if (unlocked) { e.currentTarget.style.transform = "translateY(-8px)"; e.currentTarget.style.background = `${c}10`; } }}
-                onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.background = "transparent"; }}>
-                <CuteDino color={c} size={56} index={i} />
-                {!unlocked && (
-                  <div style={{ position: "absolute", top: 2, right: 0, fontSize: 14, lineHeight: 1 }}>🔒</div>
-                )}
-                <div style={{ fontSize: 11, fontWeight: 600, color: unlocked ? c : MUTED, marginTop: 2 }}>
-                  {lang === "zh" ? DINO_NAMES_ZH[i] : DINO_NAMES_EN[i]}
-                </div>
-                <div style={{ fontSize: 16, marginTop: 2 }}>{DINO_FOOD[i].emoji}</div>
-              </div>
-            );
-          })}
+        {DINO_COLORS.map((c, i) => {
+          const unlocked = availableDinos.includes(i);
+          return (
+            <div key={i} onClick={() => unlocked && startGame(i)} style={{ cursor: unlocked ? "pointer" : "default", textAlign: "center", transition: "all 0.2s", padding: "8px 6px", borderRadius: 12 }}
+              onMouseEnter={(e) => { if (unlocked) { e.currentTarget.style.transform = "translateY(-8px)"; e.currentTarget.style.background = `${c}10`; } }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.background = "transparent"; }}>
+              {unlocked ? (
+                <>
+                  <CuteDino color={c} size={56} index={i} />
+                  <div style={{ fontSize: 11, fontWeight: 600, color: c, marginTop: 2 }}>
+                    {lang === "zh" ? DINO_NAMES_ZH[i] : DINO_NAMES_EN[i]}
+                  </div>
+                  <div style={{ fontSize: 16, marginTop: 2 }}>{DINO_FOOD[i].emoji}</div>
+                </>
+              ) : (
+                <>
+                  <div style={{ width: 56, height: 56, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, opacity: 0.4 }}>🔒</div>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: MUTED, marginTop: 2 }}>???</div>
+                  <div style={{ fontSize: 16, marginTop: 2, opacity: 0.3 }}>{DINO_FOOD[i].emoji}</div>
+                </>
+              )}
+            </div>
+          );
+        })}
         </div>
         {availableDinos.length < 7 && (
           <p style={{ fontSize: 12, color: MUTED, marginTop: 16 }}>
