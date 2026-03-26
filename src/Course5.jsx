@@ -132,25 +132,25 @@ function HeterogeneitySourceCards({ lang }) {
       key: "clinical", icon: "👥", color: BLUE,
       en: "Clinical Diversity", zh: "臨床異質性",
       descEn: "Different patient populations (age, severity), drug doses, treatment durations, or outcome definitions across studies.",
-      descZh: "不同研究的病人族群（年齡、嚴重度）、藥物劑量、治療時間或結局定義不同。",
-      exEn: "Study A: 10mg in elderly. Study B: 20mg in young adults.",
-      exZh: "研究 A：老年人用 10mg。研究 B：年輕人用 20mg。",
+      descZh: "不同研究的病人族群（年齡、嚴重度）、藥物劑量、治療時間或結果定義不同。",
+      exEn: "Study A: 10mg in elderly. \nStudy B: 20mg in young adults.",
+      exZh: "研究 A：老年人用 10mg。\n研究 B：年輕人用 20mg。",
     },
     {
       key: "method", icon: "🔬", color: "#7B68C8",
       en: "Methodological Diversity", zh: "方法學異質性",
       descEn: "Different study designs (RCT vs observational), blinding approaches, or risk of bias levels.",
-      descZh: "不同的研究設計（RCT vs 觀察性）、盲法方式或偏倚風險水平。",
-      exEn: "Study A: double-blind RCT. Study B: open-label observational.",
-      exZh: "研究 A：雙盲 RCT。研究 B：開放標籤觀察性研究。",
+      descZh: "不同的研究設計（臨床試驗 vs 觀察性研究）、盲法方式或偏倚風險水平。",
+      exEn: "Study A: double-blind RCT. \nStudy B: open-label observational.",
+      exZh: "研究 A: 雙盲 RCT。\n研究 B: 開放標籤觀察性研究。",
     },
     {
       key: "stat", icon: "📐", color: "#D4A843",
       en: "Statistical Diversity", zh: "統計異質性",
       descEn: "Different outcome measurements or time points. The quantified reflection (I², Q) of clinical and methodological differences.",
-      descZh: "不同的結局測量方式或時間點。是臨床和方法學差異在數據上的量化反映（I²、Q）。",
-      exEn: "Study A measures at 6 months. Study B at 12 months.",
-      exZh: "研究 A 在 6 個月測量。研究 B 在 12 個月測量。",
+      descZh: "不同的結果測量方式或時間點。是臨床和方法學差異在數據上的量化反映（I²、Q）。",
+      exEn: "Study A measures at 6 months. \nStudy B at 12 months.",
+      exZh: "研究 A 在 6 個月測量。\n研究 B 在 12 個月測量。",
     },
     {
       key: "unknown", icon: "❓", color: MUTED,
@@ -179,7 +179,7 @@ function HeterogeneitySourceCards({ lang }) {
             {isActive && (
               <div style={{ animation: "fadeInCard 0.3s ease-out" }}>
                 <p style={{ fontSize: 13, color: MUTED, lineHeight: 1.6, marginBottom: 8 }}>{lang === "zh" ? c.descZh : c.descEn}</p>
-                <div style={{ fontSize: 12, color: c.color, background: `${c.color}0D`, borderRadius: 8, padding: "6px 10px" }}>
+                <div style={{ fontSize: 12, color: c.color, background: `${c.color}0D`, borderRadius: 8, padding: "6px 10px", whiteSpace: "pre-line" }}>
                   {lang === "zh" ? c.exZh : c.exEn}
                 </div>
               </div>
@@ -381,7 +381,7 @@ function FunnelPlotDemo({ lang }) {
             ? "✅ 漏斗圖對稱：小型研究的效應量均勻分布在合併估計兩側。沒有明顯的發表偏倚跡象。"
             : "✅ Symmetric funnel: small studies spread evenly around the pooled estimate. No obvious signs of publication bias.")
           : (lang === "zh"
-            ? "⚠ 漏斗圖不對稱：左下角（小型、效應小的研究）缺失。這些研究可能存在但未被發表——「抽屜問題」！"
+            ? "⚠ 漏斗圖不對稱：左下角（小型、效應小的研究）缺失。這些研究可能已完成卻未被發表，被鎖在研究者的抽屜裡！"
             : "⚠ Asymmetric funnel: bottom-left corner (small studies with small effects) is missing. These studies may exist but remain unpublished — the 'file drawer problem'!")}
       </div>
     </div>
@@ -395,11 +395,11 @@ function PrismaHighlights({ lang }) {
 
   const items = [
     { key: "protocol", icon: "📝", en: "Register your protocol", zh: "註冊你的研究方案",
-      descEn: "Register on PROSPERO before starting. Lets readers verify you followed the original plan.", descZh: "在開始前於 PROSPERO 註冊。讓讀者能驗證你是否按照原計畫執行。" },
+      descEn: "Register on PROSPERO before starting. Lets readers verify you followed the original plan.", descZh: "在研究開始前於 PROSPERO 註冊。讓讀者能驗證你是否按照原計畫執行。" },
     { key: "search", icon: "🔍", en: "Document complete search strategy", zh: "記錄完整搜尋策略",
       descEn: "Report all databases searched, exact search strings, and dates. Others should be able to reproduce your search.", descZh: "報告所有搜尋的資料庫、精確搜尋字串和日期。他人應能重複你的搜尋。" },
     { key: "flow", icon: "📊", en: "PRISMA flow diagram", zh: "PRISMA 流程圖",
-      descEn: "Show screening steps: identified → screened → eligible → included, with exclusion reasons.", descZh: "展示篩選步驟：發現 → 篩選 → 合格 → 納入，含排除原因。" },
+      descEn: "Show screening steps: identified → screened → eligible → included, with exclusion reasons.", descZh: "展示篩選步驟：發現 → 篩選 → 合格 → 納入，記錄排除原因。" },
     { key: "rob", icon: "🚦", en: "Risk of bias assessment", zh: "偏倚風險評估",
       descEn: "Report RoB for each study and discuss how it affects confidence in results.", descZh: "報告每項研究的 RoB，並討論其如何影響結果的可信度。" },
     { key: "all", icon: "📄", en: "Report ALL results", zh: "報告所有結果",
