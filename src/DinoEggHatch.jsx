@@ -69,7 +69,7 @@ export default function DinoEggHatch({ t, lang, onNext, user }) {
     if (!user) return;
     const fetchAvailable = async () => {
       const { data } = await supabase.from("progress").select("dino_index").eq("user_id", user.id).eq("course", 0).eq("result", "collected");
-      if (data && data.length > 0) setAvailableDinos([...new Set(data.map(r => r.dino_index))]);
+      if (data) setAvailableDinos([...new Set(data.map(r => r.dino_index))]);
     };
     fetchAvailable();
   }, [user]);
@@ -164,13 +164,20 @@ export default function DinoEggHatch({ t, lang, onNext, user }) {
         <p style={{ fontSize: 15, color: MUTED, marginBottom: 12, maxWidth: 560, margin: "0 auto 12px" }}>{t("c1gameDesc")}</p>
         <p style={{ fontSize: 14, color: TEAL, fontWeight: 600, marginBottom: 28 }}>{lang === "zh" ? "選擇一顆龍蛋開始孵化！" : "Pick a dragon egg to hatch!"}</p>
         <div style={{ display: "flex", justifyContent: "center", gap: 16, flexWrap: "wrap", marginBottom: 12 }}>
-          {DINO_COLORS.map((c, i) => (
-            <div key={i} onClick={() => availableDinos.includes(i) && pickEgg(i)} style={{ cursor: availableDinos.includes(i) ? "pointer" : "not-allowed", textAlign: "center", transition: "transform 0.2s", opacity: availableDinos.includes(i) ? 1 : 0.25 }}
-              onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-6px)"}
-              onMouseLeave={(e) => e.currentTarget.style.transform = "translateY(0)"}>
-              <DragonEgg color={c} size={64} state="idle" delay={i * 0.3} />
-            </div>
-          ))}
+          {DINO_COLORS.map((c, i) => {
+            const unlocked = availableDinos.includes(i);
+            return (
+              <div key={i} onClick={() => unlocked && pickEgg(i)} style={{ cursor: unlocked ? "pointer" : "default", textAlign: "center", transition: "transform 0.2s" }}
+                onMouseEnter={(e) => { if (unlocked) e.currentTarget.style.transform = "translateY(-6px)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}>
+                {unlocked ? (
+                  <DragonEgg color={c} size={64} state="idle" delay={i * 0.3} />
+                ) : (
+                  <div style={{ width: 49, height: 64, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, opacity: 0.4 }}>🔒</div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     );

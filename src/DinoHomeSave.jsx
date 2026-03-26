@@ -216,7 +216,7 @@ export default function DinoHomeSave({ t, lang, user }) {
     if (!user) return;
     const fetchAvailable = async () => {
       const { data } = await supabase.from("progress").select("dino_index").eq("user_id", user.id).eq("course", 2).eq("result", "rescued");
-      if (data && data.length > 0) setAvailableDinos([...new Set(data.map(r => r.dino_index))]);
+      if (data) setAvailableDinos([...new Set(data.map(r => r.dino_index))]);
     };
     fetchAvailable();
   }, [user]);
@@ -392,16 +392,28 @@ export default function DinoHomeSave({ t, lang, user }) {
           {lang === "zh" ? "選一隻恐龍開始 ↓" : "Pick a dino to start ↓"}
         </p>
         <div style={{ display: "flex", justifyContent: "center", gap: 10, flexWrap: "wrap" }}>
-          {DINO_COLORS.map((c, i) => (
-            <div key={i} onClick={() => availableDinos.includes(i) && startGame(i)} style={{ cursor: availableDinos.includes(i) ? "pointer" : "not-allowed", textAlign: "center", transition: "all 0.2s", padding: "8px 6px", borderRadius: 12, opacity: availableDinos.includes(i) ? 1 : 0.25 }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-8px)"; e.currentTarget.style.background = `${c}10`; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.background = "transparent"; }}>
-              <CuteDino color={c} size={56} index={i} />
-              <div style={{ fontSize: 11, fontWeight: 600, color: c, marginTop: 2 }}>
-                {lang === "zh" ? DINO_NAMES_ZH[i] : DINO_NAMES_EN[i]}
+          {DINO_COLORS.map((c, i) => {
+            const unlocked = availableDinos.includes(i);
+            return (
+              <div key={i} onClick={() => unlocked && startGame(i)} style={{ cursor: unlocked ? "pointer" : "default", textAlign: "center", transition: "all 0.2s", padding: "8px 6px", borderRadius: 12 }}
+                onMouseEnter={(e) => { if (unlocked) { e.currentTarget.style.transform = "translateY(-8px)"; e.currentTarget.style.background = `${c}10`; } }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.background = "transparent"; }}>
+                {unlocked ? (
+                  <>
+                    <CuteDino color={c} size={56} index={i} />
+                    <div style={{ fontSize: 11, fontWeight: 600, color: c, marginTop: 2 }}>
+                      {lang === "zh" ? DINO_NAMES_ZH[i] : DINO_NAMES_EN[i]}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ width: 56, height: 56, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, opacity: 0.4 }}>🔒</div>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: MUTED, marginTop: 2 }}>???</div>
+                  </>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     );

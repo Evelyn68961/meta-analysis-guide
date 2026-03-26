@@ -307,7 +307,7 @@ export default function DinoKeyQuest({ lang: langProp, user }) {
     if (!user) return;
     const fetchAvailable = async () => {
       const { data } = await supabase.from("progress").select("dino_index").eq("user_id", user.id).eq("course", 3).eq("result", "saved");
-      if (data && data.length > 0) setAvailableDinos([...new Set(data.map(r => r.dino_index))]);
+      if (data) setAvailableDinos([...new Set(data.map(r => r.dino_index))]);
     };
     fetchAvailable();
   }, [user]);
@@ -372,18 +372,29 @@ export default function DinoKeyQuest({ lang: langProp, user }) {
             {lang==="zh"?"選擇你的恐龍夥伴：":"Choose your dino companion:"}
           </p>
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(110px, 1fr))", gap:14, maxWidth:600, margin:"0 auto" }}>
-            {DINO_NAMES_EN.map((_,i) => (
-              <button key={i} onClick={()=> availableDinos.includes(i) && startGame(i)} disabled={!availableDinos.includes(i)} style={{
-                background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.12)",
-                borderRadius:14, padding:"18px 10px", cursor: availableDinos.includes(i) ? "pointer" : "not-allowed",
-                display:"flex", flexDirection:"column", alignItems:"center", gap:8, transition:"all 0.2s",
-                opacity: availableDinos.includes(i) ? 1 : 0.25,
-              }} onMouseEnter={e=>{e.currentTarget.style.background="rgba(46,134,193,0.2)";e.currentTarget.style.borderColor=BLUE;}}
-                 onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.06)";e.currentTarget.style.borderColor="rgba(255,255,255,0.12)";}}>
-                <div style={{ transform:"scale(0.7)", transformOrigin:"center" }}><CuteDino index={i} size={80} color={DINO_COLORS[i]}/></div>
-                <span style={{ color:"#CCC", fontSize:13, fontFamily:FONT, fontWeight:600 }}>{lang==="zh"?DINO_NAMES_ZH[i]:DINO_NAMES_EN[i]}</span>
-              </button>
-            ))}
+            {DINO_NAMES_EN.map((_,i) => {
+              const unlocked = availableDinos.includes(i);
+              return (
+                <button key={i} onClick={()=> unlocked && startGame(i)} disabled={!unlocked} style={{
+                  background:"rgba(255,255,255,0.06)", border:"1px solid rgba(255,255,255,0.12)",
+                  borderRadius:14, padding:"18px 10px", cursor: unlocked ? "pointer" : "default",
+                  display:"flex", flexDirection:"column", alignItems:"center", gap:8, transition:"all 0.2s",
+                }} onMouseEnter={e=>{ if (unlocked) { e.currentTarget.style.background="rgba(46,134,193,0.2)"; e.currentTarget.style.borderColor=BLUE; } }}
+                   onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,0.06)";e.currentTarget.style.borderColor="rgba(255,255,255,0.12)";}}>
+                  {unlocked ? (
+                    <>
+                      <div style={{ transform:"scale(0.7)", transformOrigin:"center" }}><CuteDino index={i} size={80} color={DINO_COLORS[i]}/></div>
+                      <span style={{ color:"#CCC", fontSize:13, fontFamily:FONT, fontWeight:600 }}>{lang==="zh"?DINO_NAMES_ZH[i]:DINO_NAMES_EN[i]}</span>
+                    </>
+                  ) : (
+                    <>
+                      <div style={{ width: 56, height: 56, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, opacity: 0.4 }}>🔒</div>
+                      <span style={{ color:"#666", fontSize:13, fontFamily:FONT, fontWeight:600 }}>???</span>
+                    </>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
       </CaveBackground>

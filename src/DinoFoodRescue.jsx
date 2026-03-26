@@ -214,7 +214,7 @@ export default function DinoFoodRescue({ t, lang, user }) {
     if (!user) return;
     const fetchAvailable = async () => {
       const { data } = await supabase.from("progress").select("dino_index").eq("user_id", user.id).eq("course", 1).eq("result", "hatched");
-      if (data && data.length > 0) setAvailableDinos([...new Set(data.map(r => r.dino_index))]);
+      if (data) setAvailableDinos([...new Set(data.map(r => r.dino_index))]);
     };
     fetchAvailable();
   }, [user]);
