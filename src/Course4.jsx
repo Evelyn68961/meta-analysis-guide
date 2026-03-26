@@ -65,7 +65,7 @@ function EffectSizeCards({ lang }) {
       en: "Odds Ratio (OR)", zh: "勝算比 (OR)",
       tagEn: "Binary outcomes", tagZh: "二分類結果",
       descEn: <>Compares the odds of an event between groups.<br />Used in case-control studies and RCTs with binary outcomes.</>,
-      descZh: <>比較兩組事件發生的「勝算」。<br />適用於病例對照研究及二分類結局的 RCT。</>,
+      descZh: <>比較兩組事件發生的「勝算」。<br />適用於病例對照研究及二分類結果的 RCT。</>,
       formulaEn: <>(events_A ÷ non-events_A)÷ (events_B ÷ non-events_B)</>,
       formulaZh: <>(A組事件數 ÷ A組非事件數)÷ (B組事件數 ÷ B組非事件數)</>,
       exEn: <>New antibiotic: <br />{" "}15/100 infection vs 30/100 control → OR ≈ 0.42</>,
@@ -174,7 +174,7 @@ function WeightingDemo({ lang }) {
   return (
     <div style={{ background: CARD_BG, borderRadius: 20, border: `1px solid ${LIGHT_BORDER}`, padding: "28px 20px", boxShadow: "0 2px 20px rgba(0,0,0,0.04)" }}>
       <h3 style={{ fontSize: 18, fontWeight: 600, color: DARK, marginBottom: 6, textAlign: "center" }}>
-        {lang === "zh" ? "⚖ 反變異數加權示範" : "⚖ Inverse-Variance Weighting Demo"}
+        {lang === "zh" ? "⚖ 反變異數加權 (Inverse-Variance Weighting) 示範" : "⚖ Inverse-Variance Weighting Demo"}
       </h3>
       <p style={{ fontSize: 13, color: MUTED, textAlign: "center", marginBottom: 20 }}>
         {lang === "zh" ? "看看加權如何改變合併結果" : "See how weighting changes the pooled result"}
