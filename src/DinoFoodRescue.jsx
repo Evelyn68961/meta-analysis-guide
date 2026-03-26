@@ -359,18 +359,29 @@ export default function DinoFoodRescue({ t, lang, user }) {
           {lang === "zh" ? "選一隻恐龍開始 ↓" : "Pick a dino to start ↓"}
         </p>
         <div style={{ display: "flex", justifyContent: "center", gap: 10, flexWrap: "wrap" }}>
-          {DINO_COLORS.map((c, i) => (
-            <div key={i} onClick={() => availableDinos.includes(i) && startGame(i)} style={{ cursor: availableDinos.includes(i) ? "pointer" : "not-allowed", textAlign: "center", transition: "all 0.2s", padding: "8px 6px", borderRadius: 12, opacity: availableDinos.includes(i) ? 1 : 0.25 }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-8px)"; e.currentTarget.style.background = `${c}10`; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.background = "transparent"; }}>
-              <CuteDino color={c} size={56} index={i} />
-              <div style={{ fontSize: 11, fontWeight: 600, color: c, marginTop: 2 }}>
-                {lang === "zh" ? DINO_NAMES_ZH[i] : DINO_NAMES_EN[i]}
+          {DINO_COLORS.map((c, i) => {
+            const unlocked = availableDinos.includes(i);
+            return (
+              <div key={i} onClick={() => unlocked && startGame(i)} style={{ cursor: unlocked ? "pointer" : "not-allowed", textAlign: "center", transition: "all 0.2s", padding: "8px 6px", borderRadius: 12, opacity: unlocked ? 1 : 0.5, position: "relative", filter: unlocked ? "none" : "grayscale(0.6)" }}
+                onMouseEnter={(e) => { if (unlocked) { e.currentTarget.style.transform = "translateY(-8px)"; e.currentTarget.style.background = `${c}10`; } }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.background = "transparent"; }}>
+                <CuteDino color={c} size={56} index={i} />
+                {!unlocked && (
+                  <div style={{ position: "absolute", top: 2, right: 0, fontSize: 14, lineHeight: 1 }}>🔒</div>
+                )}
+                <div style={{ fontSize: 11, fontWeight: 600, color: unlocked ? c : MUTED, marginTop: 2 }}>
+                  {lang === "zh" ? DINO_NAMES_ZH[i] : DINO_NAMES_EN[i]}
+                </div>
+                <div style={{ fontSize: 16, marginTop: 2 }}>{DINO_FOOD[i].emoji}</div>
               </div>
-              <div style={{ fontSize: 16, marginTop: 2 }}>{DINO_FOOD[i].emoji}</div>
-            </div>
-          ))}
+            );
+          })}
         </div>
+        {availableDinos.length < 7 && (
+          <p style={{ fontSize: 12, color: MUTED, marginTop: 16 }}>
+            {lang === "zh" ? "🔒 先在課程一孵化恐龍來解鎖更多夥伴" : "🔒 Hatch dinos in Course 1 to unlock more companions"}
+          </p>
+        )}
       </div>
     );
   }
