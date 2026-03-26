@@ -64,7 +64,7 @@ function ExtractionTableDemo({ lang }) {
     { key: "pop", en: "Population (n)", zh: "族群 (n)", icon: "👥", example: { en: "T2DM adults, n=450", zh: "第二型糖尿病成人，n=450" }, desc: { en: "Who was studied and how many participants", zh: "研究對象及參與者人數" } },
     { key: "intervention", en: "Intervention", zh: "介入措施", icon: "💊", example: { en: "Metformin 1000mg BID × 24wk", zh: "Metformin 1000mg 每日兩次 × 24週" }, desc: { en: "Treatment details: drug, dose, frequency, duration", zh: "治療細節：藥物、劑量、頻率、時間" } },
     { key: "comparator", en: "Comparator", zh: "對照", icon: "⚖", example: { en: "Placebo BID × 24wk", zh: "安慰劑 每日兩次 × 24週" }, desc: { en: "What the intervention was compared against", zh: "介入措施與什麼做比較" } },
-    { key: "outcome", en: "Outcome", zh: "結局指標", icon: "📊", example: { en: "HbA1c change at 24wk", zh: "24週 HbA1c 變化" }, desc: { en: "What was measured and at what time point", zh: "測量了什麼及在何時" } },
+    { key: "outcome", en: "Outcome", zh: "結果指標", icon: "📊", example: { en: "HbA1c change at 24wk", zh: "24週 HbA1c 變化" }, desc: { en: "What was measured and at what time point", zh: "測量了什麼及在何時" } },
     { key: "results", en: "Results", zh: "結果數據", icon: "🔢", example: { en: "Tx: −1.2 (SD 0.8), Ctrl: −0.3 (SD 0.7)", zh: "治療: −1.2 (SD 0.8), 對照: −0.3 (SD 0.7)" }, desc: { en: "Raw numbers: events/totals or mean/SD/n per group", zh: "原始數據：事件數/總數 或 均值/SD/n" } },
     { key: "notes", en: "Notes", zh: "備註", icon: "📋", example: { en: "Industry-funded, ITT analysis", zh: "產業贊助，ITT 分析" }, desc: { en: "Funding, limitations, special considerations", zh: "資金來源、限制、特殊考量" } },
   ];
@@ -72,7 +72,7 @@ function ExtractionTableDemo({ lang }) {
   return (
     <div style={{ background: CARD_BG, borderRadius: 20, border: `1px solid ${LIGHT_BORDER}`, padding: "28px 20px", boxShadow: "0 2px 20px rgba(0,0,0,0.04)" }}>
       <h3 style={{ fontSize: 18, fontWeight: 600, color: DARK, marginBottom: 8, textAlign: "center" }}>
-        {lang === "zh" ? "📋 標準化數據萃取表格" : "📋 Standardized Data Extraction Form"}
+        {lang === "zh" ? "📋 標準化數據擷取表格" : "📋 Standardized Data Extraction Form"}
       </h3>
       <p style={{ fontSize: 13, color: MUTED, textAlign: "center", marginBottom: 20 }}>
         {lang === "zh" ? "點擊每個欄位，看看該填什麼" : "Click each column to see what goes in it"}
@@ -140,7 +140,7 @@ function OutcomeTracksDemo({ lang }) {
           }}>
           <div style={{ fontSize: 24, marginBottom: 8 }}>📊</div>
           <h4 style={{ fontSize: 14, fontWeight: 700, color: activeTrack === "dich" ? "#2A7A5A" : DARK, marginBottom: 6 }}>
-            {lang === "zh" ? "二分類結局" : "Dichotomous"}
+            {lang === "zh" ? "二分類結果" : "Dichotomous"}
           </h4>
           <p style={{ fontSize: 12, color: MUTED, lineHeight: 1.5 }}>
             {lang === "zh" ? "是/否、死亡/存活" : "Yes/No, Death/Survival"}
@@ -155,7 +155,7 @@ function OutcomeTracksDemo({ lang }) {
           }}>
           <div style={{ fontSize: 24, marginBottom: 8 }}>📈</div>
           <h4 style={{ fontSize: 14, fontWeight: 700, color: activeTrack === "cont" ? "#9A7B2E" : DARK, marginBottom: 6 }}>
-            {lang === "zh" ? "連續性結局" : "Continuous"}
+            {lang === "zh" ? "連續性結果" : "Continuous"}
           </h4>
           <p style={{ fontSize: 12, color: MUTED, lineHeight: 1.5 }}>
             {lang === "zh" ? "均值、分數、測量值" : "Means, scores, measurements"}
@@ -167,7 +167,7 @@ function OutcomeTracksDemo({ lang }) {
       {activeTrack === "dich" && (
         <div style={{ background: "#E6F5F0", borderRadius: 12, padding: "16px 18px", border: "1px solid #3DA87A22", animation: "fadeInTrack 0.3s ease-out" }}>
           <h4 style={{ fontSize: 14, fontWeight: 600, color: "#2A7A5A", marginBottom: 10 }}>
-            {lang === "zh" ? "需要萃取的數據" : "What to Extract"}
+            {lang === "zh" ? "需要擷取的數據" : "What to Extract"}
           </h4>
           <div style={{ background: "white", borderRadius: 8, padding: 14, marginBottom: 10 }}>
             <div style={{ fontFamily: "monospace", fontSize: 14, color: DARK, lineHeight: 1.8 }}>
@@ -183,7 +183,7 @@ function OutcomeTracksDemo({ lang }) {
       {activeTrack === "cont" && (
         <div style={{ background: "#FFF8EE", borderRadius: 12, padding: "16px 18px", border: `1px solid ${GOLD}22`, animation: "fadeInTrack 0.3s ease-out" }}>
           <h4 style={{ fontSize: 14, fontWeight: 600, color: "#9A7B2E", marginBottom: 10 }}>
-            {lang === "zh" ? "需要萃取的數據" : "What to Extract"}
+            {lang === "zh" ? "需要擷取的數據" : "What to Extract"}
           </h4>
           <div style={{ background: "white", borderRadius: 8, padding: 14, marginBottom: 10 }}>
             <div style={{ fontFamily: "monospace", fontSize: 14, color: DARK, lineHeight: 1.8 }}>
@@ -211,8 +211,8 @@ function ExtractionDrill({ lang }) {
   const studies = [
     {
       id: "dich",
-      typeZh: "二分類結局", typeEn: "Dichotomous Outcome",
-      scenarioZh: "一項 RCT 比較 Dapagliflozin vs 安慰劑在心衰竭患者的療效。結果報告：主要結局（心血管死亡或因心衰住院）發生在治療組 386/2373 人 (16.3%) 和安慰劑組 502/2371 人 (21.2%)，HR 0.74 (95% CI 0.65–0.85, p<0.001)。追蹤 18.2 個月。",
+      typeZh: "二分類結果", typeEn: "Dichotomous Outcome",
+      scenarioZh: "一項 RCT 比較 Dapagliflozin vs 安慰劑在心衰竭患者的療效。結果報告：主要結果（心血管死亡或因心衰住院）發生在治療組 386/2373 人 (16.3%) 和安慰劑組 502/2371 人 (21.2%)，HR 0.74 (95% CI 0.65–0.85, p<0.001)。追蹤 18.2 個月。",
       scenarioEn: "An RCT compared Dapagliflozin vs placebo in HF patients. Results: Primary outcome (CV death or HF hospitalization) occurred in 386/2373 (16.3%) treatment vs 502/2371 (21.2%) placebo, HR 0.74 (95% CI 0.65–0.85, p<0.001). Median follow-up 18.2 months.",
       options: [
         { zh: "HR 0.74, p<0.001", en: "HR 0.74, p<0.001", correct: false, expZh: "HR 和 p 值不夠——缺少原始事件數和樣本量。", expEn: "HR and p-value aren't enough — missing raw event counts and sample sizes." },
@@ -223,12 +223,12 @@ function ExtractionDrill({ lang }) {
     },
     {
       id: "cont",
-      typeZh: "連續性結局", typeEn: "Continuous Outcome",
+      typeZh: "連續性結果", typeEn: "Continuous Outcome",
       scenarioZh: "一項 RCT 比較 Metformin vs 安慰劑對 HbA1c 的影響。24 週後，Metformin 組 (n=225) 的 HbA1c 變化為 −1.2% (SD 0.8)，安慰劑組 (n=225) 為 −0.3% (SD 0.7)。組間差異 −0.9% (95% CI −1.05 to −0.75, p<0.001)。",
       scenarioEn: "An RCT compared Metformin vs placebo on HbA1c. At 24 weeks, Metformin group (n=225): HbA1c change −1.2% (SD 0.8); placebo (n=225): −0.3% (SD 0.7). Between-group difference −0.9% (95% CI −1.05 to −0.75, p<0.001).",
       options: [
         { zh: "組間差異 −0.9%, p<0.001", en: "Between-group difference −0.9%, p<0.001", correct: false, expZh: "組間差異可用但不理想——統合分析軟體需要每組的 mean、SD、n 來計算加權。", expEn: "Between-group difference can work but isn't ideal — software needs per-group mean, SD, n for proper weighting." },
-        { zh: "Metformin: mean −1.2, SD 0.8, n=225; Placebo: mean −0.3, SD 0.7, n=225", en: "Metformin: mean −1.2, SD 0.8, n=225; Placebo: mean −0.3, SD 0.7, n=225", correct: true, expZh: "正確！每組的均值、標準差、樣本量是連續性結局統合分析的標準輸入。", expEn: "Correct! Per-group mean, SD, and n is the standard input for continuous outcome meta-analysis." },
+        { zh: "Metformin: mean −1.2, SD 0.8, n=225; Placebo: mean −0.3, SD 0.7, n=225", en: "Metformin: mean −1.2, SD 0.8, n=225; Placebo: mean −0.3, SD 0.7, n=225", correct: true, expZh: "正確！每組的均值、標準差、樣本量是連續性結果統合分析的標準輸入。", expEn: "Correct! Per-group mean, SD, and n is the standard input for continuous outcome meta-analysis." },
         { zh: "HbA1c 下降了 1.2% vs 0.3%", en: "HbA1c dropped 1.2% vs 0.3%", correct: false, expZh: "缺少標準差和樣本量——沒有 SD 就無法計算精確度和權重。", expEn: "Missing SD and sample sizes — without SD, precision and weights can't be calculated." },
         { zh: "95% CI −1.05 to −0.75", en: "95% CI −1.05 to −0.75", correct: false, expZh: "CI 只描述組間差異的精確度，但缺少每組的獨立數據。", expEn: "CI describes precision of the between-group difference but lacks independent per-group data." },
       ],
@@ -249,7 +249,7 @@ function ExtractionDrill({ lang }) {
   return (
     <div style={{ background: CARD_BG, borderRadius: 20, border: `1px solid ${LIGHT_BORDER}`, padding: "28px 22px", boxShadow: "0 2px 20px rgba(0,0,0,0.04)", marginTop: 24 }}>
       <h3 style={{ fontSize: 18, fontWeight: 600, color: DARK, marginBottom: 6, textAlign: "center" }}>
-        {lang === "zh" ? "萃取練習：你會選哪些數字？" : "Extraction Drill: Which Numbers Would You Extract?"}
+        {lang === "zh" ? "擷取練習：你會選哪些數字？" : "Extraction Drill: Which Numbers Would You Extract?"}
       </h3>
       <p style={{ fontSize: 14, color: MUTED, textAlign: "center", marginBottom: 20 }}>
         {lang === "zh" ? "閱讀研究結果，選出最適合統合分析的數據" : "Read the study results and pick the best data for meta-analysis"}
@@ -323,18 +323,18 @@ function RateThisStudy({ lang }) {
     { key: "random", zh: "隨機化過程", en: "Randomization", icon: "🎲",
       infoZh: "隨機序列由電腦生成，但分配隱藏方式未描述。", infoEn: "Random sequence generated by computer, but allocation concealment not described.",
       correct: 1, expZh: "電腦隨機化良好，但分配隱藏不清楚引起疑慮。", expEn: "Computer randomization is good, but unclear allocation concealment raises concerns." },
-    { key: "deviate", zh: "偏離預設干預", en: "Deviations from Intervention", icon: "↔",
-      infoZh: "雙盲設計，患者和研究者都不知道分組。脫落率兩組相似（5% vs 6%）。", infoEn: "Double-blind design. Patients and investigators blinded. Dropout similar (5% vs 6%).",
-      correct: 0, expZh: "雙盲且脫落率平衡——低偏倚風險。", expEn: "Double-blind with balanced dropout — low risk of bias." },
-    { key: "missing", zh: "遺失結局數據", en: "Missing Outcome Data", icon: "❓",
-      infoZh: "完成率 89%。使用完成者分析（completer analysis），未進行 ITT 分析。", infoEn: "89% completion rate. Used completer analysis, no ITT analysis performed.",
-      correct: 2, expZh: "11% 遺失且未用 ITT 分析——高風險。脫落的人可能結局不同。", expEn: "11% missing without ITT — high risk. Dropouts may have had different outcomes." },
-    { key: "measure", zh: "結局測量", en: "Outcome Measurement", icon: "📏",
-      infoZh: "主要結局為實驗室檢驗值（HbA1c），由中央實驗室統一分析。", infoEn: "Primary outcome was lab value (HbA1c), analyzed by a central laboratory.",
+    { key: "deviate", zh: "偏離預期介入措施 ", en: "Deviations from Intervention", icon: "↔",
+      infoZh: "雙盲設計，患者和研究者都不知道分組。退出率兩組相似（5% vs 6%）。", infoEn: "Double-blind design. Patients and investigators blinded. Dropout similar (5% vs 6%).",
+      correct: 0, expZh: "雙盲且退出率平衡——低偏倚風險。", expEn: "Double-blind with balanced dropout — low risk of bias." },
+    { key: "missing", zh: "缺失結果數據", en: "Missing Outcome Data", icon: "❓",
+      infoZh: "研究完成率為 89%，僅分析完成試驗的受試者（completer analysis），未採用意向治療分析（ITT）。", infoEn: "89% completion rate. Used completer analysis, no ITT analysis performed.",
+      correct: 2, expZh: "11% 的資料缺失且未採用 ITT 分析——屬高風險。未完成試驗的受試者，結果可能與完成者不同。", expEn: "11% missing without ITT — high risk. Dropouts may have had different outcomes." },
+    { key: "measure", zh: "結果測量", en: "Outcome Measurement", icon: "📏",
+      infoZh: "主要結果為實驗室檢驗值（HbA1c），由中央實驗室統一分析。", infoEn: "Primary outcome was lab value (HbA1c), analyzed by a central laboratory.",
       correct: 0, expZh: "客觀指標由中央實驗室測量——低偏倚風險。", expEn: "Objective measure from central lab — low risk of bias." },
     { key: "select", zh: "選擇性報告", en: "Selective Reporting", icon: "📝",
-      infoZh: "試驗已預先註冊，但預先指定的次要結局之一（低血糖事件）在論文中未報告。", infoEn: "Trial was pre-registered, but one pre-specified secondary outcome (hypoglycemic events) was not reported in the paper.",
-      correct: 1, expZh: "預先註冊的結局未報告——引起選擇性報告的疑慮。", expEn: "Pre-registered outcome not reported — raises selective reporting concerns." },
+      infoZh: "試驗已預先註冊，但預先指定的次要結果之一（低血糖事件）在論文中未報告。", infoEn: "Trial was pre-registered, but one pre-specified secondary outcome (hypoglycemic events) was not reported in the paper.",
+      correct: 1, expZh: "預先註冊結果未報告——引起選擇性報告的疑慮。", expEn: "Pre-registered outcome not reported — raises selective reporting concerns." },
   ];
 
   const levels = [
@@ -441,16 +441,16 @@ function RoBToolCards({ lang }) {
 
   const rob2Domains = [
     { en: "Randomization process", zh: "隨機化過程", icon: "🎲" },
-    { en: "Deviations from intended interventions", zh: "偏離預設干預", icon: "↔" },
-    { en: "Missing outcome data", zh: "遺失結局數據", icon: "❓" },
-    { en: "Measurement of the outcome", zh: "結局測量", icon: "📏" },
+    { en: "Deviations from intended interventions", zh: "偏離預期介入措施", icon: "↔" },
+    { en: "Missing outcome data", zh: "缺失結果數據", icon: "❓" },
+    { en: "Measurement of the outcome", zh: "結果測量", icon: "📏" },
     { en: "Selection of reported result", zh: "選擇性報告", icon: "📝" },
   ];
 
   const nosCategories = [
     { en: "Selection (max 4★)", zh: "選擇 (最多 4★)", icon: "👥", stars: 4 },
     { en: "Comparability (max 2★)", zh: "可比性 (最多 2★)", icon: "⚖", stars: 2 },
-    { en: "Outcome (max 3★)", zh: "結局 (最多 3★)", icon: "📊", stars: 3 },
+    { en: "Outcome (max 3★)", zh: "結果 (最多 3★)", icon: "📊", stars: 3 },
   ];
 
   return (
@@ -533,7 +533,7 @@ function TrafficLightDemo({ lang }) {
   const [excludeHighRisk, setExcludeHighRisk] = useState(false);
 
   const domains = lang === "zh"
-    ? ["隨機化", "偏離干預", "遺失數據", "結局測量", "選擇性報告"]
+    ? ["隨機化", "偏離干預", "遺失數據", "結果測量", "選擇性報告"]
     : ["Random.", "Deviat.", "Missing", "Measure.", "Select."];
 
   // Mock 5 studies with RoB ratings: 0=low(green), 1=some(yellow), 2=high(red)
@@ -555,7 +555,7 @@ function TrafficLightDemo({ lang }) {
   return (
     <div style={{ background: CARD_BG, borderRadius: 20, border: `1px solid ${LIGHT_BORDER}`, padding: "24px 18px", boxShadow: "0 2px 20px rgba(0,0,0,0.04)" }}>
       <h4 style={{ fontSize: 15, fontWeight: 600, color: DARK, marginBottom: 14, textAlign: "center" }}>
-        {lang === "zh" ? "偏倚風險交通燈矩陣" : "Risk of Bias Traffic-Light Matrix"}
+        {lang === "zh" ? "偏倚風險紅綠燈矩陣" : "Risk of Bias Traffic-Light Matrix"}
       </h4>
 
       {/* Matrix table */}
@@ -652,10 +652,10 @@ function TrafficLightDemo({ lang }) {
 function DualExtractionCards({ lang }) {
   const [open, setOpen] = useState(null);
   const steps = [
-    { num: "1", titleZh: "獨立萃取", titleEn: "Extract Independently", descZh: "兩名審查者各自萃取數據，過程中不互相討論。使用相同的標準化表格。", descEn: "Two reviewers extract data separately without discussing. Use the same standardized form." },
-    { num: "2", titleZh: "比對結果", titleEn: "Compare Results", descZh: "比較兩份萃取結果。計算 Cohen's kappa 評估一致性（>0.8 = 優秀，0.6-0.8 = 良好）。", descEn: "Compare both extractions. Calculate Cohen's kappa for agreement (>0.8 = excellent, 0.6-0.8 = good)." },
+    { num: "1", titleZh: "獨立擷取", titleEn: "Extract Independently", descZh: "兩名審查者各自擷取數據，過程中不互相討論。使用相同的標準化表格。", descEn: "Two reviewers extract data separately without discussing. Use the same standardized form." },
+    { num: "2", titleZh: "比對結果", titleEn: "Compare Results", descZh: "比較兩份擷取結果。計算 Cohen's kappa 評估一致性（>0.8 = 優秀，0.6-0.8 = 良好）。", descEn: "Compare both extractions. Calculate Cohen's kappa for agreement (>0.8 = excellent, 0.6-0.8 = good)." },
     { num: "3", titleZh: "處理分歧", titleEn: "Resolve Disagreements", descZh: "不一致的地方回到原文核實。無法達成共識時由第三位審查者裁決。記錄所有分歧和解決方式。", descEn: "Disagreements are verified against the original text. If unresolved, a third reviewer decides. Document all disagreements and resolutions." },
-    { num: "4", titleZh: "試行校準", titleEn: "Pilot & Calibrate", descZh: "正式萃取前，先用 2-3 篇文獻進行試行，讓團隊統一萃取標準和判斷。", descEn: "Before formal extraction, pilot with 2-3 studies to calibrate the team's extraction standards and judgments." },
+    { num: "4", titleZh: "試行校準", titleEn: "Pilot & Calibrate", descZh: "正式擷取前，先用 2-3 篇文獻進行試行，讓團隊統一擷取標準和判斷。", descEn: "Before formal extraction, pilot with 2-3 studies to calibrate the team's extraction standards and judgments." },
   ];
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 14, marginBottom: 28 }}>
@@ -710,12 +710,12 @@ export default function Course3({ onNavigate, user, onLogin, onLogout }) {
 
   const catalogItems = [
     { id: "s1", num: 1, label: lang === "zh" ? "為什麼重要" : "Why It Matters" },
-    { id: "s2", num: 2, label: lang === "zh" ? "萃取表格" : "Extraction Table" },
-    { id: "s3", num: 3, label: lang === "zh" ? "提取哪些數字" : "What Numbers" },
+    { id: "s2", num: 2, label: lang === "zh" ? "擷取表格" : "Extraction Table" },
+    { id: "s3", num: 3, label: lang === "zh" ? "擷取哪些數字" : "What Numbers" },
     { id: "s4", num: 4, label: lang === "zh" ? "偏倚風險" : "Risk of Bias" },
     { id: "s5", num: 5, label: lang === "zh" ? "評估工具" : "RoB Tools" },
     { id: "s6", num: 6, label: lang === "zh" ? "整合應用" : "Putting It Together" },
-    { id: "s7", num: 7, label: lang === "zh" ? "雙人萃取" : "Dual Extraction" },
+    { id: "s7", num: 7, label: lang === "zh" ? "雙人擷取" : "Dual Extraction" },
     { id: "game", num: 8, label: lang === "zh" ? "恐龍守護家園" : "Dino Home Save" },
   ];
 
@@ -894,10 +894,10 @@ export default function Course3({ onNavigate, user, onLogin, onLogout }) {
       {/* S7: NEW — Dual Extraction & Disagreement Resolution */}
       <section id="s7" style={{ padding: "80px 24px", background: "#F1F0EC" }}>
         <div style={{ maxWidth: 880, margin: "0 auto" }}>
-          <FadeIn><SectionLabel text={lang === "zh" ? "雙人萃取" : "Dual Extraction"} /><SectionTitle>{lang === "zh" ? "雙人獨立萃取與分歧處理" : "Dual Independent Extraction & Disagreement Resolution"}</SectionTitle></FadeIn>
+          <FadeIn><SectionLabel text={lang === "zh" ? "雙人擷取" : "Dual Extraction"} /><SectionTitle>{lang === "zh" ? "雙人獨立擷取與分歧處理" : "Dual Independent Extraction & Disagreement Resolution"}</SectionTitle></FadeIn>
           <FadeIn delay={0.1}><Paragraph style={{ marginBottom: 28 }}>
             {lang === "zh"
-              ? "一個人萃取數據難免犯錯。系統性回顧要求至少兩人獨立萃取——各自完成後再比對，用 Cohen's kappa 衡量一致性。不一致的地方由第三人裁決或討論解決。"
+              ? "一個人擷取數據難免犯錯。系統性回顧要求至少兩人獨立擷取——各自完成後再比對，用 Cohen's kappa 衡量一致性。不一致的地方由第三人裁決或討論解決。"
               : "One person extracting data will inevitably make mistakes. Systematic reviews require at least two independent extractors — each completes their work separately, then results are compared using Cohen's kappa for agreement. Disagreements are resolved by a third reviewer or discussion."}
           </Paragraph></FadeIn>
 
@@ -907,7 +907,7 @@ export default function Course3({ onNavigate, user, onLogin, onLogout }) {
             <div style={{ background: `${GOLD}08`, border: `1px solid ${GOLD}1A`, borderRadius: 14, padding: "16px 20px", marginBottom: 28 }}>
               <p style={{ fontSize: 14, lineHeight: 1.7, color: GOLD }}>
                 💡 {lang === "zh"
-                  ? "常見工具：Covidence 和 Rayyan 支援雙人萃取的盲篩模式和衝突標記。Excel 也可以，但缺少自動比對功能。"
+                  ? "常見工具：Covidence 和 Rayyan 支援雙人擷取的盲篩模式和衝突標記。Excel 也可以，但缺少自動比對功能。"
                   : "Common tools: Covidence and Rayyan support blinded dual extraction with conflict flagging. Excel works too, but lacks automatic comparison features."}
               </p>
             </div>
