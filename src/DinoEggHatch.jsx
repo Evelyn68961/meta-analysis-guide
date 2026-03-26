@@ -179,6 +179,11 @@ export default function DinoEggHatch({ t, lang, onNext, user }) {
             );
           })}
         </div>
+        {availableDinos.length < 7 && (
+          <p style={{ fontSize: 12, color: MUTED, marginTop: 12 }}>
+            {lang === "zh" ? "🔒 先在課程 0 收集龍蛋來解鎖" : "🔒 Collect eggs in Course 0 to unlock"}
+          </p>
+        )}
       </div>
     );
   }

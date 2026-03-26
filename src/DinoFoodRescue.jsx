@@ -386,7 +386,7 @@ export default function DinoFoodRescue({ t, lang, user }) {
         </div>
         {availableDinos.length < 7 && (
           <p style={{ fontSize: 12, color: MUTED, marginTop: 16 }}>
-            {lang === "zh" ? "🔒 先在課程一孵化恐龍來解鎖更多夥伴" : "🔒 Hatch dinos in Course 1 to unlock more companions"}
+            {lang === "zh" ? "🔒 先在課程 1 孵化恐龍來解鎖更多夥伴" : "🔒 Hatch dinos in Course 1 to unlock more companions"}
           </p>
         )}
       </div>

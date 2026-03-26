@@ -396,6 +396,11 @@ export default function DinoKeyQuest({ lang: langProp, user }) {
               );
             })}
           </div>
+          {availableDinos.length < 7 && (
+            <p style={{ fontSize: 12, color: "#8899BB", marginTop: 12, fontFamily: FONT }}>
+              {lang === "zh" ? "🔒 先在課程 3 拯救恐龍的家來解鎖" : "🔒 Save dino's home in Course 3 to unlock"}
+            </p>
+          )}
         </div>
       </CaveBackground>
     );

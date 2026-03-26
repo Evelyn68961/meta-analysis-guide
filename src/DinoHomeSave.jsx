@@ -415,6 +415,11 @@ export default function DinoHomeSave({ t, lang, user }) {
             );
           })}
         </div>
+        {availableDinos.length < 7 && (
+          <p style={{ fontSize: 12, color: MUTED, marginTop: 12 }}>
+            {lang === "zh" ? "🔒 先在課程 2 拯救食物來解鎖" : "🔒 Rescue food in Course 2 to unlock"}
+          </p>
+        )}
       </div>
     );
   }
