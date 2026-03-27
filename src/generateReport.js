@@ -243,12 +243,6 @@ export async function generateReport(project, analysis, lang) {
     labelValue(t("臨床意義", "Clinical Implications"), analysis.implications),
   );
 
-  // AI conclusion feedback
-  children.push(...feedbackBlock(
-    t("🤖 AI 結論回饋", "🤖 AI Conclusion Feedback"),
-    analysis._conclusionFeedback, lang,
-  ));
-
   // AI full review
   children.push(...feedbackBlock(
     t("🤖 AI 全面審查", "🤖 AI Full Project Review"),
