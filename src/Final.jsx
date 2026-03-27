@@ -154,8 +154,6 @@ const T = {
     limitationsPh: "例如：納入研究以大型跨國試驗為主，可能對特定族群的推論受限。",
     implications: "臨床意義",
     implicationsPh: "例如：SGLT2 抑制劑對 CKD 合併 T2DM 患者的腎臟保護效果明確，應納入臨床指引考量。",
-    aiCheck: "AI 檢查結論",
-    aiChecking: "AI 分析中...",
 
     // Completion
     congrats: "🎉 恭喜完成！",
@@ -299,8 +297,6 @@ const T = {
     limitationsPh: "e.g., Included studies are predominantly large multinational trials, limiting generalizability to specific populations.",
     implications: "Clinical Implications",
     implicationsPh: "e.g., SGLT2 inhibitors show clear renoprotective benefit in T2DM+CKD patients and should be considered in clinical guidelines.",
-    aiCheck: "AI Check Conclusions",
-    aiChecking: "AI analyzing...",
 
     congrats: "🎉 Congratulations!",
     congratsDesc: "You've completed a full meta-analysis workflow — from defining PICO to writing conclusions. Add your results and plots to your academic poster!",
@@ -400,7 +396,7 @@ function buildCSV(studies, bin) {
 }
 
 function buildRCode(studies, bin, effectType, model, modColumns) {
-  const method = model === "fixed" ? 'method = "FE"' : 'method = "DL"';
+  const method = model === "fixed" ? 'method = "FE"' : 'method = "REML"';
   const measure = effectType || "OR";
   const q = s => `"${s.citation.replace(/"/g, '\\"')}"`;
 
@@ -812,38 +808,8 @@ Start each item with "✅" (correct) or "⚠️" (needs improvement), with a bri
 }
 
 function Step5({ analysis, setA, project, lang }) {
-  const tx = T[lang]; const [aiLoading, setAiLoading] = useState(false);
-  const [aiFeedback, setAiFeedback] = useState(analysis._conclusionFeedback || null);
+  const tx = T[lang];
   const gradeOpts = [{ key: "high", label: tx.gradeHigh, color: GREEN }, { key: "moderate", label: tx.gradeMod, color: BLUE }, { key: "low", label: tx.gradeLow, color: AMBER }, { key: "very_low", label: tx.gradeVLow, color: RED }];
-  const canCheck = (analysis.mainFinding || "").trim().length > 10;
-
-  const handleAiCheck = async () => {
-    setAiLoading(true); setAiFeedback(null);
-    const isZh = lang === "zh";
-    // AI reads the user's written interpretation instead of structured form fields
-    const interpretContext = [analysis.forestQ1, analysis.forestQ2, analysis.hetInterpretation, analysis.funnelAssessment].filter(Boolean).join("\n");
-    const systemPrompt = isZh
-      ? `你是統合分析方法學專家。學生完成統合分析並撰寫結論。
-PICO — P: ${project.pico?.p} | I: ${project.pico?.i} | C: ${project.pico?.c} | O: ${project.pico?.o}
-學生的結果解讀：${interpretContext || "（未填寫）"}
-納入研究：${getIncluded(project).length} 篇　效果量類型：${analysis.effectType}　模型：${analysis.model}
-評估：1. 結論是否與他們描述的結果一致？ 2. GRADE 合理？ 3. 臨床意義具體？ 4. 限制描述恰當？ 5. 結果報告是否包含必要統計數據（效果量、CI、p值、I²）？
-以「✅」或「⚠️」開頭。4-6 句繁體中文。不用 Markdown。`
-      : `You are a meta-analysis methodology expert. Student completed MA and is writing conclusions.
-PICO — P: ${project.pico?.p} | I: ${project.pico?.i} | C: ${project.pico?.c} | O: ${project.pico?.o}
-Student's result interpretation: ${interpretContext || "(not provided)"}
-Studies: ${getIncluded(project).length} | Effect: ${analysis.effectType} | Model: ${analysis.model}
-Evaluate: 1. Are conclusions consistent with their described results? 2. GRADE reasonable? 3. Implications specific? 4. Limitations appropriate? 5. Does their reporting include necessary statistics (effect size, CI, p-value, I²)?
-Start with "✅" or "⚠️". 4-6 sentences. No Markdown.`;
-    const userMsg = `Finding: ${analysis.mainFinding}\nGRADE: ${analysis.certainty} — ${analysis.certRationale}\nLimitations: ${analysis.limitations}\nImplications: ${analysis.implications}`;
-    try {
-      const resp = await fetch("/api/ai-feedback", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ system: systemPrompt, userMessage: userMsg }) });
-      const data = await resp.json();
-      const text = data.content?.map(i => i.text || "").join("") || (isZh ? "無法取得回饋" : "Could not get feedback");
-      setAiFeedback(text); setA(p => ({ ...p, _conclusionFeedback: text }));
-    } catch { setAiFeedback(isZh ? "連線錯誤" : "Connection error"); }
-    setAiLoading(false);
-  };
 
   return (
     <div>
@@ -858,12 +824,8 @@ Start with "✅" or "⚠️". 4-6 sentences. No Markdown.`;
       <InputField label={tx.certRationale} value={analysis.certRationale || ""} onChange={v => setA(p => ({ ...p, certRationale: v }))} placeholder={tx.certRationalePh} />
       <InputField label={tx.limitations} value={analysis.limitations || ""} onChange={v => setA(p => ({ ...p, limitations: v }))} placeholder={tx.limitationsPh} multiline />
       <InputField label={tx.implications} value={analysis.implications || ""} onChange={v => setA(p => ({ ...p, implications: v }))} placeholder={tx.implicationsPh} multiline />
-      <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 8 }}>
-        <Btn primary onClick={handleAiCheck} disabled={!canCheck || aiLoading}>{aiLoading ? tx.aiChecking : `🤖 ${tx.aiCheck}`}</Btn>
-      </div>
-      <AiFeedbackBox feedback={aiFeedback} loading={aiLoading} lang={lang} />
 
-      {/* ── Full Project Review ── */}
+      {/* ── Full Project Review (covers conclusion check too) ── */}
       <FullReviewSection analysis={analysis} setA={setA} project={project} lang={lang} />
     </div>
   );
@@ -1044,7 +1006,7 @@ export default function Final({ onNavigate, user, onLogin, onLogout }) {
   const [analysis, setA] = useState(() => {
     try { const s = sessionStorage.getItem("ma_project_final"); if (s) return JSON.parse(s); } catch {}
     const inc = getIncluded(project); const bin = inc.length > 0 ? isBinary(inc) : true;
-    return { effectType: bin ? "OR" : "MD", model: "random", rationale: "", forestQ1: "", forestQ2: "", hetInterpretation: "", funnelAssessment: "", mainFinding: "", certainty: "", certRationale: "", limitations: "", implications: "", completedAdvanced: [], advInterpretations: {}, _interpretFeedback: null, _conclusionFeedback: null, _fullReviewFeedback: null };
+    return { effectType: bin ? "OR" : "MD", model: "random", rationale: "", forestQ1: "", forestQ2: "", hetInterpretation: "", funnelAssessment: "", mainFinding: "", certainty: "", certRationale: "", limitations: "", implications: "", completedAdvanced: [], advInterpretations: {}, _interpretFeedback: null, _fullReviewFeedback: null };
   });
 
   useEffect(() => { try { sessionStorage.setItem("ma_project_final", JSON.stringify(analysis)); } catch {} }, [analysis]);
