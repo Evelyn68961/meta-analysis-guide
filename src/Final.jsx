@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useI18n } from "./i18n";
 import SiteNav from "./SiteNav";
 import WebRRunner from "./WebRRunner";
+import { generateReport } from "./generateReport";
 
 // ═══ DESIGN TOKENS ═══
 const CRIMSON = "#C0392B";
@@ -105,17 +106,6 @@ const T = {
 
     // Step 4: Interpret & Report
     interpretTitle: "解讀結果與報告",
-    reportGuideTitle: "如何報告你的結果",
-    reportGuideIntro: "從你的分析工具中，找到以下關鍵數據，並在下方解讀中引用：",
-    reportItems: [
-      "整體效果量（例如 OR = 0.67）",
-      "95% 信賴區間（例如 [0.55, 0.82]）",
-      "p 值（例如 p < 0.001）",
-      "I² 統計量（例如 I² = 35.2%）",
-      "納入研究數",
-    ],
-    reportExample: "範例寫法",
-    reportExampleText: "五項隨機對照試驗（N = 32,476）的統合分析顯示，SGLT2 抑制劑顯著降低複合腎臟結局風險（OR = 0.67, 95% CI: 0.55–0.82, p < 0.001）。研究間異質性為中度（I² = 35.2%）。",
     forestQ1: "整體效果量代表什麼意義？是否具統計顯著性？",
     forestQ1Ph: "例如：OR = 0.67 表示介入組事件發生風險為對照組的 67%，95% CI 不跨越 1，具統計顯著性。",
     interpretNowTitle: "✍️ 解讀你的結果",
@@ -130,13 +120,6 @@ const T = {
     hetInterpretPh: "例如：I²=35% 表示低至中度異質性，研究間差異可能來自族群定義不同（CKD 專屬 vs 高 CV 風險）。",
     funnelInterpret: "你如何解讀漏斗圖？（若有產生）",
     funnelPh: "例如：圖形大致對稱，未見明顯發表偏差。小型研究稍偏右側，但研究數不足以確認。",
-    biasTests: "你會考慮使用哪些額外檢測方法？",
-    eggers: "Egger's 迴歸測試",
-    trimFill: "Trim-and-Fill 法",
-    beggs: "Begg's 等級相關檢定",
-    failsafe: "Fail-safe N",
-    subgroupPlan: "次群組或敏感性分析計畫",
-    subgroupPh: "例如：依 eGFR 基線值分組、排除高偏差風險研究、僅納入 CKD 專屬試驗",
     advInterpretLabel: {
       leaveOneOut: "你如何解讀逐一排除分析結果？",
       trimFill: "你如何解讀 Trim-and-Fill 分析結果？",
@@ -269,17 +252,6 @@ const T = {
 
     // Step 4: Interpret & Report
     interpretTitle: "Interpret & Report Results",
-    reportGuideTitle: "How to report your results",
-    reportGuideIntro: "From your analysis tool, locate these key statistics and include them in your interpretation below:",
-    reportItems: [
-      "Pooled effect size (e.g., OR = 0.67)",
-      "95% confidence interval (e.g., [0.55, 0.82])",
-      "p-value (e.g., p < 0.001)",
-      "I² statistic (e.g., I² = 35.2%)",
-      "Number of included studies",
-    ],
-    reportExample: "Example write-up",
-    reportExampleText: "A meta-analysis of five RCTs (N = 32,476) showed that SGLT2 inhibitors significantly reduced the composite kidney outcome (OR = 0.67, 95% CI: 0.55–0.82, p < 0.001). Heterogeneity was moderate (I² = 35.2%).",
     forestQ1: "What does the pooled effect mean? Is it statistically significant?",
     forestQ1Ph: "e.g., OR = 0.67 means the intervention group had 33% lower odds of the event, and the 95% CI does not cross 1, so it's statistically significant.",
     interpretNowTitle: "✍️ Interpret your results",
@@ -294,13 +266,6 @@ const T = {
     hetInterpretPh: "e.g., I²=35% suggests low-to-moderate heterogeneity, possibly due to differences in population definitions (CKD-specific vs high CV risk).",
     funnelInterpret: "How do you interpret the funnel plot? (if generated)",
     funnelPh: "e.g., The plot appears roughly symmetric with no obvious publication bias. Smaller studies cluster slightly to one side, but the number of studies is too small to confirm.",
-    biasTests: "Which additional detection methods would you consider?",
-    eggers: "Egger's regression test",
-    trimFill: "Trim-and-Fill method",
-    beggs: "Begg's rank correlation test",
-    failsafe: "Fail-safe N",
-    subgroupPlan: "Subgroup or sensitivity analysis plan",
-    subgroupPh: "e.g., Subgroup by baseline eGFR, exclude high RoB studies, restrict to CKD-dedicated trials",
     advInterpretLabel: {
       leaveOneOut: "How do you interpret the leave-one-out results?",
       trimFill: "How do you interpret the trim-and-fill results?",
@@ -749,8 +714,6 @@ function Step3({ project, analysis, setA, lang }) {
 function Step4({ analysis, setA, project, lang }) {
   const tx = T[lang]; const [aiLoading, setAiLoading] = useState(false);
   const [aiFeedback, setAiFeedback] = useState(analysis._interpretFeedback || null);
-  const biasOpts = [{ key: "eggers", label: tx.eggers }, { key: "trimFill", label: tx.trimFill }, { key: "beggs", label: tx.beggs }, { key: "failsafe", label: tx.failsafe }];
-  const toggleTest = k => { const c = analysis.biasTests || []; setA(p => ({ ...p, biasTests: c.includes(k) ? c.filter(x => x !== k) : [...c, k] })); };
 
   // At least 2 interpretation fields must have content (basic + advanced)
   const filledFields = [analysis.forestQ1, analysis.forestQ2, analysis.hetInterpretation, analysis.funnelAssessment].filter(v => (v || "").trim().length > 10);
@@ -802,8 +765,6 @@ Start each item with "✅" (correct) or "⚠️" (needs improvement), with a bri
         const key = adv.moderator ? `${adv.type}_${adv.moderator}` : adv.type;
         return `Advanced — ${adv.type}${adv.moderator ? ` (${adv.moderator})` : ""}: ${(analysis.advInterpretations || {})[key] || "(empty)"}`;
       }),
-      `Bias tests selected: ${(analysis.biasTests || []).join(", ") || "none"}`,
-      `Subgroup/sensitivity plan: ${analysis.subgroupPlan || "(empty)"}`,
     ].join("\n");
 
     try {
@@ -839,35 +800,6 @@ Start each item with "✅" (correct) or "⚠️" (needs improvement), with a bri
             placeholder={ph} multiline />
         );
       })}
-
-      {/* Reporting guidance box */}
-      <div style={{ background: `${BLUE}06`, border: `1px solid ${BLUE}20`, borderRadius: 12, padding: 20, marginBottom: 24, marginTop: 20 }}>
-        <h4 style={{ fontSize: 14, fontWeight: 600, color: DARK, marginBottom: 10, display: "flex", alignItems: "center", gap: 8 }}>
-          📋 {tx.reportGuideTitle}
-        </h4>
-        <p style={{ fontSize: 13, color: MUTED, marginBottom: 10, lineHeight: 1.6 }}>{tx.reportGuideIntro}</p>
-        <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 16 }}>
-          {tx.reportItems.map((item, i) => (
-            <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 13, color: DARK }}>
-              <span style={{ color: CRIMSON, fontWeight: 700, flexShrink: 0 }}>✓</span>
-              <span>{item}</span>
-            </div>
-          ))}
-        </div>
-        <div style={{ background: CARD_BG, borderRadius: 8, padding: "12px 16px", border: `1px solid ${LIGHT_BORDER}` }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: CRIMSON, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>{tx.reportExample}</div>
-          <div style={{ fontSize: 13, color: DARK, lineHeight: 1.7, fontStyle: "italic" }}>{tx.reportExampleText}</div>
-        </div>
-      </div>
-
-      {/* Bias tests */}
-      <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: DARK, marginBottom: 10, marginTop: 8 }}>{tx.biasTests}</label>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
-        {biasOpts.map(o => { const sel = (analysis.biasTests || []).includes(o.key); return (
-          <button key={o.key} onClick={() => toggleTest(o.key)} style={{ padding: "6px 14px", borderRadius: 20, fontSize: 13, fontFamily: FONT, border: `1.5px solid ${sel ? CRIMSON : LIGHT_BORDER}`, background: sel ? `${CRIMSON}14` : CARD_BG, color: sel ? CRIMSON : MUTED, cursor: "pointer", fontWeight: sel ? 600 : 400 }}>{sel ? "✓ " : ""}{o.label}</button>
-        ); })}
-      </div>
-      <InputField label={tx.subgroupPlan} value={analysis.subgroupPlan || ""} onChange={v => setA(p => ({ ...p, subgroupPlan: v }))} placeholder={tx.subgroupPh} multiline />
 
       {/* AI Interpretation Check */}
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 12 }}>
@@ -1003,8 +935,6 @@ End with 1-2 sentences of overall assessment and the single most important impro
       `Consistency/weights: ${analysis.forestQ2 || "(empty)"}`,
       `Heterogeneity: ${analysis.hetInterpretation || "(empty)"}`,
       `Funnel plot: ${analysis.funnelAssessment || "(empty)"}`,
-      `Bias tests selected: ${(analysis.biasTests || []).join(", ") || "none"}`,
-      `Subgroup plan: ${analysis.subgroupPlan || "(empty)"}`,
       ``,
       `=== CONCLUSIONS ===`,
       `Main finding: ${analysis.mainFinding || "(empty)"}`,
@@ -1040,6 +970,20 @@ End with 1-2 sentences of overall assessment and the single most important impro
 function Completion({ analysis, project, lang, onNavigate, onBack }) {
   const tx = T[lang];
   const [hovProfile, setHovProfile] = useState(false);
+  const [hovReport, setHovReport] = useState(false);
+  const [dlState, setDlState] = useState("idle"); // idle | loading | done
+
+  const handleDownload = async () => {
+    setDlState("loading");
+    try {
+      await generateReport(project, analysis, lang);
+      setDlState("done");
+      setTimeout(() => setDlState("idle"), 2000);
+    } catch (e) {
+      console.error("Report generation failed:", e);
+      setDlState("idle");
+    }
+  };
   return (
     <div style={{ textAlign: "center" }}>
       <h2 style={{ fontSize: 24, fontWeight: 700, color: DARK, marginBottom: 8 }}>{tx.congrats}</h2>
@@ -1056,8 +1000,23 @@ function Completion({ analysis, project, lang, onNavigate, onBack }) {
           {analysis.implications && <div><strong style={{ color: DARK }}>{lang === "zh" ? "臨床意義" : "Implications"}:</strong> {analysis.implications}</div>}
         </div>
       </Card>
-      <div style={{ marginTop: 24, display: "flex", justifyContent: "center", gap: 12 }}>
+      <div style={{ marginTop: 24, display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
         <Btn onClick={onBack}>← {lang === "zh" ? "上一步" : "Back"}</Btn>
+        <button
+          onClick={handleDownload}
+          disabled={dlState === "loading"}
+          onMouseEnter={() => setHovReport(true)}
+          onMouseLeave={() => setHovReport(false)}
+          style={{
+            padding: "10px 24px", borderRadius: 10, fontSize: 14, fontWeight: 600, fontFamily: FONT,
+            cursor: dlState === "loading" ? "wait" : "pointer",
+            border: `1.5px solid ${hovReport ? CRIMSON : LIGHT_BORDER}`,
+            background: hovReport ? `${CRIMSON}0A` : CARD_BG,
+            color: dlState === "done" ? GREEN : hovReport ? CRIMSON : DARK,
+            transition: "all 0.2s",
+          }}>
+          {dlState === "loading" ? (lang === "zh" ? "⏳ 產生中..." : "⏳ Generating...") : dlState === "done" ? (lang === "zh" ? "✓ 已下載" : "✓ Downloaded") : (lang === "zh" ? "📄 下載報告" : "📄 Download Report")}
+        </button>
         <button
           onClick={() => onNavigate("profile")}
           onMouseEnter={() => setHovProfile(true)}
@@ -1085,7 +1044,7 @@ export default function Final({ onNavigate, user, onLogin, onLogout }) {
   const [analysis, setA] = useState(() => {
     try { const s = sessionStorage.getItem("ma_project_final"); if (s) return JSON.parse(s); } catch {}
     const inc = getIncluded(project); const bin = inc.length > 0 ? isBinary(inc) : true;
-    return { effectType: bin ? "OR" : "MD", model: "random", rationale: "", forestQ1: "", forestQ2: "", hetInterpretation: "", funnelAssessment: "", biasTests: [], subgroupPlan: "", mainFinding: "", certainty: "", certRationale: "", limitations: "", implications: "", completedAdvanced: [], advInterpretations: {}, _interpretFeedback: null, _conclusionFeedback: null, _fullReviewFeedback: null };
+    return { effectType: bin ? "OR" : "MD", model: "random", rationale: "", forestQ1: "", forestQ2: "", hetInterpretation: "", funnelAssessment: "", mainFinding: "", certainty: "", certRationale: "", limitations: "", implications: "", completedAdvanced: [], advInterpretations: {}, _interpretFeedback: null, _conclusionFeedback: null, _fullReviewFeedback: null };
   });
 
   useEffect(() => { try { sessionStorage.setItem("ma_project_final", JSON.stringify(analysis)); } catch {} }, [analysis]);
