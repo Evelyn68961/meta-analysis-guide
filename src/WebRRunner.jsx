@@ -242,25 +242,37 @@ if (reg_test$pval < 0.05) cat("Result: Significant asymmetry detected (p < 0.05)
 if (res$k < 10) cat("Note: Test has low power with fewer than 10 studies (k =", res$k, ")\\n")`;
 
     case "influence":
-      return `# ── Influence Diagnostics ──
+          return `# ── Influence Diagnostics ──
 inf <- influence(res)
 inf_df <- as.data.frame(inf$inf)
+k <- nrow(inf_df)
 cat("══════════════════════════════════════\\n")
 cat("  Influence Diagnostics\\n")
 cat("══════════════════════════════════════\\n\\n")
-for (i in 1:nrow(inf_df)) {
+for (i in 1:k) {
   cat(res$slab[i], "\\n")
   cat("  Cook's D:", round(inf_df$cook.d[i], 4),
       "  DFFITS:", round(inf_df$dffits[i], 4),
       "  hat:", round(inf_df$hat[i], 4), "\\n")
 }
 cat("\\n── Potential Outliers ──\\n")
-cd_threshold <- 4 / nrow(inf_df)
-outliers <- which(inf_df$cook.d > cd_threshold)
-if (length(outliers) > 0) {
-  cat("High Cook's D:", paste(res$slab[outliers], collapse=", "), "\\n")
+cd_threshold <- 4 / k
+dffits_threshold <- 3 * sqrt(1 / (k - 1))
+cd_flag <- which(inf_df$cook.d > cd_threshold)
+df_flag <- which(abs(inf_df$dffits) > dffits_threshold)
+rs_flag <- which(abs(inf_df$rstudent) > 2)
+all_flag <- sort(unique(c(cd_flag, df_flag, rs_flag)))
+if (length(all_flag) > 0) {
+  cat("Flagged studies:\\n")
+  for (j in all_flag) {
+    reasons <- c()
+    if (j %in% cd_flag) reasons <- c(reasons, paste0("Cook's D = ", round(inf_df$cook.d[j], 4), " > ", round(cd_threshold, 4)))
+    if (j %in% df_flag) reasons <- c(reasons, paste0("|DFFITS| = ", round(abs(inf_df$dffits[j]), 4), " > ", round(dffits_threshold, 4)))
+    if (j %in% rs_flag) reasons <- c(reasons, paste0("|rstudent| = ", round(abs(inf_df$rstudent[j]), 4), " > 2"))
+    cat("  ", res$slab[j], ":", paste(reasons, collapse="; "), "\\n")
+  }
 } else {
-  cat("No studies with unusually high Cook's D\\n")
+  cat("No studies with unusually high influence\\n")
 }
 plot(inf)`;
 
@@ -787,8 +799,8 @@ function parseAdvancedOutput(advOutput, analysisType, lang, effectType) {
     }
 
     case "influence": {
-      const outlierMatch = advOutput.match(/High Cook's D:\s*(.+)/);
-      const noOutlier = /No studies with unusually high/.test(advOutput);
+      const flaggedMatch = advOutput.match(/Flagged studies:\n([\s\S]*?)(?:\n\n|$)/);
+      const noOutlier = /No studies with unusually high influence/.test(advOutput);
 
       if (noOutlier) {
         rows.push({
@@ -796,11 +808,19 @@ function parseAdvancedOutput(advOutput, analysisType, lang, effectType) {
           plain: zh ? "沒有研究對整體結果有不成比例的影響 → 結果穩定" : "No study has disproportionate influence → results stable",
           color: "#3DA87A",
         });
-      } else if (outlierMatch) {
-        rows.push({
-          raw: `Outliers: ${outlierMatch[1]}`,
-          plain: zh ? `以下研究的 Cook's D 偏高，對結果有較大影響：${outlierMatch[1]}` : `These studies have high Cook's D (notable influence): ${outlierMatch[1]}`,
-          color: "#C0392B",
+      } else if (flaggedMatch) {
+        const lines = flaggedMatch[1].trim().split("\n").map(l => l.trim()).filter(Boolean);
+        lines.forEach(line => {
+          const nameMatch = line.match(/^(.+?)\s*:\s*(.+)$/);
+          if (nameMatch) {
+            rows.push({
+              raw: line,
+              plain: zh
+                ? `⚠ ${nameMatch[1]}：${nameMatch[2].replace(/rstudent/g, "殘差")}`
+                : `⚠ ${nameMatch[1]}: ${nameMatch[2]}`,
+              color: "#C0392B",
+            });
+          }
         });
       }
       break;
