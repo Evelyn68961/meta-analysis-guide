@@ -711,9 +711,10 @@ function parseAdvancedOutput(advOutput, analysisType, lang, effectType) {
           color: "#2E86C1",
         });
       }
-      if (maxMatch) {
+      if (maxMatch && origMatch) {
         const maxC = parseFloat(maxMatch[1]);
-        const stable = maxC < 0.05;
+        const orig = Math.abs(parseFloat(origMatch[1]));
+        const stable = orig === 0 ? maxC < 0.01 : (maxC / orig) < 0.10;
         rows.push({
           raw: `Max change: ${maxMatch[1]}`,
           plain: stable
@@ -757,9 +758,10 @@ function parseAdvancedOutput(advOutput, analysisType, lang, effectType) {
           color: "#2E86C1",
         });
       }
-      if (changeMatch) {
+      if (changeMatch && origMatch) {
         const c = parseFloat(changeMatch[1]);
-        const big = c > 0.05;
+        const orig = Math.abs(parseFloat(origMatch[1]));
+        const big = orig === 0 ? c > 0.01 : (c / orig) > 0.10;
         rows.push({
           raw: `Change: ${changeMatch[1]}`,
           plain: big
