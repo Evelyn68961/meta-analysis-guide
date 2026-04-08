@@ -73,6 +73,9 @@ const translations = {
     studyCDesc: "小型研究——發現強效應",
     studyDDesc: "最大型試驗——發現小的正效應",
     studyEDesc: "中型研究——發現中等效應",
+    studyFDesc: "中型試驗——發現負效應",
+    studyGDesc: "大型試驗——發現幾乎無效應",
+    studyHDesc: "中型研究——發現中等正效應",
 
     // How section
     howLabel: "分步指南",
@@ -755,6 +758,9 @@ const translations = {
     studyCDesc: "Small study — found a strong effect",
     studyDDesc: "Largest trial — found a small positive effect",
     studyEDesc: "Medium study — found a moderate effect",
+    studyFDesc: "Medium trial — found a negative effect",
+    studyGDesc: "Large trial — found nearly no effect",
+    studyHDesc: "Medium study — found a moderate positive effect",
 
     // How section
     howLabel: "Step by Step",

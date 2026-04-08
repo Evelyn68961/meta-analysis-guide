@@ -68,10 +68,13 @@ function StudyCombiner() {
     { id: 3, label: "Study C", effect: 0.52, n: 30, color: "#7B68C8", descKey: "studyCDesc" },
     { id: 4, label: "Study D", effect: 0.20, n: 200, color: "#D4A843", descKey: "studyDDesc" },
     { id: 5, label: "Study E", effect: 0.41, n: 65, color: "#5B9E5F", descKey: "studyEDesc" },
+    { id: 6, label: "Study F", effect: -0.25, n: 80, color: "#C0392B", descKey: "studyFDesc" },
+    { id: 7, label: "Study G", effect: 0.05, n: 150, color: "#8E6BBF", descKey: "studyGDesc" },
+    { id: 8, label: "Study H", effect: 0.30, n: 90, color: "#2E86C1", descKey: "studyHDesc" },
   ];
   const totalW = studies.reduce((s, st) => s + st.n, 0);
   const pooled = studies.reduce((s, st) => s + st.effect * st.n, 0) / totalW;
-  const scatteredPositions = [{ x: 12, y: 18 }, { x: 68, y: 12 }, { x: 28, y: 62 }, { x: 74, y: 58 }, { x: 46, y: 35 }];
+  const scatteredPositions = studies.map((st) => ({ x: 50 + st.effect * 60, y: ({ 1: 25, 2: 55, 3: 70, 4: 40, 5: 18, 6: 35, 7: 65, 8: 48 })[st.id] }));
   const reset = () => setPhase("scattered");
   const combine = () => { setPhase("combining"); setTimeout(() => setPhase("combined"), 1200); };
 
