@@ -54,8 +54,8 @@ const translations = {
     // Combiner
     combinerLabel: "實際演示",
     combinerTitle: "觀看研究如何合併",
-    combinerDesc: "這個互動演示展示了統合分析的工作原理。五項研究各有不同結果——點擊「合併」查看按樣本量加權如何產生一個更可信的答案。",
-    combinerScattered: "五項研究，五個不同答案",
+    combinerDesc: "這個互動演示展示了統合分析的工作原理。八項研究各有不同結果——點擊「合併」查看按樣本量加權如何產生一個更可信的答案。",
+    combinerScattered: "八項研究，八個不同答案",
     combinerCombining: "正在合併證據……",
     combinerCombined: "合併後的估計值",
     combinerScatteredDesc: "每個圓點是一項研究。它們結果不一——你信任哪一個？",
@@ -739,8 +739,8 @@ const translations = {
     // Combiner
     combinerLabel: "See It In Action",
     combinerTitle: "Watch Studies Combine",
-    combinerDesc: 'This interactive demo shows how meta-analysis works. Five studies each found different results — click "Combine" to see how weighting by sample size produces a single, more trustworthy answer.',
-    combinerScattered: "Five Studies, Five Different Answers",
+    combinerDesc: 'This interactive demo shows how meta-analysis works. Eight studies each found different results — click "Combine" to see how weighting by sample size produces a single, more trustworthy answer.',
+    combinerScattered: "Eight Studies, Eight Different Answers",
     combinerCombining: "Combining the evidence...",
     combinerCombined: "One Pooled Estimate",
     combinerScatteredDesc: "Each dot is a study. They disagree — which one do you trust?",
