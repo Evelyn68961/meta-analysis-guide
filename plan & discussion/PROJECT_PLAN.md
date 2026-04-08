@@ -82,12 +82,19 @@ src/
 ├── course5Questions.js  ← Course 5 question bank (105 Qs: 70 MCQ + 35 advanced — 14 true/false, 7 multi-select, 7 ordering, 7 spot-error)
 │
 ├── i18n.js              ← All translations (Course 0–5 + Hub + Nav + About + Profile); UI strings only — game questions in separate files
-└── index.js             ← Entry point (wraps App in I18nProvider)
+└── index.js             ← Entry point (wraps App in I18nProvider, registers service worker)
 
 Root files:
 ├── .env                 ← REACT_APP_SUPABASE_URL + REACT_APP_SUPABASE_ANON_KEY (NOT in Git)
 ├── .env.local           ← Local dev overrides pulled from Vercel (NOT in Git)
 ├── .gitignore           ← Already includes .env, .env.local
+
+public/
+├── manifest.json        ← PWA manifest (app name, icons, theme color, standalone display)
+├── service-worker.js    ← Service worker (stale-while-revalidate caching for offline support)
+├── favicon-ma101.svg    ← SVG icon
+├── favicon-192x192.png  ← PWA icon 192×192
+├── favicon-512x512.png  ← PWA icon 512×512
 │
 api/
 └── ai-feedback.js       ← Vercel serverless function: proxies AI workshop requests to Anthropic API (hides API key server-side)

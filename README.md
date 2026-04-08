@@ -29,6 +29,7 @@ AI acts as a methodology advisor — it looks at your specific results and tells
 ## Tech Stack
 
 - React (CRA) with inline styles
+- PWA — installable, offline-capable via service worker
 - Supabase — auth, progress tracking, AI gating
 - WebR (WASM) + metafor — real R execution in the browser
 - Vercel — hosting and serverless API proxy for AI calls
