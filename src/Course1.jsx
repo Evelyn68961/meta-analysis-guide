@@ -182,16 +182,16 @@ function PicoBuilder({ t, lang }) {
         explanationEn: "Option B uses standardized diagnostic criteria (DSM-5) with clear age limits.",
       },
       i: {
-        options: lang === "zh" ? ["心理治療", "認知行為治療 (CBT)，每週 1 次，持續 12-16 週", "諮商", "CBT 加上藥物"] : ["Psychotherapy", "CBT, weekly sessions for 12-16 weeks", "Counseling", "CBT plus medication"],
+        options: lang === "zh" ? ["心理治療", "認知行為治療 (CBT) + 標準藥物治療 (SSRI)，每週 1 次，持續 12-16 週", "諮商", "僅 CBT（不使用藥物）"] : ["Psychotherapy", "CBT + standard pharmacotherapy (SSRI), weekly sessions for 12-16 weeks", "Counseling", "CBT alone (no medication)"],
         correct: 1,
-        explanationZh: "選項 B 指定了具體的治療方式（CBT）、頻率（每週）和持續時間（12-16週）。",
-        explanationEn: "Option B specifies exact therapy (CBT), frequency (weekly), and duration (12-16 weeks).",
+        explanationZh: "選項 B 指定了具體的治療方式（CBT + SSRI）、頻率（每週）和持續時間（12-16週）。這是 add-on 設計：在標準藥物治療基礎上加入 CBT。",
+        explanationEn: "Option B specifies exact therapy (CBT + SSRI), frequency (weekly), and duration (12-16 weeks). This is an add-on design: CBT layered on top of standard pharmacotherapy.",
       },
       c: {
-        options: lang === "zh" ? ["什麼都不做", "藥物治療 (SSRI) 單獨使用、或等待名單對照", "其他心理治療", "運動治療"] : ["Nothing", "Pharmacotherapy (SSRI) alone, or wait-list control", "Other psychotherapy", "Exercise therapy"],
+        options: lang === "zh" ? ["什麼都不做", "僅標準藥物治療 (SSRI)", "其他心理治療", "運動治療"] : ["Nothing", "Standard pharmacotherapy (SSRI) alone", "Other psychotherapy", "Exercise therapy"],
         correct: 1,
-        explanationZh: "選項 B 提供了積極對照（SSRI）和消極對照（等待名單）兩種有意義的比較。",
-        explanationEn: "Option B provides both active (SSRI) and passive (wait-list) comparators.",
+        explanationZh: "選項 B 使用僅 SSRI 作為對照組，與介入組（CBT + SSRI）形成 add-on 比較：CBT 加上 SSRI 是否優於單獨使用 SSRI？",
+        explanationEn: "Option B uses SSRI alone as the comparator, forming an add-on comparison with the intervention (CBT + SSRI): does adding CBT to SSRI improve outcomes beyond SSRI alone?",
       },
       o: {
         options: lang === "zh" ? ["病人感覺有沒有好一點", "主要：憂鬱量表分數變化 (PHQ-9 或 HAM-D)；次要：緩解率、復發率", "回診率", "治療師的評估"] : ["Whether patients feel better", "Primary: depression score change (PHQ-9/HAM-D); Secondary: remission rate, relapse rate", "Follow-up visit rate", "Therapist\'s assessment"],
