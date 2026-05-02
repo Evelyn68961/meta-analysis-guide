@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useI18n } from "./i18n";
 import SiteNav from "./SiteNav";
 import DinoHomeSave from "./DinoHomeSave";
+import CourseNotes from "./CourseNotes";
 
 // ═══ DESIGN TOKENS ═══
 const TEAL = "#0E7C86";
@@ -925,6 +926,8 @@ export default function Course3({ onNavigate, user, onLogin, onLogout }) {
       </section>
 
       </div>{/* end .main-content */}
+
+      <CourseNotes user={user} courseId={3} courseTitle={t("hubC3Title")} lang={lang} />
 
       {/* FOOTER */}
       <footer style={{ padding: "40px 24px", textAlign: "center", borderTop: `1px solid ${LIGHT_BORDER}`, background: LIGHT_BG, marginLeft: 0 }}>

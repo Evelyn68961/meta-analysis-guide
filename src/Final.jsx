@@ -608,6 +608,7 @@ function Step3({ project, analysis, setA, lang }) {
         <WebRRunner
           rCode={rCode}
           lang={lang}
+          user={user}
           pico={project.pico}
           effectType={analysis.effectType}
           model={analysis.model}

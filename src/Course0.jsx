@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useI18n } from "./i18n";
 import SiteNav from "./SiteNav";
 import DinoEggHunt from "./DinoEggHunt";
+import CourseNotes from "./CourseNotes";
 
 const TEAL = "#0E7C86";
 const CORAL = "#E8734A";
@@ -547,6 +548,8 @@ export default function Course0({ onNavigate, user, onLogin, onLogout }) {
       </Section>
 
       </div>{/* end .main-content */}
+
+      <CourseNotes user={user} courseId={0} courseTitle={t("hubC0Title")} lang={lang} />
 
       {/* FOOTER */}
       <footer style={{ padding: "48px 24px", textAlign: "center", borderTop: `1px solid ${LIGHT_BORDER}`, background: LIGHT_BG, marginLeft: 0 }}>

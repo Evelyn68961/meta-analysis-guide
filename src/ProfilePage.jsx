@@ -4,6 +4,7 @@ import { supabase } from "./supabaseClient";
 import SiteNav from "./SiteNav";
 import CuteDino from "./CuteDino";
 import { DragonEgg } from "./DinoEggHatch";
+import { downloadNotesTxt, downloadNotesDocx, emailNotes } from "./notesExport";
 
 const TEAL = "#0E7C86";
 const CORAL = "#E8734A";
@@ -31,25 +32,26 @@ const DINO_COLORS = ["#2ECC71", "#3498DB", "#F1C40F", "#E74C3C", "#9B59B6", "#E6
 export default function ProfilePage({ onNavigate, user, onLogin, onLogout }) {
   const { t, lang } = useI18n();
   const [progress, setProgress] = useState([]);
+  const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [hoveredDino, setHoveredDino] = useState(null);
 
   useEffect(() => {
     if (!user) { setLoading(false); return; }
-    const fetchProgress = async () => {
+    const fetchAll = async () => {
       try {
-        const { data, error } = await supabase
-          .from("progress")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("completed_at", { ascending: false });
-        if (!error && data) setProgress(data);
+        const [progressRes, notesRes] = await Promise.all([
+          supabase.from("progress").select("*").eq("user_id", user.id).order("completed_at", { ascending: false }),
+          supabase.from("course_notes").select("course_id, content, updated_at").eq("user_id", user.id).order("updated_at", { ascending: false }),
+        ]);
+        if (!progressRes.error && progressRes.data) setProgress(progressRes.data);
+        if (!notesRes.error && notesRes.data) setNotes(notesRes.data.filter(n => n.content && n.content.trim()));
       } catch (e) {
-        console.error("Failed to load progress:", e);
+        console.error("Failed to load profile data:", e);
       }
       setLoading(false);
     };
-    fetchProgress();
+    fetchAll();
   }, [user]);
 
   // Derive stats from progress data (using dino_index, not species name)
@@ -287,6 +289,47 @@ export default function ProfilePage({ onNavigate, user, onLogin, onLogout }) {
                   </>
                 )}
 
+                {/* My Notes */}
+                {notes.length > 0 && (
+                  <>
+                    <h2 style={{ fontSize: 14, fontWeight: 600, letterSpacing: 1.5, textTransform: "uppercase", color: TEAL, marginBottom: 16 }}>
+                      {isZh ? "我的筆記" : "My Notes"}
+                    </h2>
+                    <div style={{ background: CARD_BG, border: `1px solid ${LIGHT_BORDER}`, borderRadius: 14, overflow: "hidden", marginBottom: 32 }}>
+                      {notes.map((n) => {
+                        const courseTitle = t(`hubC${n.course_id}Title`) || `Course ${n.course_id}`;
+                        const preview = (n.content || "").trim().slice(0, 150);
+                        const charCount = (n.content || "").length;
+                        const editedAt = n.updated_at ? new Date(n.updated_at).toLocaleDateString() : "";
+                        return (
+                          <div key={n.course_id} style={{
+                            padding: "14px 18px",
+                            borderBottom: `1px solid ${LIGHT_BORDER}`,
+                          }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12, marginBottom: 6 }}>
+                              <div style={{ fontSize: 13, fontWeight: 600, color: DARK }}>{courseTitle}</div>
+                              <div style={{ fontSize: 11, color: MUTED, whiteSpace: "nowrap" }}>
+                                {charCount.toLocaleString()} {isZh ? "字" : "chars"} · {editedAt}
+                              </div>
+                            </div>
+                            <div style={{ fontSize: 12.5, color: MUTED, lineHeight: 1.55, marginBottom: 10, fontStyle: "italic" }}>
+                              {preview}{charCount > 150 ? "…" : ""}
+                            </div>
+                            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                              <button onClick={() => onNavigate(`course${n.course_id}`)} style={profileNoteBtn(TEAL, true)}>
+                                {isZh ? "開啟" : "Open"}
+                              </button>
+                              <button onClick={() => downloadNotesTxt({ content: n.content, courseTitle })} style={profileNoteBtn(MUTED)}>.txt</button>
+                              <button onClick={() => downloadNotesDocx({ content: n.content, courseTitle })} style={profileNoteBtn(MUTED)}>.docx</button>
+                              <button onClick={() => emailNotes({ content: n.content, courseTitle, lang })} style={profileNoteBtn(MUTED)}>📧 {isZh ? "Email" : "Email"}</button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+
                 {/* No data state */}
                 {progress.length === 0 && (
                   <div style={{ textAlign: "center", padding: "32px 0" }}>
@@ -309,4 +352,18 @@ export default function ProfilePage({ onNavigate, user, onLogin, onLogout }) {
       </div>
     </div>
   );
+}
+
+function profileNoteBtn(color, primary = false) {
+  return {
+    padding: "6px 12px",
+    fontSize: 12,
+    fontWeight: 600,
+    border: primary ? "none" : `1px solid ${LIGHT_BORDER}`,
+    background: primary ? color : "transparent",
+    color: primary ? "#FFF" : color,
+    borderRadius: 8,
+    cursor: "pointer",
+    fontFamily: FONT,
+  };
 }

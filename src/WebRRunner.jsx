@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useWorkshopField, resetWorkshop } from "./useWorkshopField";
 import ADVANCED_GUIDES from "./advancedGuides";
 
 // ═══ DESIGN TOKENS (matches Final.jsx) ═══
@@ -908,8 +909,9 @@ function AdvancedReadingGuide({ advOutput, analysisType, lang, effectType }) {
 }
 
 // ═══ MAIN COMPONENT ═══
-export default function WebRRunner({ rCode, lang = "zh", pico, effectType, model, moderatorColumns = [], studies = [], onAiInterpret, onAdvComplete }) {
+export default function WebRRunner({ rCode, lang = "zh", pico, effectType, model, moderatorColumns = [], studies = [], onAiInterpret, onAdvComplete, user = null }) {
   const tx = TX[lang] || TX.en;
+  const WK = "webr_advanced";
 
   // Layer 1 state
   const [status, setStatus] = useState(STATUS.IDLE);
@@ -924,19 +926,21 @@ export default function WebRRunner({ rCode, lang = "zh", pico, effectType, model
   const [aiResult, setAiResult] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
 
-  // Layer 2 state
-  const [advSelectedType, setAdvSelectedType] = useState(null);
-  const [advSelectedMod, setAdvSelectedMod] = useState(moderatorColumns[0] || "");
+  // Layer 2 state — persisted across sessions
+  const [advSelectedType, setAdvSelectedType, advSelectedTypeMeta] = useWorkshopField(user, WK, "advSelectedType", null);
+  const [advSelectedMod, setAdvSelectedMod] = useWorkshopField(user, WK, "advSelectedMod", moderatorColumns[0] || "");
+  const [advOutput, setAdvOutput] = useWorkshopField(user, WK, "advOutput", null);
+  const [advRCode, setAdvRCode] = useWorkshopField(user, WK, "advRCode", null);
+  const [advHistory, setAdvHistory] = useWorkshopField(user, WK, "advHistory", []);
+  const [advAiResult, setAdvAiResult] = useWorkshopField(user, WK, "advAiResult", null);
+
+  // Layer 2 state — ephemeral (UI / in-flight only)
   const [advRunning, setAdvRunning] = useState(false);
-  const [advOutput, setAdvOutput] = useState(null);
   const [advPlotImg, setAdvPlotImg] = useState(null);
-  const [advAiResult, setAdvAiResult] = useState(null);
   const [advAiLoading, setAdvAiLoading] = useState(false);
   const [advShowCode, setAdvShowCode] = useState(false);
   const [showAdvGuide, setShowAdvGuide] = useState(true);
-  const [advRCode, setAdvRCode] = useState(null);
   const [advError, setAdvError] = useState(null);
-  const [advHistory, setAdvHistory] = useState([]); // completed analyses
   const [advRecommendations, setAdvRecommendations] = useState(null);
   const [advRecommendLoading, setAdvRecommendLoading] = useState(false);
   const [showAdvPanel, setShowAdvPanel] = useState(false);
@@ -1633,6 +1637,35 @@ Structure your response as:
                   border: `1px solid ${PURPLE}15`,
                   borderRadius: 16, padding: 24,
                 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, fontSize: 12, color: MUTED }}>
+                    <span>
+                      {!user
+                        ? (lang === "zh" ? "登入即可跨裝置同步進度" : "Sign in to sync progress")
+                        : advSelectedTypeMeta?.status === "saving"
+                          ? (lang === "zh" ? "儲存中…" : "Saving…")
+                          : advSelectedTypeMeta?.status === "saved"
+                            ? (lang === "zh" ? "已自動儲存" : "Autosaved")
+                            : advSelectedTypeMeta?.status === "error"
+                              ? (lang === "zh" ? "儲存失敗" : "Save failed")
+                              : ""}
+                    </span>
+                    <button
+                      onClick={() => {
+                        setAdvSelectedType(null);
+                        setAdvSelectedMod(moderatorColumns[0] || "");
+                        setAdvOutput(null);
+                        setAdvRCode(null);
+                        setAdvHistory([]);
+                        setAdvAiResult(null);
+                        setAdvPlotImg(null);
+                        setAdvError(null);
+                        if (user) resetWorkshop(user, WK);
+                      }}
+                      style={{ background: "none", border: "none", color: MUTED, fontSize: 12, cursor: "pointer", textDecoration: "underline" }}
+                    >
+                      {lang === "zh" ? "重設工作坊" : "Reset workshop"}
+                    </button>
+                  </div>
                   <p style={{ fontSize: 13, color: MUTED, marginBottom: 20, lineHeight: 1.7 }}>
                     {tx.advSubtitle}
                   </p>

@@ -3,6 +3,8 @@ import { useI18n } from "./i18n";
 import SiteNav from "./SiteNav";
 import CuteDino from "./CuteDino";
 import DinoEggHatch, { DragonEgg } from "./DinoEggHatch";
+import { useWorkshopField, resetWorkshop } from "./useWorkshopField";
+import CourseNotes from "./CourseNotes";
 
 // ═══ DESIGN TOKENS (matching existing site) ═══
 const TEAL = "#0E7C86";
@@ -325,12 +327,13 @@ function PicoBuilder({ t, lang }) {
 
 
 // ═══ AI PICO WORKSHOP ═══
-function AIPicoWorkshop({ t, lang }) {
-  const [scenario, setScenario] = useState("A");
-  const [inputs, setInputs] = useState({ p: "", i: "", c: "", o: "" });
-  const [feedback, setFeedback] = useState({ p: null, i: null, c: null, o: null });
+function AIPicoWorkshop({ t, lang, user }) {
+  const WK = "course1_pico";
+  const [scenario, setScenario, scenarioMeta] = useWorkshopField(user, WK, "scenario", "A");
+  const [inputs, setInputs] = useWorkshopField(user, WK, "inputs", { p: "", i: "", c: "", o: "" });
+  const [feedback, setFeedback] = useWorkshopField(user, WK, "feedback", { p: null, i: null, c: null, o: null });
+  const [overallFeedback, setOverallFeedback] = useWorkshopField(user, WK, "overallFeedback", null);
   const [loading, setLoading] = useState({ p: false, i: false, c: false, o: false });
-  const [overallFeedback, setOverallFeedback] = useState(null);
   const [overallLoading, setOverallLoading] = useState(false);
 
   const scenarioContext = {
@@ -440,8 +443,31 @@ Don't use Markdown formatting.`;
 
   const allFilled = Object.values(inputs).every(v => v.trim());
 
+  const handleReset = () => {
+    setScenario("A");
+    setInputs({ p: "", i: "", c: "", o: "" });
+    setFeedback({ p: null, i: null, c: null, o: null });
+    setOverallFeedback(null);
+    if (user) resetWorkshop(user, WK);
+  };
+
+  const status = scenarioMeta?.status;
+  const statusText =
+    !user ? (lang === "zh" ? "登入即可跨裝置同步" : "Sign in to sync progress")
+    : status === "saving" ? (lang === "zh" ? "儲存中…" : "Saving…")
+    : status === "saved" ? (lang === "zh" ? "已自動儲存" : "Autosaved")
+    : status === "error" ? (lang === "zh" ? "儲存失敗" : "Save failed")
+    : "";
+
   return (
     <div style={{ background: CARD_BG, borderRadius: 20, border: `1px solid ${LIGHT_BORDER}`, padding: "32px 24px", boxShadow: "0 2px 20px rgba(0,0,0,0.04)" }}>
+      {/* Save status + reset */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, fontSize: 12, color: MUTED }}>
+        <span>{statusText}</span>
+        <button onClick={handleReset} style={{ background: "none", border: "none", color: MUTED, fontSize: 12, cursor: "pointer", textDecoration: "underline" }}>
+          {lang === "zh" ? "重設" : "Reset"}
+        </button>
+      </div>
       {/* Scenario selector */}
       <h4 style={{ fontSize: 14, fontWeight: 600, color: MUTED, marginBottom: 12 }}>{t("c1aiScenario")}</h4>
       <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 28 }}>
@@ -1070,7 +1096,7 @@ export default function Course1PICO({ onNavigate, user, onLogin, onLogout }) {
         <div style={{ maxWidth: 880, margin: "0 auto" }}>
           <FadeIn><SectionLabel text={t("c1aiLabel")} /><SectionTitle>{t("c1aiTitle")}</SectionTitle></FadeIn>
           <FadeIn delay={0.1}><Paragraph style={{ marginBottom: 32 }}>{t("c1aiDesc")}</Paragraph></FadeIn>
-          <FadeIn delay={0.15}><AIPicoWorkshop t={t} lang={lang} /></FadeIn>
+          <FadeIn delay={0.15}><AIPicoWorkshop t={t} lang={lang} user={user} /></FadeIn>
         </div>
       </section>
 
@@ -1084,6 +1110,8 @@ export default function Course1PICO({ onNavigate, user, onLogin, onLogout }) {
       </section>
 
       </div>{/* end .main-content */}
+
+      <CourseNotes user={user} courseId={1} courseTitle={t("hubC1Title")} lang={lang} />
 
       {/* FOOTER */}
       <footer style={{ padding: "40px 24px", textAlign: "center", borderTop: `1px solid ${LIGHT_BORDER}`, background: LIGHT_BG, marginLeft: 0 }}>
