@@ -22,6 +22,10 @@ A bilingual (繁體中文 / English) interactive platform that teaches systemati
 
 **Easter Egg Quiz** — 35 questions across 7 categories, each represented by a collectible dinosaur egg. Downloadable cheat sheets for each category.
 
+**Per-course notes drawer** — A collapsible side tab on every course page lets logged-in users keep running notes. Autosaves to Supabase as you type, with a `localStorage` fallback when offline. Each course's notes are listed on the Profile page and can be downloaded as `.txt` or `.docx`, or shared to email via `mailto:`.
+
+**Resumable workshops** — The AI PICO workshop (Course 1) and the WebR advanced-analysis panel (Final Workshop) persist every input, AI response, and completed analysis to Supabase as you go. Pause mid-workshop, close the tab, return tomorrow — your scenario, PICO fields, AI feedback, selected analysis type, and per-run history all rehydrate. A "Reset workshop" button wipes the saved state when you want to start over.
+
 ## How AI Works Here
 
 AI acts as a methodology advisor — it looks at your specific results and tells you what to explore next and why. AI never writes R code. JavaScript assembles all code from static, pre-tested templates based on AI's structured recommendations. Same inputs → same R code → same results.
@@ -39,9 +43,23 @@ AI acts as a methodology advisor — it looks at your specific results and tells
 
 Content grounded in established methodological frameworks including the PRISMA 2020 guidelines, the Cochrane Handbook, and peer-reviewed meta-analysis tutorials.
 
-## License
+## License & Reuse
 
-MIT
+**© Evelyn Chang. All rights reserved.**
+
+This repository is published as a public portfolio so that the code, design, and pedagogy can be reviewed by potential collaborators, employers, and reviewers. It is **not** open-source.
+
+You may:
+- Read the source code.
+- Reference patterns or ideas in your own original work.
+- Cite this project with attribution.
+
+You may **not**, without prior written permission:
+- Copy, modify, or redistribute any part of the source code.
+- Deploy your own instance derived from this codebase.
+- Use the code (in whole or in part) in another project, commercial or otherwise.
+
+For permission requests or collaboration enquiries, contact the author (see below).
 
 ## Author
 

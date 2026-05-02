@@ -1,6 +1,8 @@
-# Notes Drawer & Workshop Persistence — Plan
+# Notes Drawer & Workshop Persistence — Plan & Implementation
 
-Two related features to add to the courses:
+**Status: shipped.** This file is both the original plan and a post-mortem of what actually happened during deployment.
+
+Two related features added to the courses:
 
 1. **Per-course collapsible note-taking side tab** with autosave + email/download export.
 2. **Real-time persistence for workshops** so users who pause mid-workshop don't lose their inputs, AI feedback, or analysis state.
@@ -192,3 +194,58 @@ Workshop persistence first — it's a regression fix for an existing broken beha
 - Confirm the right edge of each course page (Course0–5) is genuinely empty in the rightmost 360px when drawer is open — verify per course before committing.
 - Confirm `mailto:` is acceptable for v1, or whether we should plan the serverless email endpoint up front.
 - Confirm note scope: one note per course (recommended) vs. allow multiple named notes per course.
+
+---
+
+## Post-deployment notes (what actually happened)
+
+### Files that shipped
+- `public/service-worker.js` — strategy rewrite (see "Bug 2" below)
+- `plan & discussion/SQL_MIGRATION_NOTES_AND_WORKSHOP.sql` — Supabase migration
+- `src/App.jsx` — `redirectTo` added to `signInWithOAuth` (see "Bug 3" below)
+- `src/CourseNotes.jsx` (new) — drawer
+- `src/Course0.jsx`…`src/Course5.jsx` — mount points
+- `src/Course1.jsx` — `AIPicoWorkshop` migrated; status indicator + reset button
+- `src/Final.jsx` — pass `user` through to `WebRRunner`
+- `src/ProfilePage.jsx` — My Notes section + per-row actions
+- `src/WebRRunner.jsx` — advanced-analysis state migrated; status indicator + reset button
+- `src/notesExport.js` (new) — `.txt`/`.docx`/`mailto:` helpers
+- `src/useWorkshopField.js` (new) — autosave hook
+
+### Implementation notes vs. the original plan
+- **i18n**: did *not* add dedicated translation keys. Used inline `lang === "zh" ? ... : ...` ternaries to match the existing pattern in `AIPicoWorkshop`/`AIPicoFreestyle`. If translation tables are added later, the inline strings are easy to grep and replace.
+- **Tab vertical position**: started at `top: 40%` (vertical-center) and was moved to `top: 140` (just under SiteNav) after a deploy-time collision with the Vercel preview toolbar. See "Bug 1".
+- **z-index**: bumped to ~max int32 (`2147483000`) on the tab/drawer/backdrop so future third-party overlays (Vercel preview toolbar, Intercom, etc.) don't cover them.
+
+### Bugs hit during deployment & how they were resolved
+
+**Bug 1 — Vercel preview toolbar covered the tab.**
+- *Symptom*: tab visible on localhost, missing on `*-git-dev-*.vercel.app` previews.
+- *Cause*: my original `top: 40%` placed the tab in the same right-edge zone as Vercel's preview-only floating toolbar (which uses a very high z-index).
+- *Fix*: moved tab to `top: 140` and bumped z-index to ~int32-max.
+- *Lesson*: when you have full control of the right edge in dev, remember production previews can inject their own widgets there. Prefer `top: <px>` near the nav over `top: <%>` mid-viewport.
+
+**Bug 2 — Service worker served stale `index.html` indefinitely.**
+- *Symptom*: notes code was on `main`, build succeeded, bundle was on the CDN, but returning visitors didn't see the tab even after hard refresh on the production URL.
+- *Cause*: [public/service-worker.js](../public/service-worker.js) used a cache-first strategy for *every* request, including HTML. Once cached, the old `index.html` (referencing the old hashed JS bundle) was served forever; the new bundle was on the CDN but never linked to.
+- *Fix*: rewrote the SW to be **network-first for HTML**, **cache-first for hashed assets**, and bumped `CACHE_NAME` from `ma101-v1` to `ma101-v2` so existing clients flush stale caches on activate. CRA's content-hashed filenames (`main.0898092c.js`) are safe to cache forever; only `index.html` needs to be fresh.
+- *Lesson*: when a deploy "doesn't work" but localhost does, **service worker caching is hypothesis #1**, not the last guess. Test in incognito first to rule it out.
+
+**Bug 3 — Google login bounced users to the wrong domain.**
+- *Symptom*: user starts on production URL, logs in with Google, lands on a `-git-dev-` preview URL where the notes feature doesn't exist (because that branch's bundle predates the feature).
+- *Cause*: `supabase.auth.signInWithOAuth({ provider: "google" })` had no `redirectTo` option, so Supabase fell back to the dashboard's "Site URL" — which had been set to a preview URL during earlier testing and never updated.
+- *Fix (two parts)*:
+  1. Dashboard: set Site URL to production (`https://meta-analysis-101.vercel.app`); added `localhost:3000/**`, `meta-analysis-101.vercel.app/**`, and `meta-analysis-101-*.vercel.app/**` to the redirect URL allowlist.
+  2. Code: pass `redirectTo: window.location.origin + window.location.pathname + window.location.hash` so login returns to the exact URL the user was on, regardless of dashboard config. This makes localhost/preview/production each work correctly without dashboard juggling.
+- *Lesson*: a single global "Site URL" can't serve multi-environment workflows. Pass `redirectTo` per call; let the dashboard be a fallback only. When users describe "the deployed site doesn't work", confirm whether they mean *the URL they typed* or *the URL they ended up on after auth/redirect chains*.
+
+### Verification checklist (run after each future deploy)
+1. Production URL → notes tab visible at top-right under nav.
+2. Click tab → drawer slides in, no layout shift on the page.
+3. Type → status flips through `Saving…` → `Saved · just now`.
+4. Refresh → content rehydrates.
+5. Open Course1 AI PICO Workshop → fill a few fields → refresh → state persists.
+6. Open Final → WebR advanced panel → run an analysis → refresh → `advHistory` and selections persist.
+7. Profile page → My Notes section lists every course you've taken notes on.
+8. Log out, log in again from production URL → land back on production URL.
+9. Same flow from `localhost:3000` → land back on `localhost:3000`.
