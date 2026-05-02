@@ -201,8 +201,7 @@ export default function CourseNotes({ user, courseId, courseTitle, lang = "en" }
       style={{
         position: "fixed",
         right: open ? drawerWidth : 0,
-        top: "40%",
-        transform: "translateY(-50%)",
+        top: 140,
         transition: "right 0.28s ease",
         width: 40,
         minHeight: 120,
@@ -211,7 +210,7 @@ export default function CourseNotes({ user, courseId, courseTitle, lang = "en" }
         border: "none",
         borderRadius: "10px 0 0 10px",
         cursor: "pointer",
-        zIndex: 95,
+        zIndex: 2147483000,
         fontFamily: FONT,
         fontSize: 12,
         fontWeight: 600,
@@ -238,7 +237,7 @@ export default function CourseNotes({ user, courseId, courseTitle, lang = "en" }
           opacity: open ? 1 : 0,
           pointerEvents: open ? "auto" : "none",
           transition: "opacity 0.28s ease",
-          zIndex: 92,
+          zIndex: 2147482900,
           display: "block",
         }}
         className="course-notes-backdrop"
@@ -255,7 +254,7 @@ export default function CourseNotes({ user, courseId, courseTitle, lang = "en" }
           boxShadow: open ? "-8px 0 28px rgba(0,0,0,0.08)" : "none",
           transform: open ? "translateX(0)" : "translateX(100%)",
           transition: "transform 0.28s ease",
-          zIndex: 94,
+          zIndex: 2147482950,
           display: "flex",
           flexDirection: "column",
           fontFamily: FONT,
