@@ -111,6 +111,13 @@ const T = {
     robSome: "部分疑慮",
     robHigh: "高",
     robOverall: "整體偏差風險",
+    rob2SectionTitle: "隨機對照試驗 (RoB 2)",
+    robinsISectionTitle: "非隨機研究 (ROBINS-I)",
+    robinsIDomains: ["干擾因子", "受試者選擇", "介入分類", "介入偏離", "資料缺失", "結局測量", "選擇性報告"],
+    robinsILow: "低",
+    robinsIModerate: "中等",
+    robinsISerious: "嚴重",
+    robinsICritical: "極嚴重",
     // Phase gate
     gateTitle: "Phase 1 完成！",
     gateDesc: "你已完成規劃階段。前往分析篇繼續你的統合分析。",
@@ -221,6 +228,13 @@ const T = {
     robSome: "Some Concerns",
     robHigh: "High",
     robOverall: "Overall Risk of Bias",
+    rob2SectionTitle: "Randomized Trials (RoB 2)",
+    robinsISectionTitle: "Non-Randomized Studies (ROBINS-I)",
+    robinsIDomains: ["Confounding", "Selection", "Classification", "Deviations", "Missing Data", "Measurement", "Reporting"],
+    robinsILow: "Low",
+    robinsIModerate: "Moderate",
+    robinsISerious: "Serious",
+    robinsICritical: "Critical",
     // Phase gate
     gateTitle: "Phase 1 Complete!",
     gateDesc: "You've finished the planning phase. Continue to the analysis workshop.",
@@ -269,6 +283,7 @@ function newStudy(id) {
     txCont: { mean: "", sd: "", n: "" },
     ctrlCont: { mean: "", sd: "", n: "" },
     rob: { randomization: "", blinding: "", attrition: "", reporting: "", other: "", overall: "" },
+    robinsI: { confounding: "", selection: "", classification: "", deviations: "", missingData: "", measurement: "", reporting: "", overall: "" },
     moderators: {},
   };
 }
@@ -1190,63 +1205,66 @@ function Step4Extraction({ project, setProject, lang }) {
 }
 
 // ═══ STEP 5: RISK OF BIAS ═══
+// RoB 2 (RCTs / Quasi-RCTs): 5 domains, 3 levels
 const ROB_LEVELS = ["low", "some", "high"];
 const ROB_COLORS = { low: GREEN, some: AMBER, high: RED };
 const ROB_ICONS = { low: "🟢", some: "🟡", high: "🔴" };
+const ROB_DOMAINS = ["randomization", "blinding", "attrition", "reporting", "other"];
 
-function Step5RoB({ project, setProject, lang }) {
+// ROBINS-I (Non-randomized studies): 7 domains, 4 levels
+// Levels ordered best→worst so overall = first match walking from worst end
+const ROBINS_I_LEVELS = ["low", "moderate", "serious", "critical"];
+const ROBINS_I_COLORS = { low: GREEN, moderate: AMBER, serious: "#E07A2E", critical: "#7A1F0F" };
+const ROBINS_I_ICONS = { low: "🟢", moderate: "🟡", serious: "🟠", critical: "🔴" };
+const ROBINS_I_DOMAINS = ["confounding", "selection", "classification", "deviations", "missingData", "measurement", "reporting"];
+
+// Pick worst rated level (walk levels from worst→best, return first match).
+// Returns "" if no domain is rated yet, or the best level only when ALL domains are rated.
+function deriveOverall(domainVals, levels, totalDomains) {
+  const rated = domainVals.filter(Boolean);
+  for (let i = levels.length - 1; i > 0; i--) {
+    if (rated.includes(levels[i])) return levels[i];
+  }
+  return rated.length === totalDomains ? levels[0] : "";
+}
+
+function RoBMatrix({ studies, setProject, lang, field, domains, domainLabels, levels, levelLabels, levelColors, levelIcons }) {
   const tx = T[lang];
-  const included = (project.studies || []).filter(s => s.included);
-  const domains = ["randomization", "blinding", "attrition", "reporting", "other"];
-  const domainLabels = tx.robDomains;
-  const levelLabels = { low: tx.robLow, some: tx.robSome, high: tx.robHigh };
 
-  const updateRob = (studyId, domain, val) => {
+  const updateRating = (studyId, domain, val) => {
     setProject(prev => ({
       ...prev,
       studies: prev.studies.map(s => {
         if (s.id !== studyId) return s;
-        const newRob = { ...s.rob, [domain]: val };
-        // Auto-derive overall: worst domain
-        const vals = domains.map(d => newRob[d]).filter(Boolean);
-        const overall = vals.includes("high") ? "high" : vals.includes("some") ? "some" : (vals.length === domains.length ? "low" : "");
-        return { ...s, rob: { ...newRob, overall } };
+        const next = { ...s[field], [domain]: val };
+        const overall = deriveOverall(domains.map(d => next[d]), levels, domains.length);
+        return { ...s, [field]: { ...next, overall } };
       }),
     }));
   };
 
-  if (included.length === 0) {
-    return <div style={{ textAlign: "center", padding: 40, color: MUTED }}>{lang === "zh" ? "請先新增研究" : "Please add studies first"}</div>;
-  }
-
   return (
-    <div>
-      <Hint>
-        {lang === "zh"
-          ? "為每篇研究的每個偏差風險領域評分。整體評分會自動根據最差的領域計算。"
-          : "Rate each risk of bias domain for every study. Overall rating is auto-derived from the worst domain."}
-      </Hint>
-
-      {/* Traffic light matrix */}
-      <div style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: 0, fontSize: 13 }}>
-          <thead>
-            <tr>
-              <th style={{ textAlign: "left", padding: "8px 10px", color: DARK, fontWeight: 600, borderBottom: `2px solid ${LIGHT_BORDER}`, position: "sticky", left: 0, background: LIGHT_BG, zIndex: 1, minWidth: 120 }}>
-                {tx.study}
+    <div style={{ overflowX: "auto" }}>
+      <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: 0, fontSize: 13 }}>
+        <thead>
+          <tr>
+            <th style={{ textAlign: "left", padding: "8px 10px", color: DARK, fontWeight: 600, borderBottom: `2px solid ${LIGHT_BORDER}`, position: "sticky", left: 0, background: LIGHT_BG, zIndex: 1, minWidth: 120 }}>
+              {tx.study}
+            </th>
+            {domainLabels.map((d, i) => (
+              <th key={i} style={{ textAlign: "center", padding: "8px 6px", color: MUTED, fontWeight: 500, borderBottom: `2px solid ${LIGHT_BORDER}`, fontSize: 11, minWidth: 70 }}>
+                {d}
               </th>
-              {domainLabels.map((d, i) => (
-                <th key={i} style={{ textAlign: "center", padding: "8px 6px", color: MUTED, fontWeight: 500, borderBottom: `2px solid ${LIGHT_BORDER}`, fontSize: 11, minWidth: 70 }}>
-                  {d}
-                </th>
-              ))}
-              <th style={{ textAlign: "center", padding: "8px 6px", color: DARK, fontWeight: 700, borderBottom: `2px solid ${LIGHT_BORDER}`, fontSize: 11, minWidth: 70 }}>
-                {tx.robOverall}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {included.map((study, idx) => (
+            ))}
+            <th style={{ textAlign: "center", padding: "8px 6px", color: DARK, fontWeight: 700, borderBottom: `2px solid ${LIGHT_BORDER}`, fontSize: 11, minWidth: 70 }}>
+              {tx.robOverall}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {studies.map((study, idx) => {
+            const ratings = study[field] || {};
+            return (
               <tr key={study.id}>
                 <td style={{ padding: "8px 10px", fontWeight: 500, color: DARK, borderBottom: `1px solid ${LIGHT_BORDER}`, position: "sticky", left: 0, background: CARD_BG, zIndex: 1, maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {study.citation || `${tx.study} ${idx + 1}`}
@@ -1254,13 +1272,13 @@ function Step5RoB({ project, setProject, lang }) {
                 {domains.map((domain) => (
                   <td key={domain} style={{ textAlign: "center", padding: "6px 4px", borderBottom: `1px solid ${LIGHT_BORDER}` }}>
                     <div style={{ display: "flex", gap: 3, justifyContent: "center" }}>
-                      {ROB_LEVELS.map(level => (
-                        <button key={level} onClick={() => updateRob(study.id, domain, level)}
+                      {levels.map(level => (
+                        <button key={level} onClick={() => updateRating(study.id, domain, level)}
                           title={levelLabels[level]}
                           style={{
                             width: 24, height: 24, borderRadius: "50%", border: "none", cursor: "pointer",
-                            background: study.rob[domain] === level ? ROB_COLORS[level] : `${ROB_COLORS[level]}20`,
-                            color: study.rob[domain] === level ? "#FFF" : ROB_COLORS[level],
+                            background: ratings[domain] === level ? levelColors[level] : `${levelColors[level]}20`,
+                            color: ratings[domain] === level ? "#FFF" : levelColors[level],
                             fontSize: 10, fontWeight: 700, transition: "all 0.15s",
                             display: "flex", alignItems: "center", justifyContent: "center",
                           }}>
@@ -1271,16 +1289,85 @@ function Step5RoB({ project, setProject, lang }) {
                   </td>
                 ))}
                 <td style={{ textAlign: "center", padding: "6px 4px", borderBottom: `1px solid ${LIGHT_BORDER}`, fontSize: 18 }}>
-                  {study.rob.overall ? ROB_ICONS[study.rob.overall] : "—"}
-                  <div style={{ fontSize: 10, color: study.rob.overall ? ROB_COLORS[study.rob.overall] : MUTED }}>
-                    {study.rob.overall ? levelLabels[study.rob.overall] : ""}
+                  {ratings.overall ? levelIcons[ratings.overall] : "—"}
+                  <div style={{ fontSize: 10, color: ratings.overall ? levelColors[ratings.overall] : MUTED }}>
+                    {ratings.overall ? levelLabels[ratings.overall] : ""}
                   </div>
                 </td>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function Step5RoB({ project, setProject, lang }) {
+  const tx = T[lang];
+  const included = (project.studies || []).filter(s => s.included);
+  // RCTs and Quasi-RCTs use RoB 2; everything else uses ROBINS-I
+  const isRct = s => s.design === "RCT" || s.design === "Quasi-RCT";
+  const rctStudies = included.filter(isRct);
+  const nrsiStudies = included.filter(s => !isRct(s));
+
+  if (included.length === 0) {
+    return <div style={{ textAlign: "center", padding: 40, color: MUTED }}>{lang === "zh" ? "請先新增研究" : "Please add studies first"}</div>;
+  }
+
+  const rob2LevelLabels = { low: tx.robLow, some: tx.robSome, high: tx.robHigh };
+  const robinsILevelLabels = { low: tx.robinsILow, moderate: tx.robinsIModerate, serious: tx.robinsISerious, critical: tx.robinsICritical };
+
+  const sectionHeading = (text) => (
+    <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "8px 0 12px" }}>
+      <div style={{ width: 4, height: 18, background: GOLD, borderRadius: 2 }} />
+      <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: DARK }}>{text}</h3>
+    </div>
+  );
+
+  return (
+    <div>
+      <Hint>
+        {lang === "zh"
+          ? "為每篇研究的每個偏差風險領域評分。整體評分會自動根據最差的領域計算。RCT 使用 RoB 2，非隨機研究使用 ROBINS-I。"
+          : "Rate each domain for every study. Overall is auto-derived from the worst domain. RCTs use RoB 2; non-randomized studies use ROBINS-I."}
+      </Hint>
+
+      {rctStudies.length > 0 && (
+        <section style={{ marginBottom: nrsiStudies.length > 0 ? 28 : 0 }}>
+          {sectionHeading(tx.rob2SectionTitle)}
+          <RoBMatrix
+            studies={rctStudies}
+            setProject={setProject}
+            lang={lang}
+            field="rob"
+            domains={ROB_DOMAINS}
+            domainLabels={tx.robDomains}
+            levels={ROB_LEVELS}
+            levelLabels={rob2LevelLabels}
+            levelColors={ROB_COLORS}
+            levelIcons={ROB_ICONS}
+          />
+        </section>
+      )}
+
+      {nrsiStudies.length > 0 && (
+        <section>
+          {sectionHeading(tx.robinsISectionTitle)}
+          <RoBMatrix
+            studies={nrsiStudies}
+            setProject={setProject}
+            lang={lang}
+            field="robinsI"
+            domains={ROBINS_I_DOMAINS}
+            domainLabels={tx.robinsIDomains}
+            levels={ROBINS_I_LEVELS}
+            levelLabels={robinsILevelLabels}
+            levelColors={ROBINS_I_COLORS}
+            levelIcons={ROBINS_I_ICONS}
+          />
+        </section>
+      )}
     </div>
   );
 }
