@@ -399,6 +399,9 @@ function buildRCode(studies, bin, effectType, model, modColumns) {
   const method = model === "fixed" ? 'method = "FE"' : 'method = "REML"';
   const measure = effectType || "OR";
   const q = s => `"${s.citation.replace(/"/g, '\\"')}"`;
+  // Empty-string and null cells become R's NA. Plain `??` lets `""` through, which
+  // produces invalid R like `c(245, , 432)`.
+  const num = v => (v === "" || v == null) ? "NA" : v;
 
   // Build moderator column lines for the data.frame
   const modLines = (modColumns || []).map(col => {
@@ -429,10 +432,10 @@ library(metafor)
     code += `# ── Study Data (Binary Outcome) ──
 dat <- data.frame(
   study = c(${studies.map(q).join(", ")}),
-  ai    = c(${studies.map(s => s.tx?.events ?? "NA").join(", ")}),   # intervention events
-  n1i   = c(${studies.map(s => s.tx?.total ?? "NA").join(", ")}),  # intervention total
-  ci    = c(${studies.map(s => s.ctrl?.events ?? "NA").join(", ")}),   # control events
-  n2i   = c(${studies.map(s => s.ctrl?.total ?? "NA").join(", ")})${modComment}
+  ai    = c(${studies.map(s => num(s.tx?.events)).join(", ")}),   # intervention events
+  n1i   = c(${studies.map(s => num(s.tx?.total)).join(", ")}),  # intervention total
+  ci    = c(${studies.map(s => num(s.ctrl?.events)).join(", ")}),   # control events
+  n2i   = c(${studies.map(s => num(s.ctrl?.total)).join(", ")})${modComment}
 )
 
 # ── Calculate Effect Sizes ──
@@ -446,12 +449,12 @@ dat <- escalc(measure = "${measure}",
     code += `# ── Study Data (Continuous Outcome) ──
 dat <- data.frame(
   study = c(${studies.map(q).join(", ")}),
-  m1i   = c(${studies.map(s => s.txCont?.mean ?? "NA").join(", ")}),   # intervention mean
-  sd1i  = c(${studies.map(s => s.txCont?.sd ?? "NA").join(", ")}),  # intervention SD
-  n1i   = c(${studies.map(s => s.txCont?.n ?? "NA").join(", ")}),   # intervention N
-  m2i   = c(${studies.map(s => s.ctrlCont?.mean ?? "NA").join(", ")}),   # control mean
-  sd2i  = c(${studies.map(s => s.ctrlCont?.sd ?? "NA").join(", ")}),  # control SD
-  n2i   = c(${studies.map(s => s.ctrlCont?.n ?? "NA").join(", ")})${modComment}
+  m1i   = c(${studies.map(s => num(s.txCont?.mean)).join(", ")}),   # intervention mean
+  sd1i  = c(${studies.map(s => num(s.txCont?.sd)).join(", ")}),  # intervention SD
+  n1i   = c(${studies.map(s => num(s.txCont?.n)).join(", ")}),   # intervention N
+  m2i   = c(${studies.map(s => num(s.ctrlCont?.mean)).join(", ")}),   # control mean
+  sd2i  = c(${studies.map(s => num(s.ctrlCont?.sd)).join(", ")}),  # control SD
+  n2i   = c(${studies.map(s => num(s.ctrlCont?.n)).join(", ")})${modComment}
 )
 
 # ── Calculate Effect Sizes ──
@@ -569,7 +572,7 @@ function Step2({ project, analysis, lang }) {
   );
 }
 
-function Step3({ project, analysis, setA, lang }) {
+function Step3({ project, analysis, setA, lang, user }) {
   const tx = T[lang]; const [tab, setTab] = useState("webr");
   const inc = getIncluded(project); const bin = isBinary(inc);
   const modColumns = project.moderatorColumns || [];
@@ -1087,7 +1090,7 @@ export default function Final({ onNavigate, user, onLogin, onLogout }) {
         <Card style={{ marginBottom: 24 }}>
           {step === 0 && <Step1 analysis={analysis} setA={setA} project={project} lang={lang} />}
           {step === 1 && <Step2 project={project} analysis={analysis} lang={lang} />}
-          {step === 2 && <Step3 project={project} analysis={analysis} setA={setA} lang={lang} />}
+          {step === 2 && <Step3 project={project} analysis={analysis} setA={setA} lang={lang} user={user} />}
           {step === 3 && <Step4 analysis={analysis} setA={setA} project={project} lang={lang} />}
           {step === 4 && <Step5 analysis={analysis} setA={setA} project={project} lang={lang} />}
           {isDone && <Completion analysis={analysis} project={project} lang={lang} onNavigate={onNavigate} onBack={() => setStep(s => s - 1)} />}

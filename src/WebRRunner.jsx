@@ -280,7 +280,7 @@ plot(inf)`;
     case "subgroup": {
       if (!moderator) return null;
       const safemod = moderator.replace(/[^a-zA-Z0-9_]/g, "_").toLowerCase();
-      const vals = [...new Set(studies.map(s => s.moderators?.[moderator]).filter(Boolean))];
+      const vals = [...new Set(studies.map(s => s.moderators?.[moderator]).filter(v => v != null && v !== ""))];
       if (vals.length === 0) return null;
 
       let code = `# ── Subgroup Analysis by "${moderator}" ──\n`;
@@ -288,8 +288,9 @@ plot(inf)`;
       code += `cat("  Subgroup Analysis: ${moderator}\\n")\n`;
       code += `cat("══════════════════════════════════════\\n\\n")\n`;
       vals.forEach((val) => {
-        const safeVal = val.replace(/"/g, '\\"');
-        const safeVarName = val.replace(/[^a-zA-Z0-9]/g, "_");
+        const valStr = String(val);
+        const safeVal = valStr.replace(/"/g, '\\"');
+        const safeVarName = valStr.replace(/[^a-zA-Z0-9]/g, "_");
         code += `\nres_sub_${safeVarName} <- tryCatch(\n`;
         code += `  rma(yi, vi, data = dat, subset = (${safemod} == "${safeVal}"), ${method}, slab = dat$study),\n`;
         code += `  error = function(e) NULL)\n`;
@@ -965,8 +966,15 @@ export default function WebRRunner({ rCode, lang = "zh", pico, effectType, model
           window.__WebR = WebR;
           window.dispatchEvent(new Event("webr-loaded"));
         `;
-        window.addEventListener("webr-loaded", () => resolve({ WebR: window.__WebR }), { once: true });
-        script.onerror = reject;
+        const timeoutId = setTimeout(() => {
+          reject(new Error("WebR engine took too long to load (network blocked or CDN unreachable)"));
+        }, 60000);
+        const onLoaded = () => {
+          clearTimeout(timeoutId);
+          resolve({ WebR: window.__WebR });
+        };
+        window.addEventListener("webr-loaded", onLoaded, { once: true });
+        script.onerror = (e) => { clearTimeout(timeoutId); reject(e); };
         document.head.appendChild(script);
       });
       const webR = new WebR();
