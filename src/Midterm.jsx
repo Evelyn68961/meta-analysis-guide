@@ -112,6 +112,9 @@ const T = {
     robHigh: "高",
     robOverall: "整體偏差風險",
     rob2SectionTitle: "隨機對照試驗 (RoB 2)",
+    robMigrationTitle: "🔄 偏差風險評估已升級為 RoB 2",
+    robMigrationBody: "你之前儲存的 RoB 評分已遷移：「隨機化」欄位的評分被保留，其他四個欄位因領域定義改變而清空。請依照新的 RoB 2 定義重新評分。",
+    robMigrationDismiss: "了解 ✕",
     robinsISectionTitle: "非隨機研究 (ROBINS-I)",
     robinsIDomains: ["干擾因子", "受試者選擇", "介入分類", "介入偏離", "資料缺失", "結局測量", "選擇性報告"],
     robinsILow: "低",
@@ -229,6 +232,9 @@ const T = {
     robHigh: "High",
     robOverall: "Overall Risk of Bias",
     rob2SectionTitle: "Randomized Trials (RoB 2)",
+    robMigrationTitle: "🔄 Risk-of-bias has been upgraded to RoB 2",
+    robMigrationBody: "Your previously saved RoB ratings were migrated: the \"Randomization\" column was preserved, but the other four columns were cleared because their domain definitions changed. Please re-rate them against the new RoB 2 definitions.",
+    robMigrationDismiss: "Got it ✕",
     robinsISectionTitle: "Non-Randomized Studies (ROBINS-I)",
     robinsIDomains: ["Confounding", "Selection", "Classification", "Deviations", "Missing Data", "Measurement", "Reporting"],
     robinsILow: "Low",
@@ -1388,8 +1394,46 @@ function Step5RoB({ project, setProject, lang }) {
     </div>
   );
 
+  const dismissMigrationNotice = () => {
+    setProject(prev => ({ ...prev, _robMigrated: false }));
+  };
+
   return (
     <div>
+      {project._robMigrated === true && (
+        <div style={{
+          background: "#FFF8EE",
+          border: `1.5px solid ${GOLD}55`,
+          borderRadius: 12,
+          padding: "14px 16px",
+          marginBottom: 16,
+          display: "flex",
+          alignItems: "flex-start",
+          gap: 12,
+        }}>
+          <div style={{ flex: 1, fontSize: 13, lineHeight: 1.55, color: DARK }}>
+            <div style={{ fontWeight: 700, marginBottom: 4 }}>{tx.robMigrationTitle}</div>
+            <div style={{ color: MUTED }}>{tx.robMigrationBody}</div>
+          </div>
+          <button
+            type="button"
+            onClick={dismissMigrationNotice}
+            style={{
+              background: "transparent",
+              border: `1px solid ${GOLD}55`,
+              color: DARK,
+              padding: "6px 12px",
+              borderRadius: 8,
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+              alignSelf: "center",
+            }}>
+            {tx.robMigrationDismiss}
+          </button>
+        </div>
+      )}
       <Hint>
         {lang === "zh"
           ? "為每篇研究的每個偏差風險領域評分。整體評分會自動根據最差的領域計算。RCT 使用 RoB 2 的五大領域（隨機化、偏離介入、缺失資料、結果測量、結果報告選擇）；非隨機研究使用 ROBINS-I。"
@@ -1496,7 +1540,14 @@ export default function Midterm({ onNavigate, user, onLogin, onLogout }) {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed.studies)) {
-          parsed.studies = parsed.studies.map(migrateStudyRob);
+          const migrated = parsed.studies.map(migrateStudyRob);
+          // If any study actually changed during migration (i.e. had legacy
+          // RoB 1 keys that needed remapping), set a flag so Step5RoB shows
+          // a dismissible banner explaining why four columns are now blank.
+          const didMigrate = migrated.some((s, i) => s !== parsed.studies[i]);
+          parsed.studies = migrated;
+          // Don't re-set if user already dismissed (false).
+          if (didMigrate && !("_robMigrated" in parsed)) parsed._robMigrated = true;
         }
         return parsed;
       }
