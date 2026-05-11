@@ -33,13 +33,26 @@ export function useWorkshopField(user, workshopKey, fieldKey, defaultValue) {
   const valueRef = useRef(value);
   const timerRef = useRef(null);
   const dirtyRef = useRef(false);
+  const mountedRef = useRef(true);
+  const lastUserIdRef = useRef(user?.id ?? null);
+  const defaultValueRef = useRef(defaultValue);
 
   valueRef.current = value;
+  defaultValueRef.current = defaultValue;
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
+
+  const safeSetStatus = useCallback((s) => {
+    if (mountedRef.current) setStatus(s);
+  }, []);
 
   const writeNow = useCallback(async () => {
     if (!user || !dirtyRef.current) return;
     dirtyRef.current = false;
-    setStatus("saving");
+    safeSetStatus("saving");
     try {
       const { error } = await supabase
         .from("workshop_state")
@@ -52,15 +65,27 @@ export function useWorkshopField(user, workshopKey, fieldKey, defaultValue) {
           },
           { onConflict: "user_id,workshop_key,field_key" }
         );
-      setStatus(error ? "error" : "saved");
+      safeSetStatus(error ? "error" : "saved");
     } catch {
-      setStatus("error");
+      safeSetStatus("error");
     }
-  }, [user, workshopKey, fieldKey]);
+  }, [user, workshopKey, fieldKey, safeSetStatus]);
 
-  // Hydrate once on mount / when user becomes available
+  const writeNowRef = useRef(writeNow);
+  writeNowRef.current = writeNow;
+
+  // Hydrate on mount / when user changes. Reset value first on user-change
+  // so the previous user's data never leaks into the new user's session.
   useEffect(() => {
     let cancelled = false;
+    const newUserId = user?.id ?? null;
+    if (lastUserIdRef.current !== newUserId) {
+      lastUserIdRef.current = newUserId;
+      dirtyRef.current = false;
+      if (timerRef.current) { clearTimeout(timerRef.current); timerRef.current = null; }
+      setValue(defaultValueRef.current);
+      setHydrated(false);
+    }
     if (!user) {
       setHydrated(true);
       return;
@@ -89,24 +114,28 @@ export function useWorkshopField(user, workshopKey, fieldKey, defaultValue) {
     return () => { pendingFlushers.delete(writeNow); };
   }, [writeNow]);
 
-  // Wrapped setter: marks dirty and schedules a debounced save
+  // Wrapped setter: marks dirty and schedules a debounced save.
+  // Skip writes until hydration completes so the default value never
+  // overwrites the persisted value mid-load.
   const setAndSave = useCallback((next) => {
     setValue((prev) => {
       const resolved = typeof next === "function" ? next(prev) : next;
       if (Object.is(resolved, prev)) return prev;
-      dirtyRef.current = true;
-      setStatus("saving");
-      if (timerRef.current) clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(() => { writeNow(); }, DEBOUNCE_MS);
+      if (hydrated) {
+        dirtyRef.current = true;
+        safeSetStatus("saving");
+        if (timerRef.current) clearTimeout(timerRef.current);
+        timerRef.current = setTimeout(() => { writeNowRef.current(); }, DEBOUNCE_MS);
+      }
       return resolved;
     });
-  }, [writeNow]);
+  }, [hydrated, safeSetStatus]);
 
-  // Flush on unmount
+  // Flush only on TRUE unmount, not on every writeNow identity change.
   useEffect(() => () => {
     if (timerRef.current) clearTimeout(timerRef.current);
-    writeNow();
-  }, [writeNow]);
+    writeNowRef.current();
+  }, []);
 
   return [value, setAndSave, { hydrated, status, flush: writeNow }];
 }

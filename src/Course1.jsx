@@ -387,14 +387,18 @@ Don't repeat the student's answer. Don't use Markdown formatting.`;
           userMessage: `${label.letter} (${lang === "zh" ? label.zh : label.en}): ${inputs[field]}`,
         }),
       });
-
+      if (!response.ok) {
+        setFeedback(prev => ({ ...prev, [field]: lang === "zh" ? "AI 服務暫時無法使用，請稍後再試。" : "AI service temporarily unavailable. Please try again later." }));
+        return;
+      }
       const data = await response.json();
       const text = data.content?.map(item => item.text || "").join("") || (lang === "zh" ? "無法取得回饋，請重試。" : "Could not get feedback. Please try again.");
       setFeedback(prev => ({ ...prev, [field]: text }));
     } catch (err) {
       setFeedback(prev => ({ ...prev, [field]: lang === "zh" ? "連線錯誤，請檢查網路後重試。" : "Connection error. Please check your network and try again." }));
+    } finally {
+      setLoading(prev => ({ ...prev, [field]: false }));
     }
-    setLoading(prev => ({ ...prev, [field]: false }));
   };
 
   const checkOverall = async () => {
@@ -616,13 +620,18 @@ Don't use Markdown formatting.`;
           userMessage: topic,
         }),
       });
+      if (!response.ok) {
+        setTopicFeedback(lang === "zh" ? "AI 服務暫時無法使用，請稍後再試。" : "AI service temporarily unavailable. Please try again later.");
+        return;
+      }
       const data = await response.json();
       const text = data.content?.map(item => item.text || "").join("") || (lang === "zh" ? "無法取得回饋，請重試。" : "Could not get feedback. Please try again.");
       setTopicFeedback(text);
     } catch (err) {
       setTopicFeedback(lang === "zh" ? "連線錯誤，請檢查網路後重試。" : "Connection error. Please check your network and try again.");
+    } finally {
+      setTopicLoading(false);
     }
-    setTopicLoading(false);
   };
 
   const checkField = async (field) => {
@@ -657,13 +666,18 @@ Don't repeat the student's answer. Don't use Markdown formatting.`;
           userMessage: `${label.letter} (${lang === "zh" ? label.zh : label.en}): ${inputs[field]}`,
         }),
       });
+      if (!response.ok) {
+        setFeedback(prev => ({ ...prev, [field]: lang === "zh" ? "AI 服務暫時無法使用，請稍後再試。" : "AI service temporarily unavailable. Please try again later." }));
+        return;
+      }
       const data = await response.json();
       const text = data.content?.map(item => item.text || "").join("") || (lang === "zh" ? "無法取得回饋，請重試。" : "Could not get feedback. Please try again.");
       setFeedback(prev => ({ ...prev, [field]: text }));
     } catch (err) {
       setFeedback(prev => ({ ...prev, [field]: lang === "zh" ? "連線錯誤，請檢查網路後重試。" : "Connection error. Please check your network and try again." }));
+    } finally {
+      setLoading(prev => ({ ...prev, [field]: false }));
     }
-    setLoading(prev => ({ ...prev, [field]: false }));
   };
 
   const checkOverall = async () => {
@@ -701,13 +715,18 @@ Don't use Markdown formatting.`;
           userMessage: picoText,
         }),
       });
+      if (!response.ok) {
+        setOverallFeedback(lang === "zh" ? "AI 服務暫時無法使用，請稍後再試。" : "AI service temporarily unavailable. Please try again later.");
+        return;
+      }
       const data = await response.json();
       const text = data.content?.map(item => item.text || "").join("") || (lang === "zh" ? "無法取得回饋，請重試。" : "Could not get feedback.");
       setOverallFeedback(text);
     } catch (err) {
       setOverallFeedback(lang === "zh" ? "連線錯誤，請檢查網路後重試。" : "Connection error. Please try again.");
+    } finally {
+      setOverallLoading(false);
     }
-    setOverallLoading(false);
   };
 
   const allFilled = Object.values(inputs).every(v => v.trim()) && topic.trim();

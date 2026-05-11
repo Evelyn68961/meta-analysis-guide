@@ -43,12 +43,12 @@ function subHeading(text) {
 }
 
 function labelValue(label, value) {
-  if (!value) return null;
+  if (value == null || value === "") return null;
   return new Paragraph({
     spacing: { after: 80 },
     children: [
       new TextRun({ text: `${label}: `, font: FONT, size: BODY, bold: true }),
-      new TextRun({ text: value, font: FONT, size: BODY }),
+      new TextRun({ text: String(value), font: FONT, size: BODY }),
     ],
   });
 }
@@ -87,6 +87,7 @@ export async function generateReport(project, analysis, lang) {
   const isZh = lang === "zh";
   const inc = (project?.studies || []).filter(s => s.included);
   const bin = inc.length > 0 && inc[0].outcomeType === "binary";
+  const a = analysis || {};
   const t = (zh, en) => isZh ? zh : en;
 
   const children = [];
@@ -200,28 +201,28 @@ export async function generateReport(project, analysis, lang) {
   // ─── 5. Analysis choices ───
   children.push(sectionHeading(t("5. 分析方法", "5. Analysis Methods")));
   children.push(
-    labelValue(t("效果量類型", "Effect Size"), analysis.effectType),
-    labelValue(t("模型", "Model"), analysis.model === "random" ? t("隨機效果", "Random-Effects") : t("固定效果", "Fixed-Effect")),
-    labelValue(t("選擇理由", "Rationale"), analysis.rationale),
+    labelValue(t("效果量類型", "Effect Size"), a.effectType),
+    labelValue(t("模型", "Model"), a.model === "random" ? t("隨機效果", "Random-Effects") : a.model === "fixed" ? t("固定效果", "Fixed-Effect") : null),
+    labelValue(t("選擇理由", "Rationale"), a.rationale),
   );
   children.push(emptyLine());
 
   // ─── 6. Interpretation ───
   children.push(sectionHeading(t("6. 結果解讀", "6. Result Interpretation")));
   children.push(
-    labelValue(t("整體效果量", "Pooled Effect"), analysis.forestQ1),
-    labelValue(t("一致性與權重", "Consistency & Weights"), analysis.forestQ2),
-    labelValue(t("異質性", "Heterogeneity"), analysis.hetInterpretation),
-    labelValue(t("漏斗圖", "Funnel Plot"), analysis.funnelAssessment),
+    labelValue(t("整體效果量", "Pooled Effect"), a.forestQ1),
+    labelValue(t("一致性與權重", "Consistency & Weights"), a.forestQ2),
+    labelValue(t("異質性", "Heterogeneity"), a.hetInterpretation),
+    labelValue(t("漏斗圖", "Funnel Plot"), a.funnelAssessment),
   );
 
   // Advanced interpretations
-  if ((analysis.completedAdvanced || []).length > 0) {
+  if ((a.completedAdvanced || []).length > 0) {
     children.push(subHeading(t("進階分析解讀", "Advanced Analysis Interpretations")));
-    for (const adv of analysis.completedAdvanced) {
+    for (const adv of a.completedAdvanced) {
       const key = adv.moderator ? `${adv.type}_${adv.moderator}` : adv.type;
       const label = adv.moderator ? `${adv.type} (${adv.moderator})` : adv.type;
-      const val = (analysis.advInterpretations || {})[key];
+      const val = (a.advInterpretations || {})[key];
       if (val) children.push(labelValue(label, val));
     }
   }
@@ -229,24 +230,24 @@ export async function generateReport(project, analysis, lang) {
   // AI interpretation feedback
   children.push(...feedbackBlock(
     t("🤖 AI 解讀回饋", "🤖 AI Interpretation Feedback"),
-    analysis._interpretFeedback, lang,
+    a._interpretFeedback, lang,
   ));
   children.push(emptyLine());
 
   // ─── 7. Conclusions ───
   children.push(sectionHeading(t("7. 結論", "7. Conclusions")));
   children.push(
-    labelValue(t("主要發現", "Main Finding"), analysis.mainFinding),
-    labelValue(t("證據確定性 (GRADE)", "Evidence Certainty (GRADE)"), analysis.certainty),
-    labelValue(t("GRADE 理由", "GRADE Rationale"), analysis.certRationale),
-    labelValue(t("主要限制", "Limitations"), analysis.limitations),
-    labelValue(t("臨床意義", "Clinical Implications"), analysis.implications),
+    labelValue(t("主要發現", "Main Finding"), a.mainFinding),
+    labelValue(t("證據確定性 (GRADE)", "Evidence Certainty (GRADE)"), a.certainty),
+    labelValue(t("GRADE 理由", "GRADE Rationale"), a.certRationale),
+    labelValue(t("主要限制", "Limitations"), a.limitations),
+    labelValue(t("臨床意義", "Clinical Implications"), a.implications),
   );
 
   // AI full review
   children.push(...feedbackBlock(
     t("🤖 AI 全面審查", "🤖 AI Full Project Review"),
-    analysis._fullReviewFeedback, lang,
+    a._fullReviewFeedback, lang,
   ));
 
   // ─── Build doc ───
@@ -278,11 +279,11 @@ export async function generateReport(project, analysis, lang) {
 
   const blob = await Packer.toBlob(doc);
   const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = isZh ? "統合分析報告.docx" : "Meta-Analysis_Report.docx";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = isZh ? "統合分析報告.docx" : "Meta-Analysis_Report.docx";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
   URL.revokeObjectURL(url);
 }

@@ -922,13 +922,18 @@ Be concise. Don't use Markdown formatting. Use plain text with line breaks.`;
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ system: systemPrompt, userMessage: query }),
       });
+      if (!response.ok) {
+        setFeedback(t("c2aiError"));
+        return;
+      }
       const data = await response.json();
       const text = data.content?.map(item => item.text || "").join("") || t("c2aiNoResult");
       setFeedback(text);
     } catch (err) {
       setFeedback(t("c2aiError"));
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
