@@ -77,9 +77,10 @@ const robLabel = {
   zh: { low: "低", some: "部分疑慮", high: "高" },
   en: { low: "Low", some: "Some Concerns", high: "High" },
 };
+// RoB 2 domain labels (5 domains + overall).
 const robDomainLabel = {
-  zh: { randomization: "隨機化", blinding: "盲化", attrition: "流失", reporting: "選擇性報告", other: "其他", overall: "整體" },
-  en: { randomization: "Randomization", blinding: "Blinding", attrition: "Attrition", reporting: "Sel. Reporting", other: "Other", overall: "Overall" },
+  zh: { randomization: "隨機化過程", deviations: "偏離預期介入", missing: "缺失結果數據", measurement: "結果測量", selection: "選擇性結果報告", overall: "整體" },
+  en: { randomization: "Randomization", deviations: "Deviations", missing: "Missing Data", measurement: "Measurement", selection: "Reported Result", overall: "Overall" },
 };
 
 // ── Main ──
@@ -166,7 +167,7 @@ export async function generateReport(project, analysis, lang) {
   const hasRob = inc.some(s => s.rob && Object.values(s.rob).some(v => v));
   if (hasRob) {
     children.push(sectionHeading(t("4. 偏差風險評估", "4. Risk of Bias Assessment")));
-    const domainKeys = ["randomization", "blinding", "attrition", "reporting", "other", "overall"];
+    const domainKeys = ["randomization", "deviations", "missing", "measurement", "selection", "overall"];
     const dl = robDomainLabel[isZh ? "zh" : "en"];
     const rl = robLabel[isZh ? "zh" : "en"];
 

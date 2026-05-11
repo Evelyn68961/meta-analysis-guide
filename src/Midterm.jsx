@@ -106,12 +106,12 @@ const T = {
     removeModerator: "移除此欄位",
     moderatorHint: "調節變項可用於分析篇的次群組分析和統合迴歸。",
     // Step 5
-    robDomains: ["隨機化", "盲化", "流失", "選擇性報告", "其他"],
+    robDomains: ["隨機化過程", "偏離預期介入", "缺失結果數據", "結果測量", "選擇性結果報告"],
     robLow: "低",
     robSome: "部分疑慮",
     robHigh: "高",
     robOverall: "整體偏差風險",
-    rob2SectionTitle: "隨機對照試驗（Cochrane 偏差風險）",
+    rob2SectionTitle: "隨機對照試驗 (RoB 2)",
     robinsISectionTitle: "非隨機研究 (ROBINS-I)",
     robinsIDomains: ["干擾因子", "受試者選擇", "介入分類", "介入偏離", "資料缺失", "結局測量", "選擇性報告"],
     robinsILow: "低",
@@ -223,12 +223,12 @@ const T = {
     removeModerator: "Remove column",
     moderatorHint: "Moderator variables enable subgroup analysis and meta-regression in the Analysis workshop.",
     // Step 5
-    robDomains: ["Randomization", "Blinding", "Attrition", "Selective Reporting", "Other"],
+    robDomains: ["Randomization", "Deviations", "Missing Data", "Measurement", "Reported Result"],
     robLow: "Low",
     robSome: "Some Concerns",
     robHigh: "High",
     robOverall: "Overall Risk of Bias",
-    rob2SectionTitle: "Randomized Trials (Cochrane Risk of Bias)",
+    rob2SectionTitle: "Randomized Trials (RoB 2)",
     robinsISectionTitle: "Non-Randomized Studies (ROBINS-I)",
     robinsIDomains: ["Confounding", "Selection", "Classification", "Deviations", "Missing Data", "Measurement", "Reporting"],
     robinsILow: "Low",
@@ -263,11 +263,11 @@ const DEMO_PROJECT = {
     o: "Composite kidney outcome: ≥40% sustained eGFR decline, ESKD, or renal death",
   },
   studies: [
-    { id: "s1", citation: "Perkovic et al., 2019, NEJM (CREDENCE)", design: "RCT", n: 4401, population: "T2DM + CKD, eGFR 30-90", intervention: "Canagliflozin 100mg", comparator: "Placebo", outcome: "Composite kidney outcome", included: true, excludeReason: "", outcomeType: "binary", tx: { events: 245, total: 2202 }, ctrl: { events: 340, total: 2199 }, rob: { randomization: "low", blinding: "low", attrition: "low", reporting: "low", other: "some", overall: "low" }, moderators: { "Population Focus": "CKD-specific", "Drug": "Canagliflozin" } },
-    { id: "s2", citation: "Heerspink et al., 2020, NEJM (DAPA-CKD)", design: "RCT", n: 4304, population: "CKD ± T2DM, eGFR 25-75", intervention: "Dapagliflozin 10mg", comparator: "Placebo", outcome: "Composite kidney outcome", included: true, excludeReason: "", outcomeType: "binary", tx: { events: 197, total: 2152 }, ctrl: { events: 312, total: 2152 }, rob: { randomization: "low", blinding: "low", attrition: "low", reporting: "low", other: "low", overall: "low" }, moderators: { "Population Focus": "CKD-specific", "Drug": "Dapagliflozin" } },
-    { id: "s3", citation: "EMPA-KIDNEY Collaborative, 2023, NEJM", design: "RCT", n: 6609, population: "CKD ± T2DM, eGFR 20-45 or 45-90+ACR", intervention: "Empagliflozin 10mg", comparator: "Placebo", outcome: "Composite kidney outcome", included: true, excludeReason: "", outcomeType: "binary", tx: { events: 432, total: 3304 }, ctrl: { events: 558, total: 3305 }, rob: { randomization: "low", blinding: "low", attrition: "low", reporting: "low", other: "low", overall: "low" }, moderators: { "Population Focus": "CKD-specific", "Drug": "Empagliflozin" } },
-    { id: "s4", citation: "Zinman et al., 2015, NEJM (EMPA-REG OUTCOME)", design: "RCT", n: 7020, population: "T2DM + high CV risk", intervention: "Empagliflozin 10/25mg", comparator: "Placebo", outcome: "Incident/worsening nephropathy", included: true, excludeReason: "", outcomeType: "binary", tx: { events: 525, total: 4687 }, ctrl: { events: 388, total: 2333 }, rob: { randomization: "low", blinding: "low", attrition: "some", reporting: "low", other: "low", overall: "low" }, moderators: { "Population Focus": "High CV risk", "Drug": "Empagliflozin" } },
-    { id: "s5", citation: "Neal et al., 2017, NEJM (CANVAS)", design: "RCT", n: 10142, population: "T2DM + high CV risk", intervention: "Canagliflozin 100/300mg", comparator: "Placebo", outcome: "Renal composite", included: true, excludeReason: "", outcomeType: "binary", tx: { events: 245, total: 5795 }, ctrl: { events: 186, total: 4347 }, rob: { randomization: "low", blinding: "low", attrition: "some", reporting: "low", other: "some", overall: "some" }, moderators: { "Population Focus": "High CV risk", "Drug": "Canagliflozin" } },
+    { id: "s1", citation: "Perkovic et al., 2019, NEJM (CREDENCE)", design: "RCT", n: 4401, population: "T2DM + CKD, eGFR 30-90", intervention: "Canagliflozin 100mg", comparator: "Placebo", outcome: "Composite kidney outcome", included: true, excludeReason: "", outcomeType: "binary", tx: { events: 245, total: 2202 }, ctrl: { events: 340, total: 2199 }, rob: { randomization: "low", deviations: "low", missing: "low", measurement: "low", selection: "low", overall: "low" }, moderators: { "Population Focus": "CKD-specific", "Drug": "Canagliflozin" } },
+    { id: "s2", citation: "Heerspink et al., 2020, NEJM (DAPA-CKD)", design: "RCT", n: 4304, population: "CKD ± T2DM, eGFR 25-75", intervention: "Dapagliflozin 10mg", comparator: "Placebo", outcome: "Composite kidney outcome", included: true, excludeReason: "", outcomeType: "binary", tx: { events: 197, total: 2152 }, ctrl: { events: 312, total: 2152 }, rob: { randomization: "low", deviations: "low", missing: "low", measurement: "low", selection: "low", overall: "low" }, moderators: { "Population Focus": "CKD-specific", "Drug": "Dapagliflozin" } },
+    { id: "s3", citation: "EMPA-KIDNEY Collaborative, 2023, NEJM", design: "RCT", n: 6609, population: "CKD ± T2DM, eGFR 20-45 or 45-90+ACR", intervention: "Empagliflozin 10mg", comparator: "Placebo", outcome: "Composite kidney outcome", included: true, excludeReason: "", outcomeType: "binary", tx: { events: 432, total: 3304 }, ctrl: { events: 558, total: 3305 }, rob: { randomization: "low", deviations: "low", missing: "low", measurement: "low", selection: "low", overall: "low" }, moderators: { "Population Focus": "CKD-specific", "Drug": "Empagliflozin" } },
+    { id: "s4", citation: "Zinman et al., 2015, NEJM (EMPA-REG OUTCOME)", design: "RCT", n: 7020, population: "T2DM + high CV risk", intervention: "Empagliflozin 10/25mg", comparator: "Placebo", outcome: "Incident/worsening nephropathy", included: true, excludeReason: "", outcomeType: "binary", tx: { events: 525, total: 4687 }, ctrl: { events: 388, total: 2333 }, rob: { randomization: "low", deviations: "low", missing: "some", measurement: "low", selection: "low", overall: "some" }, moderators: { "Population Focus": "High CV risk", "Drug": "Empagliflozin" } },
+    { id: "s5", citation: "Neal et al., 2017, NEJM (CANVAS)", design: "RCT", n: 10142, population: "T2DM + high CV risk", intervention: "Canagliflozin 100/300mg", comparator: "Placebo", outcome: "Renal composite", included: true, excludeReason: "", outcomeType: "binary", tx: { events: 245, total: 5795 }, ctrl: { events: 186, total: 4347 }, rob: { randomization: "low", deviations: "some", missing: "some", measurement: "low", selection: "low", overall: "some" }, moderators: { "Population Focus": "High CV risk", "Drug": "Canagliflozin" } },
   ],
   moderatorColumns: ["Population Focus", "Drug"],
 };
@@ -282,9 +282,33 @@ function newStudy(id) {
     ctrl: { events: "", total: "" },
     txCont: { mean: "", sd: "", n: "" },
     ctrlCont: { mean: "", sd: "", n: "" },
-    rob: { randomization: "", blinding: "", attrition: "", reporting: "", other: "", overall: "" },
+    rob: { randomization: "", deviations: "", missing: "", measurement: "", selection: "", overall: "" },
     robinsI: { confounding: "", selection: "", classification: "", deviations: "", missingData: "", measurement: "", reporting: "", overall: "" },
     moderators: {},
+  };
+}
+
+// Migrate a study's RoB ratings from the legacy Cochrane RoB 1 keys
+// (blinding, attrition, reporting, other) to the RoB 2 keys (deviations,
+// missing, measurement, selection). Domain meanings differ enough that we
+// preserve only `randomization` (same concept in both frameworks); other
+// ratings are reset to "" so the user can re-rate against the new domain
+// definitions instead of inheriting a misleading mapping.
+function migrateStudyRob(study) {
+  const rob = study?.rob || {};
+  const hasLegacyKeys = "blinding" in rob || "attrition" in rob || "other" in rob;
+  const hasNewKeys = "deviations" in rob || "missing" in rob || "measurement" in rob || "selection" in rob;
+  if (!hasLegacyKeys || hasNewKeys) return study;
+  return {
+    ...study,
+    rob: {
+      randomization: rob.randomization || "",
+      deviations: "",
+      missing: "",
+      measurement: "",
+      selection: "",
+      overall: "",
+    },
   };
 }
 
@@ -1241,13 +1265,14 @@ function Step4Extraction({ project, setProject, lang }) {
 }
 
 // ═══ STEP 5: RISK OF BIAS ═══
-// Cochrane RoB for RCTs / Quasi-RCTs: 5 domains, 3 levels.
-// (These are the classic Cochrane Risk-of-Bias domains, not the RoB 2
-// framework which uses a different domain set.)
+// RoB 2 (Cochrane Risk-of-Bias 2) for RCTs / Quasi-RCTs: 5 domains, 3 levels.
+// Domains: D1 randomization process, D2 deviations from intended interventions,
+// D3 missing outcome data, D4 measurement of the outcome,
+// D5 selection of the reported result.
 const ROB_LEVELS = ["low", "some", "high"];
 const ROB_COLORS = { low: GREEN, some: AMBER, high: RED };
 const ROB_ICONS = { low: "🟢", some: "🟡", high: "🔴" };
-const ROB_DOMAINS = ["randomization", "blinding", "attrition", "reporting", "other"];
+const ROB_DOMAINS = ["randomization", "deviations", "missing", "measurement", "selection"];
 
 // ROBINS-I (Non-randomized studies): 7 domains, 4 levels
 // Levels ordered best→worst so overall = first match walking from worst end
@@ -1367,8 +1392,8 @@ function Step5RoB({ project, setProject, lang }) {
     <div>
       <Hint>
         {lang === "zh"
-          ? "為每篇研究的每個偏差風險領域評分。整體評分會自動根據最差的領域計算。RCT 使用 Cochrane 偏差風險的五大領域；非隨機研究使用 ROBINS-I。"
-          : "Rate each domain for every study. Overall is auto-derived from the worst domain. RCTs use the five Cochrane Risk-of-Bias domains; non-randomized studies use ROBINS-I."}
+          ? "為每篇研究的每個偏差風險領域評分。整體評分會自動根據最差的領域計算。RCT 使用 RoB 2 的五大領域（隨機化、偏離介入、缺失資料、結果測量、結果報告選擇）；非隨機研究使用 ROBINS-I。"
+          : "Rate each domain for every study. Overall is auto-derived from the worst domain. RCTs use the five RoB 2 domains (randomization, deviations, missing data, measurement, reported result); non-randomized studies use ROBINS-I."}
       </Hint>
 
       {rctStudies.length > 0 && (
@@ -1468,7 +1493,13 @@ export default function Midterm({ onNavigate, user, onLogin, onLogout }) {
     // Try to load from sessionStorage for anonymous persistence
     try {
       const saved = sessionStorage.getItem("ma_project_midterm");
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed.studies)) {
+          parsed.studies = parsed.studies.map(migrateStudyRob);
+        }
+        return parsed;
+      }
     } catch {}
     return {
       topic: "",
