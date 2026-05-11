@@ -107,7 +107,7 @@ const T = {
     // Step 4: Interpret & Report
     interpretTitle: "解讀結果與報告",
     forestQ1: "整體效果量代表什麼意義？是否具統計顯著性？",
-    forestQ1Ph: "例如：OR = 0.67 表示介入組事件發生風險為對照組的 67%，95% CI 不跨越 1，具統計顯著性。",
+    forestQ1Ph: "例如：OR = 0.67 表示介入組發生事件的勝算為對照組的 67%（勝算降低 33%），95% CI 不跨越 1，具統計顯著性。",
     interpretNowTitle: "✍️ 解讀你的結果",
     interpretNowDesc: "看完分析結果後，試著用自己的話回答以下問題：",
     reviewTitle: "檢查你的解讀",
@@ -714,6 +714,8 @@ function Step3({ project, analysis, setA, lang, user }) {
 function Step4({ analysis, setA, project, lang }) {
   const tx = T[lang]; const [aiLoading, setAiLoading] = useState(false);
   const [aiFeedback, setAiFeedback] = useState(analysis._interpretFeedback || null);
+  const abortRef = useRef(null);
+  useEffect(() => () => { abortRef.current?.abort(); }, []);
 
   // At least 2 interpretation fields must have content (basic + advanced)
   const filledFields = [analysis.forestQ1, analysis.forestQ2, analysis.hetInterpretation, analysis.funnelAssessment].filter(v => (v || "").trim().length > 10);
@@ -721,6 +723,9 @@ function Step4({ analysis, setA, project, lang }) {
   const canCheck = filledFields.length + advFields.length >= 2;
 
   const handleAiCheck = async () => {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
     setAiLoading(true); setAiFeedback(null);
     const isZh = lang === "zh";
     const picoStr = `P: ${project.pico?.p || "?"} | I: ${project.pico?.i || "?"} | C: ${project.pico?.c || "?"} | O: ${project.pico?.o || "?"}`;
@@ -768,12 +773,26 @@ Start each item with "✅" (correct) or "⚠️" (needs improvement), with a bri
     ].join("\n");
 
     try {
-      const resp = await fetch("/api/ai-feedback", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ system: systemPrompt, userMessage: userMsg }) });
+      const resp = await fetch("/api/ai-feedback", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ system: systemPrompt, userMessage: userMsg }), signal: controller.signal });
+      if (!resp.ok) {
+        setAiFeedback(isZh ? "AI 服務暫時無法使用，請稍後再試。" : "AI service temporarily unavailable. Please try again later.");
+        return;
+      }
       const data = await resp.json();
+      if (controller.signal.aborted) return;
       const text = data.content?.map(i => i.text || "").join("") || (isZh ? "無法取得回饋" : "Could not get feedback");
+      // Only persist successful AI replies — never persist a connection-error string.
       setAiFeedback(text); setA(p => ({ ...p, _interpretFeedback: text }));
-    } catch { setAiFeedback(isZh ? "連線錯誤" : "Connection error"); }
-    setAiLoading(false);
+    } catch (err) {
+      if (err.name === "AbortError") return;
+      console.error("Step4 AI feedback failed:", err);
+      setAiFeedback(isZh ? "連線錯誤" : "Connection error");
+    } finally {
+      if (abortRef.current === controller) {
+        abortRef.current = null;
+        setAiLoading(false);
+      }
+    }
   };
 
   return (
@@ -837,8 +856,13 @@ function Step5({ analysis, setA, project, lang }) {
 function FullReviewSection({ analysis, setA, project, lang }) {
   const tx = T[lang]; const [aiLoading, setAiLoading] = useState(false);
   const [aiFeedback, setAiFeedback] = useState(analysis._fullReviewFeedback || null);
+  const abortRef = useRef(null);
+  useEffect(() => () => { abortRef.current?.abort(); }, []);
 
   const handleFullReview = async () => {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
     setAiLoading(true); setAiFeedback(null);
     const isZh = lang === "zh";
     const inc = getIncluded(project);
@@ -911,12 +935,26 @@ End with 1-2 sentences of overall assessment and the single most important impro
     ].join("\n");
 
     try {
-      const resp = await fetch("/api/ai-feedback", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ system: systemPrompt, userMessage: userMsg }) });
+      const resp = await fetch("/api/ai-feedback", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ system: systemPrompt, userMessage: userMsg }), signal: controller.signal });
+      if (!resp.ok) {
+        setAiFeedback(isZh ? "AI 服務暫時無法使用，請稍後再試。" : "AI service temporarily unavailable. Please try again later.");
+        return;
+      }
       const data = await resp.json();
+      if (controller.signal.aborted) return;
       const text = data.content?.map(i => i.text || "").join("") || (isZh ? "無法取得回饋" : "Could not get feedback");
+      // Only persist successful AI replies — never persist a connection-error string.
       setAiFeedback(text); setA(p => ({ ...p, _fullReviewFeedback: text }));
-    } catch { setAiFeedback(isZh ? "連線錯誤" : "Connection error"); }
-    setAiLoading(false);
+    } catch (err) {
+      if (err.name === "AbortError") return;
+      console.error("FullReview AI feedback failed:", err);
+      setAiFeedback(isZh ? "連線錯誤" : "Connection error");
+    } finally {
+      if (abortRef.current === controller) {
+        abortRef.current = null;
+        setAiLoading(false);
+      }
+    }
   };
 
   return (
@@ -1008,9 +1046,26 @@ export default function Final({ onNavigate, user, onLogin, onLogout }) {
   const [project] = useState(() => { try { const s = sessionStorage.getItem("ma_project_midterm"); if (s) return JSON.parse(s); } catch {} return null; });
 
   const [analysis, setA] = useState(() => {
-    try { const s = sessionStorage.getItem("ma_project_final"); if (s) return JSON.parse(s); } catch {}
     const inc = getIncluded(project); const bin = inc.length > 0 ? isBinary(inc) : true;
-    return { effectType: bin ? "OR" : "MD", model: "random", rationale: "", forestQ1: "", forestQ2: "", hetInterpretation: "", funnelAssessment: "", mainFinding: "", certainty: "", certRationale: "", limitations: "", implications: "", completedAdvanced: [], advInterpretations: {}, _interpretFeedback: null, _fullReviewFeedback: null };
+    const fresh = { effectType: bin ? "OR" : "MD", model: "random", rationale: "", forestQ1: "", forestQ2: "", hetInterpretation: "", funnelAssessment: "", mainFinding: "", certainty: "", certRationale: "", limitations: "", implications: "", completedAdvanced: [], advInterpretations: {}, _interpretFeedback: null, _fullReviewFeedback: null };
+    try {
+      const s = sessionStorage.getItem("ma_project_final");
+      if (s) {
+        const saved = JSON.parse(s);
+        // Reconcile saved effectType against the current project's outcome type.
+        // If the user changed the project (e.g. swapped from binary RCTs to
+        // continuous outcomes in the midterm), the persisted "OR" is no longer
+        // valid and would silently propagate to the R code template.
+        const binaryEffects = ["OR", "RR", "RD"];
+        const continuousEffects = ["MD", "SMD"];
+        const allowed = bin ? binaryEffects : continuousEffects;
+        if (saved.effectType && !allowed.includes(saved.effectType)) {
+          saved.effectType = bin ? "OR" : "MD";
+        }
+        return { ...fresh, ...saved };
+      }
+    } catch {}
+    return fresh;
   });
 
   useEffect(() => { try { sessionStorage.setItem("ma_project_final", JSON.stringify(analysis)); } catch {} }, [analysis]);

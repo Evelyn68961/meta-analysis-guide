@@ -111,7 +111,7 @@ const T = {
     robSome: "部分疑慮",
     robHigh: "高",
     robOverall: "整體偏差風險",
-    rob2SectionTitle: "隨機對照試驗 (RoB 2)",
+    rob2SectionTitle: "隨機對照試驗（Cochrane 偏差風險）",
     robinsISectionTitle: "非隨機研究 (ROBINS-I)",
     robinsIDomains: ["干擾因子", "受試者選擇", "介入分類", "介入偏離", "資料缺失", "結局測量", "選擇性報告"],
     robinsILow: "低",
@@ -228,7 +228,7 @@ const T = {
     robSome: "Some Concerns",
     robHigh: "High",
     robOverall: "Overall Risk of Bias",
-    rob2SectionTitle: "Randomized Trials (RoB 2)",
+    rob2SectionTitle: "Randomized Trials (Cochrane Risk of Bias)",
     robinsISectionTitle: "Non-Randomized Studies (ROBINS-I)",
     robinsIDomains: ["Confounding", "Selection", "Classification", "Deviations", "Missing Data", "Measurement", "Reporting"],
     robinsILow: "Low",
@@ -421,6 +421,8 @@ function Step1Pico({ project, setProject, lang }) {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiFeedback, setAiFeedback] = useState(project._picoFeedback || null);
   const [picoPass, setPicoPass] = useState(project._picoPass || false);
+  const abortRef = useRef(null);
+  useEffect(() => () => { abortRef.current?.abort(); }, []);
 
   const { pico } = project;
   const setPico = (field, val) => setProject(prev => ({ ...prev, pico: { ...prev.pico, [field]: val }, _picoPass: false, _picoFeedback: null }));
@@ -428,6 +430,9 @@ function Step1Pico({ project, setProject, lang }) {
   const canCheck = pico.p.trim() && pico.i.trim() && pico.c.trim() && pico.o.trim() && project.topic.trim();
 
   const handleAiCheck = async () => {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
     setAiLoading(true);
     setAiFeedback(null);
     setPicoPass(false);
@@ -457,17 +462,30 @@ Be concise (4-6 sentences). No Markdown formatting.`;
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ system: systemPrompt, userMessage: userMsg }),
+        signal: controller.signal,
       });
+      if (!response.ok) {
+        setAiFeedback(isZh ? "AI 服務暫時無法使用，請稍後再試。" : "AI service temporarily unavailable. Please try again later.");
+        return;
+      }
       const data = await response.json();
+      if (controller.signal.aborted) return;
       const text = data.content?.map(item => item.text || "").join("") || (isZh ? "無法取得回饋" : "Could not get feedback");
       const pass = text.includes("✅");
       setAiFeedback(text);
       setPicoPass(pass);
+      // Only persist successful AI replies — never persist a connection-error string.
       setProject(prev => ({ ...prev, _picoFeedback: text, _picoPass: pass }));
     } catch (err) {
+      if (err.name === "AbortError") return;
+      console.error("PICO AI check failed:", err);
       setAiFeedback(isZh ? "連線錯誤，請稍後重試。" : "Connection error. Please try again.");
+    } finally {
+      if (abortRef.current === controller) {
+        abortRef.current = null;
+        setAiLoading(false);
+      }
     }
-    setAiLoading(false);
   };
 
   return (
@@ -510,6 +528,8 @@ function Step2Search({ project, setProject, lang }) {
   const tx = T[lang];
   const [aiLoading, setAiLoading] = useState(false);
   const [aiFeedback, setAiFeedback] = useState(project._searchFeedback || null);
+  const abortRef = useRef(null);
+  useEffect(() => () => { abortRef.current?.abort(); }, []);
 
   const search = project.search || { databases: [], booleanQuery: "", greyLiterature: "" };
   const setSearch = (field, val) => setProject(prev => ({
@@ -528,6 +548,9 @@ function Step2Search({ project, setProject, lang }) {
   const canCheck = search.databases.length >= 2 && search.booleanQuery.trim().length > 10;
 
   const handleAiCheck = async () => {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
     setAiLoading(true);
     setAiFeedback(null);
     const isZh = lang === "zh";
@@ -555,15 +578,28 @@ Start with "✅" or "⚠️". Be concise (4-6 sentences). No Markdown.`;
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ system: systemPrompt, userMessage: userMsg }),
+        signal: controller.signal,
       });
+      if (!response.ok) {
+        setAiFeedback(isZh ? "AI 服務暫時無法使用，請稍後再試。" : "AI service temporarily unavailable. Please try again later.");
+        return;
+      }
       const data = await response.json();
+      if (controller.signal.aborted) return;
       const text = data.content?.map(item => item.text || "").join("") || (isZh ? "無法取得回饋" : "Could not get feedback");
       setAiFeedback(text);
+      // Only persist successful AI replies — never persist a connection-error string.
       setProject(prev => ({ ...prev, _searchFeedback: text }));
     } catch (err) {
+      if (err.name === "AbortError") return;
+      console.error("Search AI check failed:", err);
       setAiFeedback(isZh ? "連線錯誤" : "Connection error");
+    } finally {
+      if (abortRef.current === controller) {
+        abortRef.current = null;
+        setAiLoading(false);
+      }
     }
-    setAiLoading(false);
   };
 
   return (
@@ -1205,7 +1241,9 @@ function Step4Extraction({ project, setProject, lang }) {
 }
 
 // ═══ STEP 5: RISK OF BIAS ═══
-// RoB 2 (RCTs / Quasi-RCTs): 5 domains, 3 levels
+// Cochrane RoB for RCTs / Quasi-RCTs: 5 domains, 3 levels.
+// (These are the classic Cochrane Risk-of-Bias domains, not the RoB 2
+// framework which uses a different domain set.)
 const ROB_LEVELS = ["low", "some", "high"];
 const ROB_COLORS = { low: GREEN, some: AMBER, high: RED };
 const ROB_ICONS = { low: "🟢", some: "🟡", high: "🔴" };
@@ -1306,7 +1344,7 @@ function RoBMatrix({ studies, setProject, lang, field, domains, domainLabels, le
 function Step5RoB({ project, setProject, lang }) {
   const tx = T[lang];
   const included = (project.studies || []).filter(s => s.included);
-  // RCTs and Quasi-RCTs use RoB 2; everything else uses ROBINS-I
+  // RCTs and Quasi-RCTs use the Cochrane RoB domain set; everything else uses ROBINS-I
   const isRct = s => s.design === "RCT" || s.design === "Quasi-RCT";
   const rctStudies = included.filter(isRct);
   const nrsiStudies = included.filter(s => !isRct(s));
@@ -1329,8 +1367,8 @@ function Step5RoB({ project, setProject, lang }) {
     <div>
       <Hint>
         {lang === "zh"
-          ? "為每篇研究的每個偏差風險領域評分。整體評分會自動根據最差的領域計算。RCT 使用 RoB 2，非隨機研究使用 ROBINS-I。"
-          : "Rate each domain for every study. Overall is auto-derived from the worst domain. RCTs use RoB 2; non-randomized studies use ROBINS-I."}
+          ? "為每篇研究的每個偏差風險領域評分。整體評分會自動根據最差的領域計算。RCT 使用 Cochrane 偏差風險的五大領域；非隨機研究使用 ROBINS-I。"
+          : "Rate each domain for every study. Overall is auto-derived from the worst domain. RCTs use the five Cochrane Risk-of-Bias domains; non-randomized studies use ROBINS-I."}
       </Hint>
 
       {rctStudies.length > 0 && (
@@ -1455,7 +1493,9 @@ export default function Midterm({ onNavigate, user, onLogin, onLogout }) {
       ...DEMO_PROJECT,
       search: { databases: ["PubMed", "Embase", "Cochrane CENTRAL"], booleanQuery: "(\"SGLT2 inhibitors\" OR dapagliflozin OR empagliflozin OR canagliflozin) AND (\"chronic kidney disease\" OR CKD OR \"renal outcome\" OR nephropathy) AND (\"randomized controlled trial\" OR RCT)", greyLiterature: "ClinicalTrials.gov, EMPA-KIDNEY supplementary appendix" },
       prisma: { recordsIdentified: "2847", duplicatesRemoved: "924", afterDedup: "1923", titleAbstractScreened: "1923", titleAbstractExcluded: "1911", fullTextAssessed: "", fullTextExcluded: "", includedInMA: "" },
-      _picoPass: false,
+      // Demo data is curated and known-valid; pre-pass the AI gate so the user
+      // can navigate through the workflow without re-running the AI check.
+      _picoPass: true,
       _picoFeedback: null,
       _searchFeedback: null,
     }));
@@ -1469,7 +1509,11 @@ export default function Midterm({ onNavigate, user, onLogin, onLogout }) {
   const canGoNext = () => {
     if (step === 0) return project.topic.trim() && project.pico.p.trim();
     if (step === 1) return (project.search?.databases?.length || 0) >= 1;
-    if (step === 2) return (project.studies || []).length > 0;
+    // Step 2 transitions into data extraction / RoB / PRISMA, all of which
+    // operate on s.included only. Requiring ≥1 included study here prevents
+    // the user from advancing into empty-state screens; the final PhaseGate
+    // still enforces the ≥3 minimum required for a meta-analysis.
+    if (step === 2) return (project.studies || []).filter(s => s.included).length > 0;
     return true;
   };
 
