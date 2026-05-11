@@ -240,7 +240,7 @@ function SubgroupDemo({ lang }) {
             {lang === "zh" ? "高劑量組" : "High Dose Subgroup"}
           </div>
         )}
-        {studies.filter(s => !showSubgroups || s.group === "high").filter(s => showSubgroups ? s.group === "high" : true).slice(0, showSubgroups ? 3 : 6).map((s, i) => (
+        {(showSubgroups ? studies.filter(s => s.group === "high") : studies).map((s, i) => (
           <div key={`h-${i}`} style={{ display: "flex", alignItems: "center", gap: 10, height: 24 }}>
             <div style={{ width: 100, fontSize: 11, color: DARK, textAlign: "right" }}>{s.label}</div>
             <div style={{ width: barW(s.es), height: 14, borderRadius: 4, background: showSubgroups ? (s.group === "high" ? CORAL : BLUE) : CRIMSON, transition: "all 0.4s", opacity: 0.7 }} />

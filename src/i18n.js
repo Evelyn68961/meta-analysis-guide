@@ -364,7 +364,7 @@ const translations = {
     c1s4RefTitle: "參考 PICO",
     c1scenarioARef: { p: "射出分率降低的心衰竭 (HFrEF) 成年患者，NYHA class II-IV", i: "SGLT2 抑制劑 (如 Dapagliflozin 10mg 或 Empagliflozin 10mg) 加上標準治療", c: "安慰劑加上標準治療", o: "主要：心血管死亡或心衰竭住院的複合終點；次要：全因死亡率、生活品質 (KCCQ)" },
     c1scenarioBRef: { p: "加護病房中接受 β-lactam 抗生素治療的重症成人患者", i: "延長輸注 (≥3小時持續輸注或間歇延長輸注)", c: "傳統間歇輸注 (30分鐘 bolus)", o: "主要：院內死亡率；次要：臨床治癒率、ICU 住院天數" },
-    c1scenarioCRef: { p: "符合 DSM-5 重度憂鬱症診斷標準的成年患者 (18歲以上)", i: "認知行為治療 (CBT)，每週 1 次，持續 12-16 週", c: "藥物治療 (SSRI) 單獨使用、或等待名單對照", o: "主要：憂鬱量表分數變化 (PHQ-9 或 HAM-D)；次要：緩解率、復發率" },
+    c1scenarioCRef: { p: "符合 DSM-5 重度憂鬱症診斷標準的成年患者 (18歲以上)", i: "認知行為治療 (CBT) + 標準藥物治療 (SSRI)，每週 1 次，持續 12-16 週", c: "僅標準藥物治療 (SSRI)", o: "主要：憂鬱量表分數變化 (PHQ-9 或 HAM-D)；次要：緩解率、復發率" },
     c1s4Next: "來動手練習！ →",
 
     c1s5Label: "常見錯誤",
@@ -379,7 +379,7 @@ const translations = {
 
     c1gameLabel: "龍蛋孵化挑戰",
     c1gameTitle: "你能孵出小恐龍嗎？",
-    c1gameDesc: "選擇一顆龍蛋，回答 5 道 PICO 問題。每答對一題，龍蛋就會獲得陽光，裂開一些！但每答錯一題，龍蛋會被寒冰覆蓋——錯 3 題龍蛋就會被凍住……",
+    c1gameDesc: "選擇一顆龍蛋，回答 7 道 PICO 問題。每答對一題，龍蛋就會獲得陽光，裂開一些！但每答錯一題，龍蛋會被寒冰覆蓋——錯 3 題龍蛋就會被凍住……",
     c1gameStart: "開始孵化 🥚",
     c1gameQ: (n) => `第 ${n} 題 / 共 7 題`,
     c1gameCorrect: "正確！龍蛋裂開了一些！ 🔥",
@@ -1015,7 +1015,7 @@ const translations = {
     c1s4ShowAnswer: "Show Reference Answer", c1s4HideAnswer: "Hide Reference Answer", c1s4RefTitle: "Reference PICO",
     c1scenarioARef: { p: "Adults with HFrEF, NYHA class II-IV", i: "SGLT2 inhibitor (Dapagliflozin 10mg or Empagliflozin 10mg) plus standard therapy", c: "Placebo plus standard therapy", o: "Primary: composite of CV death or HF hospitalization; Secondary: all-cause mortality, KCCQ" },
     c1scenarioBRef: { p: "Critically ill adults in ICU receiving β-lactam antibiotics", i: "Prolonged infusion (≥3h continuous or extended intermittent)", c: "Conventional intermittent infusion (30-min bolus)", o: "Primary: in-hospital mortality; Secondary: clinical cure rate, ICU LOS" },
-    c1scenarioCRef: { p: "Adults (≥18y) meeting DSM-5 criteria for major depressive disorder", i: "CBT, weekly sessions for 12-16 weeks", c: "Pharmacotherapy (SSRI) alone, or wait-list control", o: "Primary: depression score change (PHQ-9/HAM-D); Secondary: remission rate, relapse rate" },
+    c1scenarioCRef: { p: "Adults (≥18y) meeting DSM-5 criteria for major depressive disorder", i: "CBT + standard pharmacotherapy (SSRI), weekly sessions for 12-16 weeks", c: "Standard pharmacotherapy (SSRI) alone", o: "Primary: depression score change (PHQ-9/HAM-D); Secondary: remission rate, relapse rate" },
     c1s4Next: "Now let's practice! →",
 
     c1s5Label: "Common Mistakes", c1s5Title: "The 5 PICO Traps",
@@ -1028,7 +1028,7 @@ const translations = {
     c1s5Next: "Head to the Dragon Egg Challenge! 🥚🔥",
 
     c1gameLabel: "Dragon Egg Challenge", c1gameTitle: "Can You Hatch the Dinosaurs?",
-    c1gameDesc: "Pick a dragon egg, then answer 5 PICO questions. Each correct answer brings sunshine to crack the egg! But each wrong answer brings frost — 3 wrong and the egg freezes solid…",
+    c1gameDesc: "Pick a dragon egg, then answer 7 PICO questions. Each correct answer brings sunshine to crack the egg! But each wrong answer brings frost — 3 wrong and the egg freezes solid…",
     c1gameStart: "Start Hatching 🥚",
     c1gameQ: (n) => `Question ${n} of 7`,
     c1gameCorrect: "Correct! The egg is cracking! 🔥", c1gameWrong: "Wrong… the egg feels a chill ❄️",

@@ -256,7 +256,6 @@ function BooleanVisualizer({ t, lang }) {
             <circle cx={cx1} cy={cy} r={r} fill="#D94B2E33" stroke="#D94B2E" strokeWidth="2" />
             <circle cx={cx2} cy={cy} r={r} fill="#F5F5F3" stroke="#CCC" strokeWidth="1.5" strokeDasharray="4 3" />
             <circle cx={cx1} cy={cy} r={r} fill="white" clipPath="url(#clip-not-right)" />
-            <circle cx={cx1} cy={cy} r={r} fill="#D94B2E33" clipPath="url(#clip-not-right)" opacity="0" />
             <text x={cx1 - r * 0.4} y={cy + 4} fontSize="13" fill={MUTED} textAnchor="middle">{lang === "zh" ? "癌症" : "Cancer"}</text>
             <text x={cx2 + r * 0.35} y={cy + 4} fontSize="13" fill="#CCC" textAnchor="middle">{lang === "zh" ? "動物" : "Animal"}</text>
             <text x={size * 0.5} y={size - 10} fontSize="12" fill="#D94B2E" fontWeight="700" textAnchor="middle">NOT</text>
@@ -876,8 +875,8 @@ function GreyLitHunt({ lang }) {
           </button>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: 15, fontWeight: 600, color: score >= 7 ? GREEN : score >= 5 ? PURPLE : CORAL }}>
-              {score}/{sources.length} {lang === "zh" ? "正確" : "correct"} {score === 8 ? "🎉" : score >= 6 ? "👍" : "📚"}
+            <span style={{ fontSize: 15, fontWeight: 600, color: score === sources.length ? GREEN : score >= 6 ? PURPLE : CORAL }}>
+              {score}/{sources.length} {lang === "zh" ? "正確" : "correct"} {score === sources.length ? "🎉" : score >= 6 ? "👍" : "📚"}
             </span>
             <button onClick={() => { setSelected(new Set()); setShowResults(false); }}
               style={{ background: "transparent", border: `1.5px solid ${LIGHT_BORDER}`, color: MUTED, padding: "8px 20px", borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: "pointer" }}>
