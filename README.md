@@ -17,14 +17,14 @@ A bilingual (繁體中文 / English) interactive platform that teaches systemati
 
 **Two AI-assisted workshops** let you plan and execute a complete meta-analysis on your own data:
 
-- **Midterm Workshop** — Define your PICO, build a search strategy, add studies, extract data, and assess risk of bias. AI validates your PICO and search strategy.
-- **Final Workshop** — Choose effect sizes, run real R code in the browser via WebR + metafor, generate forest and funnel plots, and draw conclusions. AI interprets your results and recommends which advanced analyses to explore (leave-one-out, trim-and-fill, Egger's test, subgroup, meta-regression).
+- **Midterm Workshop** — Define your PICO, build a search strategy, add studies, extract data, and assess risk of bias using the official Cochrane RoB 2 five-domain framework (randomization → deviations → missing data → measurement → reported result). AI validates your PICO and search strategy with race-safe request handling so back-to-back clicks never overwrite a fresher result with a stale one.
+- **Final Workshop** — Choose effect sizes, run real R code in the browser via WebR + metafor, generate forest and funnel plots, and draw conclusions. AI interprets your results and recommends which advanced analyses to explore (leave-one-out, trim-and-fill, Egger's test, subgroup, meta-regression). Saved analysis state is reconciled against the current project's outcome type on hydration, so a stale "OR" from an earlier binary-outcome PICO can't silently propagate to a continuous-outcome project.
 
 **Easter Egg Quiz** — 35 questions across 7 categories, each represented by a collectible dinosaur egg. Downloadable cheat sheets for each category.
 
 **Per-course notes drawer** — A collapsible side tab on every course page lets logged-in users keep running notes. Autosaves to Supabase as you type, with a `localStorage` fallback when offline. Each course's notes are listed on the Profile page and can be downloaded as `.txt` or `.docx`, or shared to email via `mailto:`.
 
-**Resumable workshops** — The AI PICO workshop (Course 1) and the WebR advanced-analysis panel (Final Workshop) persist every input, AI response, and completed analysis to Supabase as you go. Pause mid-workshop, close the tab, return tomorrow — your scenario, PICO fields, AI feedback, selected analysis type, and per-run history all rehydrate. A "Reset workshop" button wipes the saved state when you want to start over.
+**Resumable workshops** — Three workshops persist as you go: the AI PICO workshop (Course 1), the AI Boolean Query checker (Course 2), and the WebR advanced-analysis panel (Final Workshop). Every input, AI response, and completed analysis is debounced-written to Supabase, with a per-user `localStorage` fallback that initializes synchronously on first render — reloads come up showing your saved draft instantly, and your work survives Supabase outages or signed-out sessions. Switching accounts on a shared device resets the field to that user's own namespace, so drafts can't leak between users. A "Reset workshop" button wipes the saved state (cloud + local) when you want to start over.
 
 ## How AI Works Here
 

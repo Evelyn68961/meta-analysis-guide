@@ -249,3 +249,73 @@ Workshop persistence first — it's a regression fix for an existing broken beha
 7. Profile page → My Notes section lists every course you've taken notes on.
 8. Log out, log in again from production URL → land back on production URL.
 9. Same flow from `localhost:3000` → land back on `localhost:3000`.
+
+---
+
+## Subsequent hardening (post-shipment fixes)
+
+After shipping the original feature, an audit of the workshop pages surfaced several issues that the v1 implementation didn't cover. These were addressed in follow-up commits.
+
+### Coverage gap — `AIBooleanChecker` (Course 2) was never wired
+
+**Problem.** The original plan called out `AIPicoWorkshop` (Course 1) and the WebR advanced-analysis panel (Final Workshop), but Course 2's `AIBooleanChecker` shipped in regular `useState` with no `user` prop and no persistence. Students lost their typed Boolean queries on every reload.
+
+**Fix.** Threaded `user` through `App` → `Course2` → `AIBooleanChecker`; replaced the `query` `useState` with `useWorkshopField(user, "course2_ai_boolean", "query", "")`; added the same Saving/Autosaved/Save-failed status indicator the other workshops show. AI feedback itself stays in regular `useState` because it's a transient response — re-running the check with the same query just returns a fresh answer; persisting it would risk showing students stale AI replies for queries they've since edited.
+
+### `useWorkshopField` correctness fixes
+
+The original hook had three race / leak bugs that surfaced under realistic usage:
+
+1. **Cross-user data leak.** When `user` changed (login → different user, or shared device), the previous user's value remained visible until hydration completed. A keystroke before hydration finished would save it under the new user's row.
+   - *Fix*: detect `user.id` change, reset value to `defaultValue`, set `hydrated=false` before the new fetch.
+2. **`setStatus` after unmount.** The unmount flush effect called `writeNow()` which calls `setStatus("saving"/"saved"/"error")` without checking mounted state — produced the React "set state on unmounted component" warning and lost the final status.
+   - *Fix*: added a `mountedRef` and `safeSetStatus()` guard. Also moved the unmount flush to a true unmount effect (`useEffect(() => () => {...}, [])` with a ref-held `writeNow`) so it fires once on teardown instead of every time `user`/`workshopKey`/`fieldKey` changes.
+3. **Default value overwrites persisted value mid-load.** Before hydration completes, any controlled-input re-render that called `setAndSave` with the default value would mark the field dirty and trigger a debounced write of the default, clobbering whatever was about to load from Supabase.
+   - *Fix*: `setAndSave` now skips the dirty-mark + debounce until `hydrated === true`.
+
+### `localStorage` fallback (the docstring's promise, now real)
+
+The original v1 docstring claimed "with localStorage fallback" but the code had zero localStorage usage. The fallback was added in a follow-up:
+
+- Keys are namespaced per user: `workshop:${userId}:${workshopKey}:${fieldKey}`, with `"anon"` as the namespace for signed-out users.
+- `useState` initializer reads `localStorage` synchronously, so reloads come up showing the user's draft instantly instead of flashing the default value for ~200ms while Supabase loads.
+- Every `writeNow` writes `localStorage` first (instant, basically can't fail), then attempts the Supabase upsert. On Supabase failure the status flips to `"error"` but the data is still safe in `localStorage` and survives reload.
+- When Supabase loads, the cloud value mirrors back to `localStorage` to keep them in sync.
+- `resetWorkshop` now wipes the matching `localStorage` namespace too.
+- New `clearWorkshopFieldLocal(user, workshopKey, fieldKey)` helper for single-field local cleanup.
+
+### Fetch handler hardening (workshop + exam pages)
+
+All AI fetch sites — Course 1 AIPicoWorkshop (`checkField`, `checkOverall`), Course 1 AIPicoFreestyle (`checkTopic`, `checkField`, `checkOverall`), Course 2 AIBooleanChecker (`checkQuery`), Midterm Step 1 (PICO check), Midterm Step 2 (search check), Final Step 4 (interpretation check), Final FullReviewSection (full project review) — got the same hardening:
+
+- **`response.ok` check** before parsing JSON, so 4xx / 5xx errors surface a real "AI service temporarily unavailable" message instead of falling through to the generic "Could not get feedback" empty-result fallback.
+- **`AbortController` per fetch** — re-clicking the same button aborts the prior in-flight request (per-field for PICO check buttons, single ref for topic/overall/Boolean/Midterm/Final checks). Stale responses can no longer overwrite a newer one. Unmount cleanup aborts everything in flight to avoid setState on unmounted components. `AbortError` is silently swallowed.
+- **`setLoading(false)` in `finally`** — spinner can't get stuck if anything in the catch path throws.
+- **Active-controller guard before `setLoading(false)`** in the `finally` — so a superseded request doesn't reset the loading flag the newer one just turned on.
+- **`console.error` in catch** — the swallowed errors are now diagnosable.
+- **Stop persisting connection-error strings.** Both Final Step 4 and Midterm Step 1/2 used to write `"連線錯誤"` into `_interpretFeedback` / `_picoFeedback` / `_searchFeedback` on fetch failure. Those error strings then survived reloads and looked like a fake AI reply. Now only successful AI replies are persisted; errors are shown in transient UI state only.
+
+### Other persistence-adjacent corrections
+
+- **Final.jsx — stale `effectType` reconciliation.** Saved analysis from an earlier binary-outcome project (`effectType: "OR"`) was being applied silently to a continuous-outcome project, emitting wrong `measure=` in the R code template. The state initializer now validates the saved `effectType` against the current project's `isBinary(inc)` and resets to the appropriate default (`OR` / `MD`) on mismatch.
+- **Midterm.jsx — `canGoNext` step-2 gate.** Required `studies.length > 0`; now requires `studies.filter(s => s.included).length > 0` so a user can't advance to RoB / extraction with every study marked Excluded.
+- **Midterm.jsx — `loadDemo` sets `_picoPass: true`.** The demo is curated valid PICO; forcing the user to re-run the AI check before they could navigate the demo workflow was friction with no purpose.
+- **`generateReport.js` — null-guarded `analysis`** (`const a = analysis || {}`); rewrote `labelValue` to allow numeric `0` instead of dropping it via `if (!value)`; renamed the download-link variable to avoid shadowing.
+
+### RoB 2 framework — schema migration
+
+Originally the Midterm RoB section was labeled "RoB 2" but used the legacy Cochrane RoB 1 domain set (randomization, blinding, attrition, reporting, other). Refactored to actual RoB 2:
+
+- New domain keys: `randomization`, `deviations`, `missing`, `measurement`, `selection` — matching the official five RoB 2 domains.
+- `migrateStudyRob()` helper runs on every sessionStorage hydration. If it sees legacy keys (`blinding`/`attrition`/`other`), it preserves the `randomization` rating (the only domain that means the same thing in both frameworks) and resets the other four to `""` so users re-rate against the new domain definitions instead of inheriting a misleading mapping.
+- A `_robMigrated: true` flag is set on the project when `migrateStudyRob` actually fires for at least one study. `Step5RoB` shows a one-time, dismissible banner explaining what happened. Clicking "Got it" sets `_robMigrated: false`, which persists in sessionStorage so the banner stays hidden across reloads after dismissal.
+- `generateReport.js` `robDomainLabel` and `domainKeys` updated to match the new keys.
+- `Course3.jsx` `RateThisStudy` quiz labels (which already implemented RoB 2 conceptually) had two domain labels polished to match the official wording: "Deviations from Intervention" → "Deviations from Intended Interventions"; "Selective Reporting" → "Selection of Reported Result".
+
+### Updated verification checklist additions
+10. Course 2 AI Boolean Query Workshop → type a query → refresh → query persists; status badge shows Saving / Autosaved.
+11. Sign out → start typing in any workshop → refresh → draft survives via the `anon` localStorage namespace.
+12. Sign in as user A, type in a workshop, sign out, sign in as user B → workshop field is empty (not user A's draft).
+13. Disconnect network → type in a workshop → status flips to `Save failed` but the draft is in localStorage; reconnect, edit one character → status goes through `Saving…` → `Autosaved`.
+14. Open the Final exam after switching the Midterm project from a binary outcome to a continuous outcome → effect-type radio defaults to `MD`, not the stale `OR`.
+15. Load a Midterm project saved before the RoB 2 refactor → Step 5 shows the dismissible "RoB 2 upgrade" banner; only the Randomization column has values; banner stays dismissed across reloads.
