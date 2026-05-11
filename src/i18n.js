@@ -416,6 +416,22 @@ const translations = {
     c1freePlaceholderC: "對照組是什麼...",
     c1freePlaceholderO: "你要測量的結果指標...",
 
+    // ─── Shared workshop UI strings (used by AIPicoWorkshop, AIPicoFreestyle, AIBooleanChecker) ───
+    wkAiCheckBtn: "AI 檢查",
+    wkAiCheckLoading: "分析中…",
+    wkAiOverallBtn: "AI 整體評估我的 PICO",
+    wkAiOverallLoading: "正在進行整體評估…",
+    wkAiOverallTitle: "整體評估",
+    wkResetShort: "重設",
+    wkStartOver: "重新開始 ↻",
+    wkSaveSync: "登入即可跨裝置同步",
+    wkSaveSaving: "儲存中…",
+    wkSaveSaved: "已自動儲存",
+    wkSaveError: "儲存失敗",
+    wkErrUnavailable: "AI 服務暫時無法使用，請稍後再試。",
+    wkErrNoResult: "無法取得回饋，請重試。",
+    wkErrConnection: "連線錯誤，請檢查網路後重試。",
+
     // ═══ COURSE 2: Literature Search & PRISMA ═══
     // Nav / Meta
     c2Label: "課程 2",
@@ -1059,6 +1075,22 @@ const translations = {
     c1freePlaceholderI: "The intervention you want to test...",
     c1freePlaceholderC: "What's the comparator...",
     c1freePlaceholderO: "The outcome you want to measure...",
+
+    // ─── Shared workshop UI strings (used by AIPicoWorkshop, AIPicoFreestyle, AIBooleanChecker) ───
+    wkAiCheckBtn: "AI Check",
+    wkAiCheckLoading: "Checking…",
+    wkAiOverallBtn: "AI Overall Assessment",
+    wkAiOverallLoading: "Running overall assessment…",
+    wkAiOverallTitle: "Overall Assessment",
+    wkResetShort: "Reset",
+    wkStartOver: "Start Over ↻",
+    wkSaveSync: "Sign in to sync progress",
+    wkSaveSaving: "Saving…",
+    wkSaveSaved: "Autosaved",
+    wkSaveError: "Save failed",
+    wkErrUnavailable: "AI service temporarily unavailable. Please try again later.",
+    wkErrNoResult: "Could not get feedback. Please try again.",
+    wkErrConnection: "Connection error. Please check your network and try again.",
 
     // ═══ COURSE 2: Literature Search & PRISMA ═══
     // Nav / Meta

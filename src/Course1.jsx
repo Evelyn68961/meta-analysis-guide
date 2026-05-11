@@ -336,6 +336,16 @@ function AIPicoWorkshop({ t, lang, user }) {
   const [loading, setLoading] = useState({ p: false, i: false, c: false, o: false });
   const [overallLoading, setOverallLoading] = useState(false);
 
+  // Per-field abort controllers so re-clicking the same field's "AI Check"
+  // cancels the in-flight request (preventing stale-response overwrites),
+  // while concurrent checks on different fields still run in parallel.
+  const fieldAbortRefs = useRef({ p: null, i: null, c: null, o: null });
+  const overallAbortRef = useRef(null);
+  useEffect(() => () => {
+    Object.values(fieldAbortRefs.current).forEach(c => c?.abort());
+    overallAbortRef.current?.abort();
+  }, []);
+
   const scenarioContext = {
     A: { en: "SGLT2 inhibitors for heart failure (HFrEF)", zh: "SGLT2 抑制劑治療心衰竭 (HFrEF)" },
     B: { en: "Prolonged β-lactam infusion in critically ill ICU patients", zh: "延長輸注 β-lactam 抗生素治療重症 ICU 患者" },
@@ -358,6 +368,11 @@ function AIPicoWorkshop({ t, lang, user }) {
 
   const checkField = async (field) => {
     if (!inputs[field].trim()) return;
+    // Abort any in-flight request for THIS field; leave other fields alone.
+    fieldAbortRefs.current[field]?.abort();
+    const controller = new AbortController();
+    fieldAbortRefs.current[field] = controller;
+
     setLoading(prev => ({ ...prev, [field]: true }));
     setFeedback(prev => ({ ...prev, [field]: null }));
 
@@ -371,7 +386,7 @@ function AIPicoWorkshop({ t, lang, user }) {
 2. 具體說明哪裡好或哪裡需要改進
 3. 如果需要改進，給一個具體的修改建議
 不要重複學生的答案。不要使用 Markdown 格式。`
-      : `You are a meta-analysis teaching assistant. The student is practicing PICO for: "${scenarioText}".
+      : `You are a meta-analysis teaching assistant. The student is practicing PICO for: "${scenarioText}". Reply in English.
 Evaluate their ${label.letter} (${label.en}). Keep it brief (2-3 sentences):
 1. Start with: ✅ Good, ⚠️ Needs improvement, or 💡 Suggestion
 2. Be specific about what's good or needs work
@@ -386,24 +401,36 @@ Don't repeat the student's answer. Don't use Markdown formatting.`;
           system: systemPrompt,
           userMessage: `${label.letter} (${lang === "zh" ? label.zh : label.en}): ${inputs[field]}`,
         }),
+        signal: controller.signal,
       });
       if (!response.ok) {
-        setFeedback(prev => ({ ...prev, [field]: lang === "zh" ? "AI 服務暫時無法使用，請稍後再試。" : "AI service temporarily unavailable. Please try again later." }));
+        setFeedback(prev => ({ ...prev, [field]: t("wkErrUnavailable") }));
         return;
       }
       const data = await response.json();
-      const text = data.content?.map(item => item.text || "").join("") || (lang === "zh" ? "無法取得回饋，請重試。" : "Could not get feedback. Please try again.");
+      if (controller.signal.aborted) return;
+      const text = data.content?.map(item => item.text || "").join("") || t("wkErrNoResult");
       setFeedback(prev => ({ ...prev, [field]: text }));
     } catch (err) {
-      setFeedback(prev => ({ ...prev, [field]: lang === "zh" ? "連線錯誤，請檢查網路後重試。" : "Connection error. Please check your network and try again." }));
+      if (err.name === "AbortError") return;
+      setFeedback(prev => ({ ...prev, [field]: t("wkErrConnection") }));
     } finally {
-      setLoading(prev => ({ ...prev, [field]: false }));
+      // Only clear loading if this controller is still the active one.
+      // If a newer click superseded us, that newer call owns the loading flag.
+      if (fieldAbortRefs.current[field] === controller) {
+        fieldAbortRefs.current[field] = null;
+        setLoading(prev => ({ ...prev, [field]: false }));
+      }
     }
   };
 
   const checkOverall = async () => {
     const filled = Object.values(inputs).every(v => v.trim());
     if (!filled) return;
+    overallAbortRef.current?.abort();
+    const controller = new AbortController();
+    overallAbortRef.current = controller;
+
     setOverallLoading(true);
     setOverallFeedback(null);
 
@@ -417,7 +444,7 @@ Don't repeat the student's answer. Don't use Markdown formatting.`;
 3. 這個 PICO 是否足夠精確到可以用來搜尋文獻
 4. 一個最重要的改進建議
 不要使用 Markdown 格式。`
-      : `You are a meta-analysis teaching assistant. The student wrote a complete PICO for: "${scenarioText}".
+      : `You are a meta-analysis teaching assistant. The student wrote a complete PICO for: "${scenarioText}". Reply in English.
 Give an overall assessment (3-5 sentences):
 1. Rating: 🏆 Excellent, 👍 Good, or 📝 Needs revision
 2. Logical coherence between PICO elements
@@ -435,14 +462,25 @@ Don't use Markdown formatting.`;
           system: systemPrompt,
           userMessage: picoText,
         }),
+        signal: controller.signal,
       });
+      if (!response.ok) {
+        setOverallFeedback(t("wkErrUnavailable"));
+        return;
+      }
       const data = await response.json();
-      const text = data.content?.map(item => item.text || "").join("") || (lang === "zh" ? "無法取得回饋，請重試。" : "Could not get feedback.");
+      if (controller.signal.aborted) return;
+      const text = data.content?.map(item => item.text || "").join("") || t("wkErrNoResult");
       setOverallFeedback(text);
     } catch (err) {
-      setOverallFeedback(lang === "zh" ? "連線錯誤，請檢查網路後重試。" : "Connection error. Please try again.");
+      if (err.name === "AbortError") return;
+      setOverallFeedback(t("wkErrConnection"));
+    } finally {
+      if (overallAbortRef.current === controller) {
+        overallAbortRef.current = null;
+        setOverallLoading(false);
+      }
     }
-    setOverallLoading(false);
   };
 
   const allFilled = Object.values(inputs).every(v => v.trim());
@@ -457,10 +495,10 @@ Don't use Markdown formatting.`;
 
   const status = scenarioMeta?.status;
   const statusText =
-    !user ? (lang === "zh" ? "登入即可跨裝置同步" : "Sign in to sync progress")
-    : status === "saving" ? (lang === "zh" ? "儲存中…" : "Saving…")
-    : status === "saved" ? (lang === "zh" ? "已自動儲存" : "Autosaved")
-    : status === "error" ? (lang === "zh" ? "儲存失敗" : "Save failed")
+    !user ? t("wkSaveSync")
+    : status === "saving" ? t("wkSaveSaving")
+    : status === "saved" ? t("wkSaveSaved")
+    : status === "error" ? t("wkSaveError")
     : "";
 
   return (
@@ -468,15 +506,15 @@ Don't use Markdown formatting.`;
       {/* Save status + reset */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, fontSize: 12, color: MUTED }}>
         <span>{statusText}</span>
-        <button onClick={handleReset} style={{ background: "none", border: "none", color: MUTED, fontSize: 12, cursor: "pointer", textDecoration: "underline" }}>
-          {lang === "zh" ? "重設" : "Reset"}
+        <button type="button" onClick={handleReset} style={{ background: "none", border: "none", color: MUTED, fontSize: 12, cursor: "pointer", textDecoration: "underline" }}>
+          {t("wkResetShort")}
         </button>
       </div>
       {/* Scenario selector */}
       <h4 style={{ fontSize: 14, fontWeight: 600, color: MUTED, marginBottom: 12 }}>{t("c1aiScenario")}</h4>
       <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 28 }}>
         {["A", "B", "C"].map(s => (
-          <button key={s} onClick={() => handleScenarioChange(s)} style={{ background: scenario === s ? `${TEAL}0D` : "#FAFAF7", border: `1.5px solid ${scenario === s ? TEAL + "44" : LIGHT_BORDER}`, borderRadius: 12, padding: "12px 16px", textAlign: "left", fontSize: 14, color: scenario === s ? TEAL : DARK, fontWeight: scenario === s ? 600 : 400, cursor: "pointer", transition: "all 0.2s" }}>
+          <button type="button" key={s} onClick={() => handleScenarioChange(s)} style={{ background: scenario === s ? `${TEAL}0D` : "#FAFAF7", border: `1.5px solid ${scenario === s ? TEAL + "44" : LIGHT_BORDER}`, borderRadius: 12, padding: "12px 16px", textAlign: "left", fontSize: 14, color: scenario === s ? TEAL : DARK, fontWeight: scenario === s ? 600 : 400, cursor: "pointer", transition: "all 0.2s" }}>
             {t(`c1scenario${s}`)}
           </button>
         ))}
@@ -485,20 +523,23 @@ Don't use Markdown formatting.`;
       {/* PICO fields with AI check */}
       {["p", "i", "c", "o"].map(field => {
         const label = picoLabels[field];
+        const inputId = `pico-ws-${field}`;
         return (
           <div key={field} style={{ marginBottom: 20 }}>
-            <label style={{ fontSize: 13, fontWeight: 600, color: DARK, marginBottom: 6, display: "flex", alignItems: "center", gap: 8 }}>
+            <label htmlFor={inputId} style={{ fontSize: 13, fontWeight: 600, color: DARK, marginBottom: 6, display: "flex", alignItems: "center", gap: 8 }}>
               <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 22, height: 22, borderRadius: 6, background: `${label.color}15`, fontSize: 11, fontWeight: 700, color: label.color }}>{label.letter}</span>
               {t(`c1s4Your${field.toUpperCase()}`)}
             </label>
             <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
               <textarea
+                id={inputId}
                 value={inputs[field]}
                 onChange={(e) => { setInputs(prev => ({ ...prev, [field]: e.target.value })); setFeedback(prev => ({ ...prev, [field]: null })); }}
                 placeholder={t(`c1s4Placeholder${field.toUpperCase()}`)}
                 style={{ flex: 1, padding: "10px 14px", borderRadius: 10, border: `1.5px solid ${LIGHT_BORDER}`, fontSize: 14, lineHeight: 1.6, color: DARK, background: "#FAFAF7", resize: "vertical", minHeight: 48, outline: "none", transition: "border-color 0.2s", boxSizing: "border-box" }}
               />
               <button
+                type="button"
                 onClick={() => checkField(field)}
                 disabled={!inputs[field].trim() || loading[field]}
                 style={{
@@ -510,7 +551,7 @@ Don't use Markdown formatting.`;
                   transition: "all 0.2s", whiteSpace: "nowrap", alignSelf: "flex-start", marginTop: 0, minHeight: 48,
                 }}
               >
-                {loading[field] ? (lang === "zh" ? "分析中…" : "Checking…") : (lang === "zh" ? "AI 檢查" : "AI Check")}
+                {loading[field] ? t("wkAiCheckLoading") : t("wkAiCheckBtn")}
               </button>
             </div>
             {/* Inline AI feedback */}
@@ -532,6 +573,7 @@ Don't use Markdown formatting.`;
       {/* Overall check button */}
       <div style={{ borderTop: `1px solid ${LIGHT_BORDER}`, paddingTop: 20, marginTop: 8 }}>
         <button
+          type="button"
           onClick={checkOverall}
           disabled={!allFilled || overallLoading}
           style={{
@@ -543,7 +585,7 @@ Don't use Markdown formatting.`;
             boxShadow: allFilled ? `0 2px 12px ${TEAL}33` : "none",
           }}
         >
-          {overallLoading ? (lang === "zh" ? "正在進行整體評估…" : "Running overall assessment…") : (lang === "zh" ? "AI 整體評估我的 PICO" : "AI Overall Assessment")}
+          {overallLoading ? t("wkAiOverallLoading") : t("wkAiOverallBtn")}
         </button>
       </div>
 
@@ -556,7 +598,7 @@ Don't use Markdown formatting.`;
           fontSize: 14, lineHeight: 1.7, color: DARK,
           animation: "fadeInUp 0.3s ease-out",
         }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: TEAL, marginBottom: 8 }}>{lang === "zh" ? "整體評估" : "Overall Assessment"}</div>
+          <div style={{ fontSize: 13, fontWeight: 600, color: TEAL, marginBottom: 8 }}>{t("wkAiOverallTitle")}</div>
           {overallFeedback}
         </div>
       )}
@@ -575,6 +617,15 @@ function AIPicoFreestyle({ t, lang }) {
   const [overallFeedback, setOverallFeedback] = useState(null);
   const [overallLoading, setOverallLoading] = useState(false);
 
+  const topicAbortRef = useRef(null);
+  const fieldAbortRefs = useRef({ p: null, i: null, c: null, o: null });
+  const overallAbortRef = useRef(null);
+  useEffect(() => () => {
+    topicAbortRef.current?.abort();
+    Object.values(fieldAbortRefs.current).forEach(c => c?.abort());
+    overallAbortRef.current?.abort();
+  }, []);
+
   const picoLabels = {
     p: { letter: "P", en: "Population", zh: "族群", color: CORAL },
     i: { letter: "I", en: "Intervention", zh: "介入", color: "#7B68C8" },
@@ -592,6 +643,10 @@ function AIPicoFreestyle({ t, lang }) {
 
   const checkTopic = async () => {
     if (!topic.trim()) return;
+    topicAbortRef.current?.abort();
+    const controller = new AbortController();
+    topicAbortRef.current = controller;
+
     setTopicLoading(true);
     setTopicFeedback(null);
 
@@ -603,7 +658,7 @@ function AIPicoFreestyle({ t, lang }) {
 3. 如果太廣泛或太模糊，給一個具體的聚焦建議
 4. 如果合適，鼓勵學生開始寫 PICO
 不要使用 Markdown 格式。`
-      : `You are a meta-analysis teaching assistant. The student wants to practice writing PICO for their own research topic.
+      : `You are a meta-analysis teaching assistant. The student wants to practice writing PICO for their own research topic. Reply in English.
 Evaluate whether the topic is suitable for a meta-analysis. Keep it brief (2-4 sentences):
 1. Start with: ✅ Suitable, ⚠️ Needs adjustment, or 💡 Suggestion
 2. Whether the topic is specific enough to form a searchable research question
@@ -619,23 +674,33 @@ Don't use Markdown formatting.`;
           system: systemPrompt,
           userMessage: topic,
         }),
+        signal: controller.signal,
       });
       if (!response.ok) {
-        setTopicFeedback(lang === "zh" ? "AI 服務暫時無法使用，請稍後再試。" : "AI service temporarily unavailable. Please try again later.");
+        setTopicFeedback(t("wkErrUnavailable"));
         return;
       }
       const data = await response.json();
-      const text = data.content?.map(item => item.text || "").join("") || (lang === "zh" ? "無法取得回饋，請重試。" : "Could not get feedback. Please try again.");
+      if (controller.signal.aborted) return;
+      const text = data.content?.map(item => item.text || "").join("") || t("wkErrNoResult");
       setTopicFeedback(text);
     } catch (err) {
-      setTopicFeedback(lang === "zh" ? "連線錯誤，請檢查網路後重試。" : "Connection error. Please check your network and try again.");
+      if (err.name === "AbortError") return;
+      setTopicFeedback(t("wkErrConnection"));
     } finally {
-      setTopicLoading(false);
+      if (topicAbortRef.current === controller) {
+        topicAbortRef.current = null;
+        setTopicLoading(false);
+      }
     }
   };
 
   const checkField = async (field) => {
     if (!inputs[field].trim() || !topic.trim()) return;
+    fieldAbortRefs.current[field]?.abort();
+    const controller = new AbortController();
+    fieldAbortRefs.current[field] = controller;
+
     setLoading(prev => ({ ...prev, [field]: true }));
     setFeedback(prev => ({ ...prev, [field]: null }));
 
@@ -649,7 +714,7 @@ Don't use Markdown formatting.`;
 2. 具體說明哪裡好或哪裡需要改進
 3. 如果需要改進，給一個具體的修改建議
 不要重複學生的答案。不要使用 Markdown 格式。`
-      : `You are a meta-analysis teaching assistant. The student is writing PICO for their own research topic.
+      : `You are a meta-analysis teaching assistant. The student is writing PICO for their own research topic. Reply in English.
 Research topic: "${topic}"
 Evaluate their ${label.letter} (${label.en}). Keep it brief (2-3 sentences):
 1. Start with: ✅ Good, ⚠️ Needs improvement, or 💡 Suggestion
@@ -665,24 +730,34 @@ Don't repeat the student's answer. Don't use Markdown formatting.`;
           system: systemPrompt,
           userMessage: `${label.letter} (${lang === "zh" ? label.zh : label.en}): ${inputs[field]}`,
         }),
+        signal: controller.signal,
       });
       if (!response.ok) {
-        setFeedback(prev => ({ ...prev, [field]: lang === "zh" ? "AI 服務暫時無法使用，請稍後再試。" : "AI service temporarily unavailable. Please try again later." }));
+        setFeedback(prev => ({ ...prev, [field]: t("wkErrUnavailable") }));
         return;
       }
       const data = await response.json();
-      const text = data.content?.map(item => item.text || "").join("") || (lang === "zh" ? "無法取得回饋，請重試。" : "Could not get feedback. Please try again.");
+      if (controller.signal.aborted) return;
+      const text = data.content?.map(item => item.text || "").join("") || t("wkErrNoResult");
       setFeedback(prev => ({ ...prev, [field]: text }));
     } catch (err) {
-      setFeedback(prev => ({ ...prev, [field]: lang === "zh" ? "連線錯誤，請檢查網路後重試。" : "Connection error. Please check your network and try again." }));
+      if (err.name === "AbortError") return;
+      setFeedback(prev => ({ ...prev, [field]: t("wkErrConnection") }));
     } finally {
-      setLoading(prev => ({ ...prev, [field]: false }));
+      if (fieldAbortRefs.current[field] === controller) {
+        fieldAbortRefs.current[field] = null;
+        setLoading(prev => ({ ...prev, [field]: false }));
+      }
     }
   };
 
   const checkOverall = async () => {
     const filled = Object.values(inputs).every(v => v.trim());
     if (!filled || !topic.trim()) return;
+    overallAbortRef.current?.abort();
+    const controller = new AbortController();
+    overallAbortRef.current = controller;
+
     setOverallLoading(true);
     setOverallFeedback(null);
 
@@ -695,7 +770,7 @@ Don't repeat the student's answer. Don't use Markdown formatting.`;
 3. 這個 PICO 是否足夠精確到可以用來搜尋文獻
 4. 一個最重要的改進建議
 不要使用 Markdown 格式。`
-      : `You are a meta-analysis teaching assistant. The student wrote a complete PICO for their own research topic.
+      : `You are a meta-analysis teaching assistant. The student wrote a complete PICO for their own research topic. Reply in English.
 Research topic: "${topic}"
 Give an overall assessment (3-5 sentences):
 1. Rating: 🏆 Excellent, 👍 Good, or 📝 Needs revision
@@ -714,18 +789,24 @@ Don't use Markdown formatting.`;
           system: systemPrompt,
           userMessage: picoText,
         }),
+        signal: controller.signal,
       });
       if (!response.ok) {
-        setOverallFeedback(lang === "zh" ? "AI 服務暫時無法使用，請稍後再試。" : "AI service temporarily unavailable. Please try again later.");
+        setOverallFeedback(t("wkErrUnavailable"));
         return;
       }
       const data = await response.json();
-      const text = data.content?.map(item => item.text || "").join("") || (lang === "zh" ? "無法取得回饋，請重試。" : "Could not get feedback.");
+      if (controller.signal.aborted) return;
+      const text = data.content?.map(item => item.text || "").join("") || t("wkErrNoResult");
       setOverallFeedback(text);
     } catch (err) {
-      setOverallFeedback(lang === "zh" ? "連線錯誤，請檢查網路後重試。" : "Connection error. Please try again.");
+      if (err.name === "AbortError") return;
+      setOverallFeedback(t("wkErrConnection"));
     } finally {
-      setOverallLoading(false);
+      if (overallAbortRef.current === controller) {
+        overallAbortRef.current = null;
+        setOverallLoading(false);
+      }
     }
   };
 
@@ -734,16 +815,18 @@ Don't use Markdown formatting.`;
   return (
     <div style={{ background: CARD_BG, borderRadius: 20, border: `1px solid ${LIGHT_BORDER}`, padding: "32px 24px", boxShadow: "0 2px 20px rgba(0,0,0,0.04)" }}>
       {/* Topic input */}
-      <h4 style={{ fontSize: 14, fontWeight: 600, color: DARK, marginBottom: 8 }}>{t("c1freeTopic")}</h4>
+      <label htmlFor="pico-fs-topic" style={{ fontSize: 14, fontWeight: 600, color: DARK, marginBottom: 8, display: "block" }}>{t("c1freeTopic")}</label>
       <p style={{ fontSize: 13, color: MUTED, marginBottom: 12, lineHeight: 1.6 }}>{t("c1freeTopicHint")}</p>
       <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
         <textarea
+          id="pico-fs-topic"
           value={topic}
           onChange={(e) => { setTopic(e.target.value); setTopicFeedback(null); }}
           placeholder={t("c1freeTopicPlaceholder")}
           style={{ flex: 1, padding: "12px 14px", borderRadius: 10, border: `1.5px solid ${LIGHT_BORDER}`, fontSize: 14, lineHeight: 1.6, color: DARK, background: "#FAFAF7", resize: "vertical", minHeight: 56, outline: "none", transition: "border-color 0.2s", boxSizing: "border-box" }}
         />
         <button
+          type="button"
           onClick={checkTopic}
           disabled={!topic.trim() || topicLoading}
           style={{
@@ -755,7 +838,7 @@ Don't use Markdown formatting.`;
             transition: "all 0.2s", whiteSpace: "nowrap", alignSelf: "flex-start", minHeight: 56,
           }}
         >
-          {topicLoading ? (lang === "zh" ? "分析中…" : "Checking…") : t("c1freeTopicCheck")}
+          {topicLoading ? t("wkAiCheckLoading") : t("c1freeTopicCheck")}
         </button>
       </div>
       {/* Topic feedback */}
@@ -781,20 +864,23 @@ Don't use Markdown formatting.`;
           {/* PICO fields */}
           {["p", "i", "c", "o"].map(field => {
             const label = picoLabels[field];
+            const inputId = `pico-fs-${field}`;
             return (
               <div key={field} style={{ marginBottom: 20 }}>
-                <label style={{ fontSize: 13, fontWeight: 600, color: DARK, marginBottom: 6, display: "flex", alignItems: "center", gap: 8 }}>
+                <label htmlFor={inputId} style={{ fontSize: 13, fontWeight: 600, color: DARK, marginBottom: 6, display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 22, height: 22, borderRadius: 6, background: `${label.color}15`, fontSize: 11, fontWeight: 700, color: label.color }}>{label.letter}</span>
                   {t(`c1s4Your${field.toUpperCase()}`)}
                 </label>
                 <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
                   <textarea
+                    id={inputId}
                     value={inputs[field]}
                     onChange={(e) => { setInputs(prev => ({ ...prev, [field]: e.target.value })); setFeedback(prev => ({ ...prev, [field]: null })); }}
                     placeholder={t(`c1freePlaceholder${field.toUpperCase()}`)}
                     style={{ flex: 1, padding: "10px 14px", borderRadius: 10, border: `1.5px solid ${LIGHT_BORDER}`, fontSize: 14, lineHeight: 1.6, color: DARK, background: "#FAFAF7", resize: "vertical", minHeight: 48, outline: "none", transition: "border-color 0.2s", boxSizing: "border-box" }}
                   />
                   <button
+                    type="button"
                     onClick={() => checkField(field)}
                     disabled={!inputs[field].trim() || loading[field]}
                     style={{
@@ -806,7 +892,7 @@ Don't use Markdown formatting.`;
                       transition: "all 0.2s", whiteSpace: "nowrap", alignSelf: "flex-start", minHeight: 48,
                     }}
                   >
-                    {loading[field] ? (lang === "zh" ? "分析中…" : "Checking…") : (lang === "zh" ? "AI 檢查" : "AI Check")}
+                    {loading[field] ? t("wkAiCheckLoading") : t("wkAiCheckBtn")}
                   </button>
                 </div>
                 {feedback[field] && (
@@ -827,6 +913,7 @@ Don't use Markdown formatting.`;
           {/* Overall check */}
           <div style={{ borderTop: `1px solid ${LIGHT_BORDER}`, paddingTop: 20, marginTop: 8 }}>
             <button
+              type="button"
               onClick={checkOverall}
               disabled={!allFilled || overallLoading}
               style={{
@@ -838,7 +925,7 @@ Don't use Markdown formatting.`;
                 boxShadow: allFilled ? `0 2px 12px ${TEAL}33` : "none",
               }}
             >
-              {overallLoading ? (lang === "zh" ? "正在進行整體評估…" : "Running overall assessment…") : (lang === "zh" ? "AI 整體評估我的 PICO" : "AI Overall Assessment")}
+              {overallLoading ? t("wkAiOverallLoading") : t("wkAiOverallBtn")}
             </button>
           </div>
 
@@ -850,7 +937,7 @@ Don't use Markdown formatting.`;
               fontSize: 14, lineHeight: 1.7, color: DARK,
               animation: "fadeInUp 0.3s ease-out",
             }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: TEAL, marginBottom: 8 }}>{lang === "zh" ? "整體評估" : "Overall Assessment"}</div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: TEAL, marginBottom: 8 }}>{t("wkAiOverallTitle")}</div>
               {overallFeedback}
             </div>
           )}
@@ -860,10 +947,10 @@ Don't use Markdown formatting.`;
       {/* Reset button */}
       {(topic.trim() || Object.values(inputs).some(v => v.trim())) && (
         <div style={{ marginTop: 16, textAlign: "center" }}>
-          <button onClick={resetAll} style={{ background: "transparent", border: `1.5px solid ${LIGHT_BORDER}`, color: MUTED, padding: "8px 20px", borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: "pointer", transition: "all 0.2s" }}
+          <button type="button" onClick={resetAll} style={{ background: "transparent", border: `1.5px solid ${LIGHT_BORDER}`, color: MUTED, padding: "8px 20px", borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: "pointer", transition: "all 0.2s" }}
             onMouseEnter={(e) => { e.target.style.borderColor = CORAL; e.target.style.color = CORAL; }}
             onMouseLeave={(e) => { e.target.style.borderColor = LIGHT_BORDER; e.target.style.color = MUTED; }}>
-            {lang === "zh" ? "重新開始 ↻" : "Start Over ↻"}
+            {t("wkStartOver")}
           </button>
         </div>
       )}

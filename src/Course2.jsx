@@ -896,16 +896,23 @@ function AIBooleanChecker({ t, lang, user }) {
   const [feedback, setFeedback] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  const abortRef = useRef(null);
+  useEffect(() => () => { abortRef.current?.abort(); }, []);
+
   const status = queryMeta?.status;
   const statusText =
-    !user ? (lang === "zh" ? "登入即可跨裝置同步" : "Sign in to sync progress")
-    : status === "saving" ? (lang === "zh" ? "儲存中…" : "Saving…")
-    : status === "saved" ? (lang === "zh" ? "已自動儲存" : "Autosaved")
-    : status === "error" ? (lang === "zh" ? "儲存失敗" : "Save failed")
+    !user ? t("wkSaveSync")
+    : status === "saving" ? t("wkSaveSaving")
+    : status === "saved" ? t("wkSaveSaved")
+    : status === "error" ? t("wkSaveError")
     : "";
 
   const checkQuery = async () => {
     if (!query.trim()) return;
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     setLoading(true);
     setFeedback(null);
 
@@ -917,7 +924,7 @@ function AIBooleanChecker({ t, lang, user }) {
 4. 評估搜尋範圍是否太寬或太窄
 5. 給出改善後的搜尋語法
 保持簡潔，不要使用 Markdown 格式。用純文字和換行。`
-      : `You are a systematic review search strategy reviewer. The student gives you a PubMed search string. Review it and give specific improvement suggestions. Format:
+      : `You are a systematic review search strategy reviewer. The student gives you a PubMed search string. Review it and give specific improvement suggestions. Reply in English. Format:
 1. Rate overall quality (Excellent/Good/Needs Improvement)
 2. Identify missing synonyms or MeSH terms
 3. Check if AND/OR/NOT usage is correct
@@ -930,35 +937,42 @@ Be concise. Don't use Markdown formatting. Use plain text with line breaks.`;
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ system: systemPrompt, userMessage: query }),
+        signal: controller.signal,
       });
       if (!response.ok) {
         setFeedback(t("c2aiError"));
         return;
       }
       const data = await response.json();
+      if (controller.signal.aborted) return;
       const text = data.content?.map(item => item.text || "").join("") || t("c2aiNoResult");
       setFeedback(text);
     } catch (err) {
+      if (err.name === "AbortError") return;
       setFeedback(t("c2aiError"));
     } finally {
-      setLoading(false);
+      if (abortRef.current === controller) {
+        abortRef.current = null;
+        setLoading(false);
+      }
     }
   };
 
   return (
     <div style={{ background: CARD_BG, borderRadius: 20, border: `1px solid ${LIGHT_BORDER}`, padding: "32px 24px", boxShadow: "0 2px 20px rgba(0,0,0,0.04)" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 12, gap: 12 }}>
-        <h4 style={{ fontSize: 15, fontWeight: 600, color: DARK, margin: 0 }}>{t("c2aiInstructions")}</h4>
+        <label htmlFor="boolean-query" style={{ fontSize: 15, fontWeight: 600, color: DARK, margin: 0 }}>{t("c2aiInstructions")}</label>
         {statusText && <span style={{ fontSize: 11, color: status === "error" ? CORAL : MUTED }}>{statusText}</span>}
       </div>
       <textarea
+        id="boolean-query"
         value={query}
         onChange={(e) => { setQuery(e.target.value); setFeedback(null); }}
         placeholder={t("c2aiBPlaceholder")}
         rows={4}
         style={{ width: "100%", padding: "12px 16px", borderRadius: 12, border: `1.5px solid ${LIGHT_BORDER}`, fontSize: 14, lineHeight: 1.6, color: DARK, background: "#FAFAF7", resize: "vertical", outline: "none", transition: "border-color 0.2s", fontFamily: "'Noto Sans TC', 'Outfit', monospace", boxSizing: "border-box", marginBottom: 12 }}
       />
-      <button onClick={checkQuery} disabled={!query.trim() || loading}
+      <button type="button" onClick={checkQuery} disabled={!query.trim() || loading}
         style={{
           background: query.trim() ? PURPLE : "#E8E6E1", border: "none", color: query.trim() ? "#FFF" : MUTED,
           padding: "13px 28px", borderRadius: 10, fontSize: 14, fontWeight: 600,
