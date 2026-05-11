@@ -552,6 +552,8 @@ function TrafficLightDemo({ lang }) {
   const activeStudies = excludeHighRisk ? studies.filter(s => !isHighRisk(s)) : studies;
   const totalWeight = activeStudies.reduce((sum, s) => sum + s.weight, 0);
   const pooledEffect = activeStudies.reduce((sum, s) => sum + s.effect * (s.weight / totalWeight), 0);
+  const fullTotalWeight = studies.reduce((sum, s) => sum + s.weight, 0);
+  const fullPooledEffect = studies.reduce((sum, s) => sum + s.effect * (s.weight / fullTotalWeight), 0);
 
   return (
     <div style={{ background: CARD_BG, borderRadius: 20, border: `1px solid ${LIGHT_BORDER}`, padding: "24px 18px", boxShadow: "0 2px 20px rgba(0,0,0,0.04)" }}>
@@ -638,8 +640,8 @@ function TrafficLightDemo({ lang }) {
           {excludeHighRisk && (
             <span style={{ fontSize: 12, color: CORAL, marginLeft: 8 }}>
               {lang === "zh"
-                ? "（排除高風險研究後，效應量從 −0.92 降到 −0.63）"
-                : " (dropped from −0.92 to −0.63 after excluding high-risk study)"}
+                ? `（排除高風險研究後，效應量從 ${fullPooledEffect.toFixed(2)} 變為 ${pooledEffect.toFixed(2)}）`
+                : ` (changed from ${fullPooledEffect.toFixed(2)} to ${pooledEffect.toFixed(2)} after excluding high-risk study)`}
             </span>
           )}
         </div>
