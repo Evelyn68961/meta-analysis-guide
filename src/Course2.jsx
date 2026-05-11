@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useI18n } from "./i18n";
+import { useWorkshopField } from "./useWorkshopField";
 import SiteNav from "./SiteNav";
 import DinoFoodRescue from "./DinoFoodRescue";
 import CourseNotes from "./CourseNotes";
@@ -890,10 +891,18 @@ function GreyLitHunt({ lang }) {
 }
 
 // ═══ AI WORKSHOP: BOOLEAN QUERY CHECKER ═══
-function AIBooleanChecker({ t, lang }) {
-  const [query, setQuery] = useState("");
+function AIBooleanChecker({ t, lang, user }) {
+  const [query, setQuery, queryMeta] = useWorkshopField(user, "course2_ai_boolean", "query", "");
   const [feedback, setFeedback] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  const status = queryMeta?.status;
+  const statusText =
+    !user ? (lang === "zh" ? "登入即可跨裝置同步" : "Sign in to sync progress")
+    : status === "saving" ? (lang === "zh" ? "儲存中…" : "Saving…")
+    : status === "saved" ? (lang === "zh" ? "已自動儲存" : "Autosaved")
+    : status === "error" ? (lang === "zh" ? "儲存失敗" : "Save failed")
+    : "";
 
   const checkQuery = async () => {
     if (!query.trim()) return;
@@ -938,7 +947,10 @@ Be concise. Don't use Markdown formatting. Use plain text with line breaks.`;
 
   return (
     <div style={{ background: CARD_BG, borderRadius: 20, border: `1px solid ${LIGHT_BORDER}`, padding: "32px 24px", boxShadow: "0 2px 20px rgba(0,0,0,0.04)" }}>
-      <h4 style={{ fontSize: 15, fontWeight: 600, color: DARK, marginBottom: 12 }}>{t("c2aiInstructions")}</h4>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 12, gap: 12 }}>
+        <h4 style={{ fontSize: 15, fontWeight: 600, color: DARK, margin: 0 }}>{t("c2aiInstructions")}</h4>
+        {statusText && <span style={{ fontSize: 11, color: status === "error" ? CORAL : MUTED }}>{statusText}</span>}
+      </div>
       <textarea
         value={query}
         onChange={(e) => { setQuery(e.target.value); setFeedback(null); }}
@@ -1304,7 +1316,7 @@ export default function Course2({ onNavigate, user, onLogin, onLogout }) {
           <FadeIn delay={0.1}><Paragraph style={{ marginBottom: 32 }}>
             {t("c2aiBDesc")}
           </Paragraph></FadeIn>
-          <FadeIn delay={0.15}><AIBooleanChecker t={t} lang={lang} /></FadeIn>
+          <FadeIn delay={0.15}><AIBooleanChecker t={t} lang={lang} user={user} /></FadeIn>
         </div>
       </section>
 
