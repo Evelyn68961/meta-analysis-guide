@@ -204,7 +204,7 @@ Project docs:
 
 ### Question Bank Architecture (split per course):
 - Each course has its own question file: `course0Questions.js`, `course1Questions.js`, etc.
-- Shared helpers in `questionHelpers.js`: `pickQuestions()`, `pickBalanced()`, `pickByType()`, `pickAdvancedMix()`
+- Shared helpers in `questionHelpers.js`: `pickQuestions()`, `pickBalanced()`, `pickByType()`, `pickAdvancedMix()`, `shuffleQuestionOptions()`
 - **Standard MCQ questions:** `{ id, category, type: "mcq", zh: { q, opts, exp }, en: { q, opts, exp }, correct }`
 - **Advanced question types (Courses 4–5):**
   - `type: "true_false"` — statement + `correct: true/false`
@@ -214,11 +214,18 @@ Project docs:
 - `id` format: `"cN-XXX"` (e.g., `"c0-WW01"`, `"c1-042"`, `"c4-085"`)
 - `category` (0–6) maps to 7 thematic groups per course
 - Helper functions in `questionHelpers.js`:
-  - `pickQuestions(pool, n)` — pure random pick
-  - `pickBalanced(pool, n, numCategories)` — even coverage across categories, then shuffle
-  - `pickByType(pool, type, n)` — pick N questions of a specific type with balanced categories
-  - `pickAdvancedMix(pool, n)` — pick N non-MCQ questions with type variety (2 true/false, 2 multi-select, 1 ordering, 1 spot-error for n=6)
+  - `pickQuestions(pool, n)` — pure random pick (applies option shuffle)
+  - `pickBalanced(pool, n, numCategories)` — even coverage across categories, then shuffle (applies option shuffle)
+  - `pickByType(pool, type, n)` — pick N questions of a specific type with balanced categories (applies option shuffle)
+  - `pickAdvancedMix(pool, n)` — pick N non-MCQ questions with type variety (2 true/false, 2 multi-select, 1 ordering, 1 spot-error for n=6) (applies option shuffle)
+  - `shuffleQuestionOptions(q)` — applied internally by the pick helpers above. Fisher–Yates shuffle of the positional-answer array on a per-question basis, with the correct index remapped to match:
+    - `mcq` → shuffles `opts` (both `zh` and `en` in lockstep) and remaps `correct`
+    - `multi_select` → shuffles `opts` and remaps each entry of `correctAll` (then sorts ascending)
+    - `spot_error` → shuffles `statements` and remaps `correct` (`-1` for "no error" is preserved)
+    - `true_false`, `ordering` → passed through untouched (no positional-letter cheat to defeat)
+    - Returns a new question object; source question banks are never mutated.
 - Game components localize at runtime: `q[lang].q`, `q[lang].opts`, `q.correct`, `q[lang].exp`
+- **Authoring rule for `exp` (explanation) prose:** Do NOT reference option letters ("Option B", "選項 B") or positions ("the second choice"). Options are shuffled per pick, so the displayed letter is not stable. Use letter-agnostic phrasing like "This option" / "此選項" or describe the correct answer's content directly. The UI highlights the correct option in green when the explanation is shown, so "this option" is unambiguous to the student.
 - Currently: 525 questions total (35 Course 0 + 70 Course 1 + 70 Course 2 + 70 Course 3 + 105 Course 4 + 105 Course 5 + 70 reserve per advanced course)
 
 ### Common Pitfalls:
