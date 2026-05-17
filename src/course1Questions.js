@@ -26,12 +26,12 @@ export const course1Questions = [
     zh: {
       q: "以下哪個是正確的 PICO 格式研究問題？",
       opts: ["糖尿病藥物有效嗎？", "在第二型糖尿病成人中，Metformin 相比安慰劑能否降低 HbA1c？", "Metformin 是最好的藥嗎？", "糖尿病患者應該吃什麼藥？"],
-      exp: "選項 B 清楚包含了 P（第二型糖尿病成人）、I（Metformin）、C（安慰劑）和 O（HbA1c 降低），是標準的 PICO 格式。",
+      exp: "此選項清楚包含了 P（第二型糖尿病成人）、I（Metformin）、C（安慰劑）和 O（HbA1c 降低），是標準的 PICO 格式。",
     },
     en: {
       q: "Which is a properly formatted PICO research question?",
       opts: ["Do diabetes drugs work?", "In adults with T2DM, does Metformin vs placebo reduce HbA1c?", "Is Metformin the best drug?", "What should diabetes patients take?"],
-      exp: "Option B clearly contains P (adults with T2DM), I (Metformin), C (placebo), and O (HbA1c reduction) — a standard PICO format.",
+      exp: "This option clearly contains P (adults with T2DM), I (Metformin), C (placebo), and O (HbA1c reduction) — a standard PICO format.",
     },
     correct: 1,
   },
@@ -40,12 +40,12 @@ export const course1Questions = [
     zh: {
       q: "哪一個研究問題最符合 PICO 框架？",
       opts: ["Statin 類藥物安全嗎？", "在高血脂成人中，Atorvastatin 40mg 相比 Rosuvastatin 20mg 在 12 週後降低 LDL-C 的效果如何？", "膽固醇藥有哪些副作用？", "高血脂要不要吃藥？"],
-      exp: "選項 B 明確定義了 P（高血脂成人）、I（Atorvastatin 40mg）、C（Rosuvastatin 20mg）、O（12 週後 LDL-C 變化），完整且具體。",
+      exp: "此選項明確定義了 P（高血脂成人）、I（Atorvastatin 40mg）、C（Rosuvastatin 20mg）、O（12 週後 LDL-C 變化），完整且具體。",
     },
     en: {
       q: "Which research question best follows the PICO framework?",
       opts: ["Are statins safe?", "In adults with hyperlipidemia, does Atorvastatin 40mg vs Rosuvastatin 20mg reduce LDL-C at 12 weeks?", "What are the side effects of cholesterol drugs?", "Should people with high cholesterol take medication?"],
-      exp: "Option B clearly defines P (adults with hyperlipidemia), I (Atorvastatin 40mg), C (Rosuvastatin 20mg), O (LDL-C change at 12 weeks).",
+      exp: "This option clearly defines P (adults with hyperlipidemia), I (Atorvastatin 40mg), C (Rosuvastatin 20mg), O (LDL-C change at 12 weeks).",
     },
     correct: 1,
   },
@@ -68,12 +68,12 @@ export const course1Questions = [
     zh: {
       q: "下列哪個研究問題的 PICO 四要素最完整？",
       opts: ["免疫療法對癌症有用嗎？", "運動對老年人有什麼好處？", "在 65 歲以上社區老年人中，每週 3 次有氧運動相比常規活動，6 個月後跌倒發生率是否降低？", "新冠疫苗有效嗎？"],
-      exp: "選項 C 精確定義了 P（65 歲以上社區老年人）、I（每週 3 次有氧運動）、C（常規活動）、O（6 個月後跌倒發生率）。",
+      exp: "此選項精確定義了 P（65 歲以上社區老年人）、I（每週 3 次有氧運動）、C（常規活動）、O（6 個月後跌倒發生率）。",
     },
     en: {
       q: "Which research question has the most complete PICO elements?",
       opts: ["Does immunotherapy work for cancer?", "What are the benefits of exercise for elderly?", "In community-dwelling adults ≥65y, does aerobic exercise 3x/week vs usual activity reduce fall incidence at 6 months?", "Are COVID vaccines effective?"],
-      exp: "Option C precisely defines P (community-dwelling adults ≥65y), I (aerobic exercise 3x/week), C (usual activity), O (fall incidence at 6 months).",
+      exp: "This option precisely defines P (community-dwelling adults ≥65y), I (aerobic exercise 3x/week), C (usual activity), O (fall incidence at 6 months).",
     },
     correct: 2,
   },
@@ -82,12 +82,12 @@ export const course1Questions = [
     zh: {
       q: "以下哪個問題的格式最適合進行系統性回顧？",
       opts: ["降血壓藥物的最新進展是什麼？", "在未控制的高血壓成人中，ARB 相比 ACEi 在 24 週後降低收縮壓的幅度有何差異？", "高血壓患者吃什麼藥比較好？", "哪種降壓藥副作用最少？"],
-      exp: "選項 B 有明確的 PICO：P（未控制的高血壓成人）、I（ARB）、C（ACEi）、O（24 週後收縮壓變化），適合作為系統性回顧的問題。",
+      exp: "此選項有明確的 PICO：P（未控制的高血壓成人）、I（ARB）、C（ACEi）、O（24 週後收縮壓變化），適合作為系統性回顧的問題。",
     },
     en: {
       q: "Which question format is most suitable for a systematic review?",
       opts: ["What are the latest advances in antihypertensives?", "In adults with uncontrolled HTN, do ARBs vs ACEi differ in SBP reduction at 24 weeks?", "Which BP medication is better?", "Which antihypertensive has the fewest side effects?"],
-      exp: "Option B has clear PICO: P (adults with uncontrolled HTN), I (ARB), C (ACEi), O (SBP change at 24 weeks) — suitable for systematic review.",
+      exp: "This option has clear PICO: P (adults with uncontrolled HTN), I (ARB), C (ACEi), O (SBP change at 24 weeks) — suitable for systematic review.",
     },
     correct: 1,
   },
@@ -96,12 +96,12 @@ export const course1Questions = [
     zh: {
       q: "下列哪個問題有完整的 PICO 但研究範圍可能太窄？",
       opts: ["藥物治療對癌症有效嗎？", "在台大醫院 2023 年收治的 HFrEF 成人中，Dapagliflozin 相比安慰劑降低住院率如何？", "在 HFrEF 成人中，SGLT2i 相比安慰劑降低住院率如何？", "心臟衰竭要怎麼治？"],
-      exp: "選項 B 雖然 PICO 完整，但限定「台大醫院 2023 年」使得搜尋範圍過窄，幾乎無法找到足夠研究做統合分析。",
+      exp: "此選項雖然 PICO 完整，但限定「台大醫院 2023 年」使得搜尋範圍過窄，幾乎無法找到足夠研究做統合分析。",
     },
     en: {
       q: "Which question has complete PICO but may be too narrow?",
       opts: ["Does drug therapy work for cancer?", "In HFrEF adults admitted to NTUH in 2023, does Dapagliflozin vs placebo reduce hospitalization?", "In HFrEF adults, does SGLT2i vs placebo reduce hospitalization?", "How do we treat heart failure?"],
-      exp: "Option B has full PICO but restricting to one hospital in one year makes it too narrow for a meta-analysis.",
+      exp: "This option has full PICO but restricting to one hospital in one year makes it too narrow for a meta-analysis.",
     },
     correct: 1,
   },
@@ -110,12 +110,12 @@ export const course1Questions = [
     zh: {
       q: "哪一個研究問題最能幫助你制定搜尋策略？",
       opts: ["Warfarin 好不好用？", "血栓治療有什麼新進展？", "在非瓣膜性心房顫動成人中，DOAC 相比 Warfarin 對中風和重大出血發生率的影響如何？", "抗凝血劑的種類有哪些？"],
-      exp: "選項 C 的 PICO 明確，每個元素都可以直接轉換為搜尋關鍵詞：P→AF, I→DOAC, C→Warfarin, O→stroke/bleeding。",
+      exp: "此選項的 PICO 明確，每個元素都可以直接轉換為搜尋關鍵詞：P→AF, I→DOAC, C→Warfarin, O→stroke/bleeding。",
     },
     en: {
       q: "Which research question best supports developing a search strategy?",
       opts: ["Is Warfarin any good?", "What's new in thrombosis treatment?", "In adults with non-valvular AF, do DOACs vs Warfarin differ in stroke and major bleeding rates?", "What types of anticoagulants exist?"],
-      exp: "Option C has clear PICO that directly maps to search terms: P→AF, I→DOAC, C→Warfarin, O→stroke/bleeding.",
+      exp: "This option has clear PICO that directly maps to search terms: P→AF, I→DOAC, C→Warfarin, O→stroke/bleeding.",
     },
     correct: 2,
   },
@@ -170,12 +170,12 @@ export const course1Questions = [
     zh: {
       q: "你正在研究「延長輸注 β-lactam 抗生素對重症患者的效果」。以下哪個 Population 定義最恰當？",
       opts: ["所有接受抗生素的患者", "加護病房中接受 β-lactam 抗生素治療的重症成人患者", "住院的患者", "有感染症狀的人"],
-      exp: "選項 B 精確定義了場域（ICU）、藥物類別（β-lactam）、嚴重度（重症）和年齡（成人）。其他選項太廣泛。",
+      exp: "此選項精確定義了場域（ICU）、藥物類別（β-lactam）、嚴重度（重症）和年齡（成人）。其他選項太廣泛。",
     },
     en: {
       q: "For 'prolonged β-lactam infusion in critically ill patients,' which Population is most appropriate?",
       opts: ["All patients receiving antibiotics", "Critically ill adults in ICU receiving β-lactam antibiotics", "Hospitalized patients", "People with infection symptoms"],
-      exp: "Option B precisely defines setting (ICU), drug class (β-lactam), severity (critically ill), and age (adults). Others are too broad.",
+      exp: "This option precisely defines setting (ICU), drug class (β-lactam), severity (critically ill), and age (adults). Others are too broad.",
     },
     correct: 1,
   },
@@ -212,12 +212,12 @@ export const course1Questions = [
     zh: {
       q: "在研究「Finerenone 對慢性腎臟病的效果」時，以下哪個 P 最合適？",
       opts: ["所有腎臟病患者", "有蛋白尿的人", "合併第二型糖尿病的 CKD 成人，eGFR 25-90 且 UACR ≥ 30 mg/g", "洗腎患者"],
-      exp: "選項 C 精確限定了 CKD 合併 T2DM、具體 eGFR 和 UACR 範圍，與 FIDELIO/FIGARO 試驗的納入條件一致。",
+      exp: "此選項精確限定了 CKD 合併 T2DM、具體 eGFR 和 UACR 範圍，與 FIDELIO/FIGARO 試驗的納入條件一致。",
     },
     en: {
       q: "For 'Finerenone in CKD,' which Population is most appropriate?",
       opts: ["All kidney disease patients", "People with proteinuria", "Adults with CKD and T2DM, eGFR 25-90, UACR ≥ 30 mg/g", "Dialysis patients"],
-      exp: "Option C precisely limits to CKD with T2DM, specific eGFR and UACR ranges, matching FIDELIO/FIGARO trial criteria.",
+      exp: "This option precisely limits to CKD with T2DM, specific eGFR and UACR ranges, matching FIDELIO/FIGARO trial criteria.",
     },
     correct: 2,
   },
@@ -240,12 +240,12 @@ export const course1Questions = [
     zh: {
       q: "你想做一個關於「抗凝血劑預防中風」的統合分析。以下哪個 P 最適合？",
       opts: ["所有中風患者", "有中風風險的人", "非瓣膜性心房顫動 (NVAF) 且 CHA₂DS₂-VASc ≥ 2 的成人", "心律不整患者"],
-      exp: "選項 C 精確限定了心房顫動類型（非瓣膜性）和中風風險（CHA₂DS₂-VASc 分數），確保研究之間的可比性。",
+      exp: "此選項精確限定了心房顫動類型（非瓣膜性）和中風風險（CHA₂DS₂-VASc 分數），確保研究之間的可比性。",
     },
     en: {
       q: "For a meta-analysis on 'anticoagulants for stroke prevention,' which P is best?",
       opts: ["All stroke patients", "People at risk of stroke", "Adults with NVAF and CHA₂DS₂-VASc ≥ 2", "Patients with arrhythmia"],
-      exp: "Option C specifies AF type (non-valvular) and stroke risk score (CHA₂DS₂-VASc), ensuring comparability across studies.",
+      exp: "This option specifies AF type (non-valvular) and stroke risk score (CHA₂DS₂-VASc), ensuring comparability across studies.",
     },
     correct: 2,
   },
@@ -254,12 +254,12 @@ export const course1Questions = [
     zh: {
       q: "以下哪個 P 定義包含了適當的排除條件？",
       opts: ["所有糖尿病患者", "T2DM 成人，排除 eGFR < 30、懷孕及正在接受胰島素治療者", "糖尿病且身體不好的人", "住院的糖尿病患者"],
-      exp: "選項 B 不僅定義了納入條件（T2DM 成人），還明確列出排除條件（腎功能不全、懷孕、已用胰島素），確保族群同質性。",
+      exp: "此選項不僅定義了納入條件（T2DM 成人），還明確列出排除條件（腎功能不全、懷孕、已用胰島素），確保族群同質性。",
     },
     en: {
       q: "Which P definition includes appropriate exclusion criteria?",
       opts: ["All diabetes patients", "Adults with T2DM, excluding eGFR < 30, pregnancy, and current insulin use", "Diabetes patients who are unwell", "Hospitalized diabetes patients"],
-      exp: "Option B defines inclusion (T2DM adults) AND exclusion criteria (renal impairment, pregnancy, insulin use), ensuring homogeneity.",
+      exp: "This option defines inclusion (T2DM adults) AND exclusion criteria (renal impairment, pregnancy, insulin use), ensuring homogeneity.",
     },
     correct: 1,
   },
@@ -282,12 +282,12 @@ export const course1Questions = [
     zh: {
       q: "你想研究「PPI 對胃食道逆流的效果」。以下哪個 P 在廣度與精確度之間取得最好的平衡？",
       opts: ["所有消化道疾病患者", "有症狀的胃食道逆流疾病 (GERD) 成人（非手術候選人）", "胃不舒服的人", "確診有食道糜爛的 GERD 患者"],
-      exp: "選項 B 限定了疾病（GERD）、症狀（有症狀的）、年齡（成人）和排除（非手術），夠精確但不至於太窄。",
+      exp: "此選項限定了疾病（GERD）、症狀（有症狀的）、年齡（成人）和排除（非手術），夠精確但不至於太窄。",
     },
     en: {
       q: "For 'PPIs for GERD,' which P best balances breadth and precision?",
       opts: ["All GI disease patients", "Symptomatic adults with GERD (non-surgical candidates)", "People with stomach discomfort", "GERD patients with confirmed erosive esophagitis"],
-      exp: "Option B specifies disease (GERD), symptoms (symptomatic), age (adults), and exclusion (non-surgical) — precise but not too narrow.",
+      exp: "This option specifies disease (GERD), symptoms (symptomatic), age (adults), and exclusion (non-surgical) — precise but not too narrow.",
     },
     correct: 1,
   },
@@ -296,12 +296,12 @@ export const course1Questions = [
     zh: {
       q: "研究「Palbociclib 對乳癌的效果」，以下哪個 P 最精確？",
       opts: ["所有乳癌患者", "所有女性癌症患者", "HR+/HER2− 晚期或轉移性乳癌的停經後女性", "接受化療的乳癌患者"],
-      exp: "選項 C 限定了生物標記（HR+/HER2−）、疾病階段（晚期/轉移性）和族群特徵（停經後），與 PALOMA 試驗的納入條件一致。",
+      exp: "此選項限定了生物標記（HR+/HER2−）、疾病階段（晚期/轉移性）和族群特徵（停經後），與 PALOMA 試驗的納入條件一致。",
     },
     en: {
       q: "For 'Palbociclib in breast cancer,' which P is most precise?",
       opts: ["All breast cancer patients", "All female cancer patients", "Postmenopausal women with HR+/HER2− advanced or metastatic breast cancer", "Breast cancer patients receiving chemotherapy"],
-      exp: "Option C specifies biomarkers (HR+/HER2−), stage (advanced/metastatic), and demographics (postmenopausal), matching PALOMA trial criteria.",
+      exp: "This option specifies biomarkers (HR+/HER2−), stage (advanced/metastatic), and demographics (postmenopausal), matching PALOMA trial criteria.",
     },
     correct: 2,
   },
@@ -314,12 +314,12 @@ export const course1Questions = [
     zh: {
       q: "研究延長輸注 β-lactam 抗生素的效果，以下哪個 I 定義最精確？",
       opts: ["抗生素治療", "延長輸注 (≥3小時持續輸注或間歇延長輸注)", "高劑量抗生素", "持續靜脈輸注"],
-      exp: "選項 B 明確定義了給藥方式（≥3 小時持續或間歇延長輸注），比其他選項更精確、可重複驗證。",
+      exp: "此選項明確定義了給藥方式（≥3 小時持續或間歇延長輸注），比其他選項更精確、可重複驗證。",
     },
     en: {
       q: "For prolonged β-lactam infusion, which Intervention definition is most precise?",
       opts: ["Antibiotic therapy", "Prolonged infusion (≥3h continuous or extended intermittent infusion)", "High-dose antibiotics", "Continuous IV infusion"],
-      exp: "Option B clearly defines the administration method (≥3h continuous or extended intermittent), more precise and reproducible.",
+      exp: "This option clearly defines the administration method (≥3h continuous or extended intermittent), more precise and reproducible.",
     },
     correct: 1,
   },
@@ -328,12 +328,12 @@ export const course1Questions = [
     zh: {
       q: "以下哪個 Intervention 定義最具體？",
       opts: ["給予降血糖藥物", "Empagliflozin 10mg 每日一次，合併標準治療", "使用新型藥物", "口服藥物治療"],
-      exp: "選項 B 包含了藥名、劑量、頻率及合併治療，是最完整的介入措施定義。",
+      exp: "此選項包含了藥名、劑量、頻率及合併治療，是最完整的介入措施定義。",
     },
     en: {
       q: "Which Intervention definition is most specific?",
       opts: ["Give glucose-lowering drugs", "Empagliflozin 10mg once daily plus standard therapy", "Use novel agents", "Oral medication therapy"],
-      exp: "Option B includes drug name, dose, frequency, and concomitant therapy — the most complete intervention definition.",
+      exp: "This option includes drug name, dose, frequency, and concomitant therapy — the most complete intervention definition.",
     },
     correct: 1,
   },
@@ -356,12 +356,12 @@ export const course1Questions = [
     zh: {
       q: "研究 CBT 治療憂鬱症，以下哪個 I 定義最合適？",
       opts: ["心理治療", "認知行為治療 (CBT)，每週 1 次，持續 12-16 週", "諮商", "CBT 加上藥物"],
-      exp: "選項 B 明確指定了治療類型（CBT）、頻率（每週 1 次）和持續時間（12-16 週），具備可重現性。",
+      exp: "此選項明確指定了治療類型（CBT）、頻率（每週 1 次）和持續時間（12-16 週），具備可重現性。",
     },
     en: {
       q: "For studying CBT in depression, which Intervention is most appropriate?",
       opts: ["Psychotherapy", "CBT, weekly sessions for 12-16 weeks", "Counseling", "CBT plus medication"],
-      exp: "Option B specifies the therapy type (CBT), frequency (weekly), and duration (12-16 weeks) for reproducibility.",
+      exp: "This option specifies the therapy type (CBT), frequency (weekly), and duration (12-16 weeks) for reproducibility.",
     },
     correct: 1,
   },
@@ -384,12 +384,12 @@ export const course1Questions = [
     zh: {
       q: "研究「GLP-1 受體促效劑對體重的效果」，以下哪個 I 最合適？",
       opts: ["減重藥物", "Semaglutide 2.4mg 每週一次皮下注射，持續 68 週", "GLP-1 類藥物", "注射型降血糖藥"],
-      exp: "選項 B 指明了藥名、劑量、頻率、給藥途徑和持續時間，是最可操作的介入定義。",
+      exp: "此選項指明了藥名、劑量、頻率、給藥途徑和持續時間，是最可操作的介入定義。",
     },
     en: {
       q: "For 'GLP-1 RA on body weight,' which I is most appropriate?",
       opts: ["Weight-loss drugs", "Semaglutide 2.4mg subcutaneous injection weekly for 68 weeks", "GLP-1 class drugs", "Injectable glucose-lowering agents"],
-      exp: "Option B specifies drug name, dose, frequency, route, and duration — the most actionable intervention definition.",
+      exp: "This option specifies drug name, dose, frequency, route, and duration — the most actionable intervention definition.",
     },
     correct: 1,
   },
@@ -412,12 +412,12 @@ export const course1Questions = [
     zh: {
       q: "非藥物介入也可以作為 PICO 的 I。以下哪個非藥物 I 定義最好？",
       opts: ["運動", "多動一點", "結構化有氧運動計畫：每週 3 次、每次 45 分鐘中等強度、持續 12 週", "健康的生活方式"],
-      exp: "選項 C 明確定義了運動類型、頻率、強度、持續時間，是可重複的非藥物介入定義。",
+      exp: "此選項明確定義了運動類型、頻率、強度、持續時間，是可重複的非藥物介入定義。",
     },
     en: {
       q: "Non-drug interventions can also be PICO's I. Which is best defined?",
       opts: ["Exercise", "Move more", "Structured aerobic exercise: 3x/week, 45 min moderate intensity, for 12 weeks", "Healthy lifestyle"],
-      exp: "Option C specifies exercise type, frequency, intensity, and duration — a reproducible non-drug intervention definition.",
+      exp: "This option specifies exercise type, frequency, intensity, and duration — a reproducible non-drug intervention definition.",
     },
     correct: 2,
   },
@@ -602,12 +602,12 @@ export const course1Questions = [
     zh: {
       q: "你想研究「SGLT2 抑制劑對心衰竭患者的效果」。以下哪個 Outcome 定義最合適？",
       opts: ["病人有沒有好轉", "心血管死亡或心衰竭住院的複合終點", "所有不良事件", "醫生的主觀評估"],
-      exp: "選項 B 是一個具體、可量測的複合終點，常用於心衰竭臨床試驗（如 DAPA-HF, EMPEROR-Reduced）。",
+      exp: "此選項是一個具體、可量測的複合終點，常用於心衰竭臨床試驗（如 DAPA-HF, EMPEROR-Reduced）。",
     },
     en: {
       q: "For 'SGLT2 inhibitors in heart failure,' which Outcome is most appropriate?",
       opts: ["Whether patients got better", "Composite of CV death or HF hospitalization", "All adverse events", "Physician's subjective assessment"],
-      exp: "Option B is a specific, measurable composite endpoint used in major HF trials (DAPA-HF, EMPEROR-Reduced).",
+      exp: "This option is a specific, measurable composite endpoint used in major HF trials (DAPA-HF, EMPEROR-Reduced).",
     },
     correct: 1,
   },
@@ -616,12 +616,12 @@ export const course1Questions = [
     zh: {
       q: "研究延長輸注抗生素的效果，以下哪個 O 最合適？",
       opts: ["主要：院內死亡率；次要：臨床治癒率、ICU 住院天數", "抗生素的副作用", "細菌培養結果", "病人有沒有出院"],
-      exp: "選項 A 有分主要和次要結果指標，且都是具體、可量測的臨床終點。",
+      exp: "此選項有分主要和次要結果指標，且都是具體、可量測的臨床終點。",
     },
     en: {
       q: "For studying prolonged antibiotic infusion, which Outcome is most appropriate?",
       opts: ["Primary: in-hospital mortality; Secondary: clinical cure rate, ICU LOS", "Antibiotic side effects", "Bacterial culture results", "Whether patients were discharged"],
-      exp: "Option A distinguishes primary and secondary outcomes, all specific and measurable clinical endpoints.",
+      exp: "This option distinguishes primary and secondary outcomes, all specific and measurable clinical endpoints.",
     },
     correct: 0,
   },
@@ -960,12 +960,12 @@ export const course1Questions = [
     zh: {
       q: "以下哪個錯誤是「把研究範圍當成 PICO」？",
       opts: ["P: HFrEF 成人, I: Dapagliflozin 10mg, C: 安慰劑, O: CV death", "P: 心臟病, I: 藥物, C: 無, O: 病人好轉", "P: COPD, I: Tiotropium, C: Salmeterol, O: 急性惡化頻率", "P: T2DM 成人 HbA1c>7%, I: Metformin 1000mg BID, C: 安慰劑, O: HbA1c 26 週變化"],
-      exp: "選項 B 的每個元素都是研究「範圍」而不是可操作的 PICO：「心臟病」太廣、「藥物」不具體、「無」不是有效對照、「好轉」不可量測。",
+      exp: "此選項的每個元素都是研究「範圍」而不是可操作的 PICO：「心臟病」太廣、「藥物」不具體、「無」不是有效對照、「好轉」不可量測。",
     },
     en: {
       q: "Which example shows the mistake of 'treating research scope as PICO'?",
       opts: ["P: HFrEF adults, I: Dapagliflozin 10mg, C: placebo, O: CV death", "P: heart disease, I: drugs, C: none, O: patient improvement", "P: COPD, I: Tiotropium, C: Salmeterol, O: exacerbation frequency", "P: T2DM adults HbA1c>7%, I: Metformin 1000mg BID, C: placebo, O: HbA1c change at 26wk"],
-      exp: "Option B uses scope-level terms rather than actionable PICO: 'heart disease' is too broad, 'drugs' is vague, 'none' isn't valid, 'improvement' isn't measurable.",
+      exp: "This option uses scope-level terms rather than actionable PICO: 'heart disease' is too broad, 'drugs' is vague, 'none' isn't valid, 'improvement' isn't measurable.",
     },
     correct: 1,
   },
@@ -1002,12 +1002,12 @@ export const course1Questions = [
     zh: {
       q: "以下哪個錯誤是把「P 和 I 搞混了」？",
       opts: ["P: ICU 重症成人, I: Meropenem 延長輸注", "P: 接受 Metformin 治療的 T2DM 患者, I: Metformin", "P: 65 歲以上高血壓成人, I: Amlodipine 5mg", "P: NVAF 成人, I: Rivaroxaban 20mg"],
-      exp: "選項 B 把已經在使用 Metformin 的病人定義為 P，又把 Metformin 定義為 I，造成 P 和 I 重疊。P 應該在介入之前就定義好。",
+      exp: "此選項把已經在使用 Metformin 的病人定義為 P，又把 Metformin 定義為 I，造成 P 和 I 重疊。P 應該在介入之前就定義好。",
     },
     en: {
       q: "Which example shows the mistake of 'confusing P and I'?",
       opts: ["P: ICU critically ill adults, I: Meropenem prolonged infusion", "P: T2DM patients on Metformin, I: Metformin", "P: Adults ≥65y with HTN, I: Amlodipine 5mg", "P: Adults with NVAF, I: Rivaroxaban 20mg"],
-      exp: "Option B defines P as patients already on Metformin, then also defines I as Metformin — P and I overlap. P should be defined before the intervention.",
+      exp: "This option defines P as patients already on Metformin, then also defines I as Metformin — P and I overlap. P should be defined before the intervention.",
     },
     correct: 1,
   },

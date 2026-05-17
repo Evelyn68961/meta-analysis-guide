@@ -13,10 +13,49 @@
 //   const advanced = pickAdvancedMix(course4Questions, 6);
 // ============================================================
 
+// ── Shuffle option order within a question and remap the correct index ──
+// Prevents the "answer is always B" anti-pattern that lets students guess by position.
+// Type-aware:
+//   - mcq:          shuffle `opts` (zh+en) and remap `correct` (an index)
+//   - multi_select: shuffle `opts` and remap `correctAll` (array of indices)
+//   - spot_error:   shuffle `statements` (zh+en, kept in lockstep) and remap `correct`
+//   - true_false, ordering: untouched (no positional-letter cheat to defeat)
+// `correct === -1` (spot_error "no error in any option") is preserved as-is.
+export function shuffleQuestionOptions(q) {
+  const type = q.type || "mcq";
+  if (type !== "mcq" && type !== "spot_error" && type !== "multi_select") return q;
+
+  // spot_error uses `statements`; mcq/multi_select use `opts`.
+  const field = type === "spot_error" ? "statements" : "opts";
+  const len = (q.zh && q.zh[field] && q.zh[field].length) || (q.en && q.en[field] && q.en[field].length) || 0;
+  if (len <= 1) return q;
+
+  // perm[newPos] = oldIdx  (Fisher–Yates)
+  const perm = Array.from({ length: len }, (_, i) => i);
+  for (let i = perm.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [perm[i], perm[j]] = [perm[j], perm[i]];
+  }
+  const oldToNew = new Array(len);
+  perm.forEach((oldIdx, newPos) => { oldToNew[oldIdx] = newPos; });
+  const reorder = (arr) => perm.map(oldIdx => arr[oldIdx]);
+
+  const out = { ...q };
+  if (q.zh && q.zh[field]) out.zh = { ...q.zh, [field]: reorder(q.zh[field]) };
+  if (q.en && q.en[field]) out.en = { ...q.en, [field]: reorder(q.en[field]) };
+
+  if (type === "multi_select" && Array.isArray(q.correctAll)) {
+    out.correctAll = q.correctAll.map(oldIdx => oldToNew[oldIdx]).sort((a, b) => a - b);
+  } else if (typeof q.correct === "number" && q.correct >= 0 && q.correct < len) {
+    out.correct = oldToNew[q.correct];
+  }
+  return out;
+}
+
 // ── Pick N random questions from a pool ──
 export function pickQuestions(pool, n) {
   const shuffled = [...pool].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, n);
+  return shuffled.slice(0, n).map(shuffleQuestionOptions);
 }
 
 // ── Pick N questions with balanced category coverage ──
@@ -45,8 +84,8 @@ export function pickBalanced(pool, n, numCategories = 7) {
     round++;
   }
 
-  // Final shuffle so categories aren't in order
-  return picked.sort(() => Math.random() - 0.5);
+  // Final shuffle so categories aren't in order, then per-question option shuffle
+  return picked.sort(() => Math.random() - 0.5).map(shuffleQuestionOptions);
 }
 
 // ── Pick N questions of a specific type ──
@@ -90,6 +129,6 @@ export function pickAdvancedMix(pool, n) {
     picked.push(remaining.shift());
   }
 
-  // Shuffle and return
-  return picked.slice(0, n).sort(() => Math.random() - 0.5);
+  // Shuffle and return (with per-question option shuffle for mcq/spot_error/multi_select)
+  return picked.slice(0, n).sort(() => Math.random() - 0.5).map(shuffleQuestionOptions);
 }
