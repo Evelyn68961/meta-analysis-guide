@@ -346,30 +346,16 @@ export default function CourseNotes({ user, courseId, courseTitle, lang = "en" }
           </div>
         )}
 
-        {/* Download row */}
-        <div style={{ padding: "12px 16px 8px", borderTop: `1px solid ${LIGHT_BORDER}`, display: "flex", gap: 8 }}>
-          <button
-            onClick={() => downloadNotesTxt({ content, courseTitle })}
-            disabled={!content.trim()}
-            style={btnSecondary(!!content.trim())}
-          >.txt</button>
-          <button
-            onClick={() => downloadNotesDocx({ content, courseTitle })}
-            disabled={!content.trim()}
-            style={btnSecondary(!!content.trim())}
-          >.docx</button>
-        </div>
-
-        {/* Email row */}
-        <div style={{ padding: "4px 16px 16px", display: "flex", gap: 6, alignItems: "center" }}>
+        {/* Email input — full width on its own row */}
+        <div style={{ padding: "12px 16px 0", borderTop: `1px solid ${LIGHT_BORDER}` }}>
           <input
             type="email"
             value={emailTo}
             onChange={(e) => setEmailTo(e.target.value)}
-            placeholder={lang === "zh" ? "電子郵件" : "your@email.com"}
+            placeholder={lang === "zh" ? "your@email.com" : "your@email.com"}
             style={{
-              flex: 1,
-              minWidth: 0,
+              width: "100%",
+              boxSizing: "border-box",
               padding: "9px 11px",
               borderRadius: 8,
               border: `1px solid ${LIGHT_BORDER}`,
@@ -380,6 +366,20 @@ export default function CourseNotes({ user, courseId, courseTitle, lang = "en" }
               background: "#FFF",
             }}
           />
+        </div>
+
+        {/* Action row — downloads on left, Send fills the rest */}
+        <div style={{ padding: "10px 16px 16px", display: "flex", gap: 8 }}>
+          <button
+            onClick={() => downloadNotesTxt({ content, courseTitle })}
+            disabled={!content.trim()}
+            style={btnSecondary(!!content.trim())}
+          >.txt</button>
+          <button
+            onClick={() => downloadNotesDocx({ content, courseTitle })}
+            disabled={!content.trim()}
+            style={btnSecondary(!!content.trim())}
+          >.docx</button>
           <button
             onClick={handleEmail}
             disabled={!content.trim() || !emailLooksValid || emailState === "sending"}
